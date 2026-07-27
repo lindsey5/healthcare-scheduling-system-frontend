@@ -1,8 +1,16 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppRouter from './routes/AppRouter';
+import { Toaster } from "sileo";
 
 function App() {
+  
+  const queryClient = new QueryClient();
+  
   return (
-    <AppRouter />
+    <QueryClientProvider client={queryClient}>
+      <Toaster position="top-center" />
+      <AppRouter />
+    </QueryClientProvider>
   )
 }
 
