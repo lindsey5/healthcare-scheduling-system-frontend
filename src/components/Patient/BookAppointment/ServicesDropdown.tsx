@@ -1,4 +1,4 @@
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import useGetServices from "../../../hooks/service/use-get-services.hook"
 import Dropdown from "../../ui/Dropdown";
 import type { Service } from "../../../types/service.type";
