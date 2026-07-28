@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { scrollTo } from "../../utils/utils";
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <header className="bg-[#1E3D15] text-white shadow-md">
+        <header className="bg-[#1E3D15] text-white shadow-md z-10 fixed top-0 left-0 right-0">
             <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
@@ -24,24 +25,24 @@ export default function Header() {
                     <nav>
                         <ul className="flex items-center gap-8 font-medium">
                             <li>
-                                <a href="#home" className="hover:text-green-300 transition">
+                                <button onClick={() => scrollTo("home")} className="hover:text-green-300 transition">
                                     Home
-                                </a>
+                                </button>
                             </li>
                             <li>
-                                <a href="#about" className="hover:text-green-300 transition">
+                                <button onClick={() => scrollTo("about")} className="hover:text-green-300 transition">
                                     About
-                                </a>
+                                </button>
                             </li>
                             <li>
-                                <a href="#services" className="hover:text-green-300 transition">
+                                <button onClick={() => scrollTo("services")} className="hover:text-green-300 transition">
                                     Services
-                                </a>
+                                </button>
                             </li>
                             <li>
-                                <a href="#contact" className="hover:text-green-300 transition">
+                                <button onClick={() => scrollTo("contact")} className="hover:text-green-300 transition">
                                     Contact
-                                </a>
+                                </button>
                             </li>
                         </ul>
                     </nav>

@@ -1,4 +1,7 @@
+import { scrollTo } from "../../utils/utils";
+
 export default function Hero() {
+
     return (
         <section id="home" className="bg-white">
             <div className="max-w-7xl mx-auto px-6 py-20 lg:py-32 flex flex-col lg:flex-row items-center gap-12">
@@ -24,19 +27,12 @@ export default function Hero() {
                     </p>
 
                     <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <a
-                            href="/appointment"
-                            className="bg-[#1E3D15] text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800 transition"
-                        >
-                            Book an Appointment
-                        </a>
-
-                        <a
-                            href="#services"
+                        <button
+                            onClick={() => scrollTo("services")}
                             className="border-2 border-[#1E3D15] text-[#1E3D15] px-6 py-3 rounded-lg font-semibold hover:bg-[#1E3D15] hover:text-white transition"
                         >
                             View Services
-                        </a>
+                        </button>
                     </div>
                 </div>
 

@@ -14,7 +14,7 @@ export default function Button ({
             {...props}
             type="submit"
             className={cn(
-                "w-full bg-[#1E3D15] hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition cursor-pointer",
+                "px-4 bg-[#1E3D15] hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition cursor-pointer",
                 className
             )}
         />

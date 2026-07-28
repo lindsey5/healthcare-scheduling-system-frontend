@@ -1,0 +1,106 @@
+import ServicesDropdown from "./ServicesDropdown";
+import Textfield from "../../ui/Textfield";
+import DoctorsDropdown from "./DoctorsDropdown";
+import { getDayOfWeek } from "../../../utils/utils";
+import AvailableTimeSlotDropdown from "./AvailableTimeSlotDropdown";
+import Card from "../../ui/Card";
+import Textarea from "../../ui/Textarea";
+import type { AppointmentFormData } from "../../../schemas/appointmentSchema";
+import type { FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import Button from "../../ui/Button";
+import { ArrowRight } from "lucide-react";
+
+interface PurposeOfVisitProps {
+    next: () => void;
+    setValue: UseFormSetValue<AppointmentFormData>;
+    errors: FieldErrors<AppointmentFormData>;
+    watch: UseFormWatch<AppointmentFormData>;
+    handleSubmit: UseFormHandleSubmit<AppointmentFormData>;
+}
+
+export default function PurposeOfVisit ({ 
+    next,
+    setValue,
+    errors,
+    watch,
+    handleSubmit
+} : PurposeOfVisitProps) {
+
+
+    const onSubmit = () => {
+        next();
+    }
+
+    return (
+        <Card className="p-6 space-y-6">
+            <div>
+                <h1 className="text-3xl font-bold text-[#1E3D15]">Purpose of Visit</h1>
+                <p className="text-gray-500 mt-2">Please select your preferred healthcare service, doctor, appointment schedule, and briefly describe your concern.</p>
+            </div>
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-5"
+            >
+                <Textfield 
+                    label="Appointment Date *"
+                    type="date"
+                    className="bg-white"
+                    onChange={(e) => {
+                        setValue('appointmentDate', e.target.value);
+                        setValue('serviceId', NaN);
+                        setValue('doctorId', NaN)
+                    }}
+                    value={watch('appointmentDate')}
+                    min={new Date().toISOString().split("T")[0]}
+                    error={errors.appointmentDate?.message}
+                />
+                <ServicesDropdown 
+                    onChange={(e) => {
+                        setValue('serviceId', Number(e.target.value));
+                        setValue('doctorId', NaN);
+                    }}
+                    error={errors.serviceId?.message}
+                    disabled={!watch('appointmentDate')}
+                    value={watch('serviceId')}
+                    dayOfWeek={getDayOfWeek(watch('appointmentDate'))}
+                />
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <DoctorsDropdown
+                        serviceId={watch("serviceId")}
+                        disabled={!watch("serviceId")}
+                        value={watch("doctorId")}
+                        error={errors.doctorId?.message}
+                        onChange={(e) => setValue("doctorId", Number(e.target.value))}
+                    />
+
+                    <AvailableTimeSlotDropdown
+                        appointmentDate={watch("appointmentDate")}
+                        serviceId={watch("serviceId")}
+                        error={errors.appointmentTime?.message}
+                        value={watch('appointmentTime')}
+                        onChange={(e) => setValue('appointmentTime', e.target.value)}
+                    />
+                </div>
+
+                <Textarea 
+                    label="Purpose of Visit *"
+                    rows={5}
+                    error={errors.purposeOfVisit?.message}
+                    value={watch('purposeOfVisit')}
+                    onChange={(e) => setValue("purposeOfVisit", e.target.value)}
+                    placeholder="Briefly describe your illness, concern, or reason for your appointment"
+                />
+                <div className="flex justify-end">
+                    <Button
+                        className="px-6 flex gap-3 items-center"
+                        type="submit"
+                    >
+                        Next
+                        <ArrowRight size={20}/> 
+                    </Button>
+                </div>
+            </form>
+        
+        </Card>
+    )
+}

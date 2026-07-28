@@ -1,22 +1,30 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import Textfield from "../ui/Textfield";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "../../schemas/authSchema";
-import useLoginUser from "../../hooks/auth/use-login-user.hook";
 import { promiseToast } from "../../utils/utils";
 import Button from "../ui/Button";
+import useLoginPatient from "../../hooks/patient/use-login-patient.hook";
+import { useAuthStore } from "../../lib/store/authStore";
 
 export default function UserLogin() {
-    const loginMutation = useLoginUser();
+    const navigate = useNavigate();
+    const { isAuthenticated, user } = useAuthStore();
+
+    const loginMutation = useLoginPatient();
 
     const { register, formState: { errors }, handleSubmit } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema)
     })
 
     const onSubmit = async (data : LoginFormData) => {
-        promiseToast(loginMutation.mutateAsync(data))
+        promiseToast(loginMutation.mutateAsync(data), "top-center", () => navigate('/patient'), "Successfully Logged In")
+    }
+
+    if(isAuthenticated()){
+        return <Navigate to={`/${user.role}`} replace />
     }
 
     return (
@@ -86,6 +94,7 @@ export default function UserLogin() {
 
                             <Button
                                 type="submit"
+                                className="w-full"
                                 disabled={loginMutation.isPending}
                             >
                                 Sign In

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { cn } from "../../utils/utils";
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
     label?: string;
@@ -52,11 +53,13 @@ export default function Textfield({
                     {...props}
                     type={inputType}
                     onChange={handleChange}
-                    className={`w-full border border-gray-300 rounded-xl ${
-                        icon ? "pl-12" : "pl-4"
-                    } ${
-                        type === "password" ? "pr-12" : "pr-4"
-                    } py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition ${className}`}
+                    className={cn("w-full border border-gray-300 rounded-xl",
+                        icon ? "pl-12" : "pl-4",
+                        type === "password" ? "pr-12" : "pr-4",
+                        "py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition",
+                        className,
+                        error && 'border-red-500'
+                    )}
                 />
 
                 {type === "password" && (

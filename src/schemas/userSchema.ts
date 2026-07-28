@@ -3,11 +3,11 @@ import z from "zod";
 export const CreateUserSchema = z.object({
     firstname: z.string()
         .min(1, "Firstname is required")
-        .max(50, "Firstname must not exceed 100 characters"),
+        .max(50, "Firstname must not exceed 50 characters"),
 
     lastname: z.string()
         .min(1, "Lastname is required")
-        .max(50, "Lastname must not exceed 100 characters"),
+        .max(50, "Lastname must not exceed 50 characters"),
 
     email: z.string()
         .min(1, "Email is required")

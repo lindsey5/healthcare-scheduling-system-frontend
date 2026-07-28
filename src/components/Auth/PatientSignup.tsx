@@ -1,13 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ShieldCheck } from "lucide-react";
 import Textfield from "../ui/Textfield";
-import useRegisterUser from "../../hooks/auth/use-register-user.hook";
 import { useForm } from "react-hook-form";
 import { type CreateUserFormData, CreateUserSchema } from "../../schemas/userSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { promiseToast } from "../../utils/utils";
 import { useState } from "react";
-import useVerifyUser from "../../hooks/auth/use-verify-user.hook";
+import useVerifyUser from "../../hooks/patient/use-verify-patient.hook";
+import useRegisterPatient from "../../hooks/patient/use-register-patient.hook";
+import { useAuthStore } from "../../lib/store/authStore";
 
 type VerificationModalProps = {
     open: boolean;
@@ -28,13 +29,13 @@ export function VerificationModal({
         promiseToast(verifyUserMutation.mutateAsync({
             email, 
             verificationCode
-        }), "top-center", () => navigate('/user'))
+        }), "top-center", () => navigate('/patient'))
     }
 
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/50 px-4">
             <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in duration-200">
                 <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
@@ -88,9 +89,10 @@ export function VerificationModal({
     );
 }
 
-export default function UserSignUp() {
-    const registerMutation = useRegisterUser();
+export default function PatientSignUp() {
+    const registerMutation = useRegisterPatient();
     const [showVerify, setShowVerify] = useState(false);
+    const { isAuthenticated, user } = useAuthStore();
 
     const { register, formState: { errors }, handleSubmit, watch } = useForm<CreateUserFormData>({
         resolver: zodResolver(CreateUserSchema)
@@ -100,6 +102,10 @@ export default function UserSignUp() {
         promiseToast(registerMutation.mutateAsync(data), "top-center", () => {
             setShowVerify(true)
         })
+    }
+
+    if(isAuthenticated()){
+        return <Navigate to={`/${user.role}`} replace />
     }
 
     return (
@@ -191,6 +197,7 @@ export default function UserSignUp() {
 
                             <button
                                 type="submit"
+                                disabled={registerMutation.isPending}
                                 className="w-full bg-[#1E3D15] hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition"
                             >
                                 Create Account

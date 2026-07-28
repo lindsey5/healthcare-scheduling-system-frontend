@@ -17,17 +17,17 @@ type LoginResponse = {
     message?: string;
 }
 
-const loginUser = (data : LoginPayload) => 
-    apiAxios<LoginResponse>("/api/users/login", {
+const loginPatient = (data : LoginPayload) => 
+    apiAxios<LoginResponse>("/api/patients/login", {
         method: "POST",
         data
     })
 
-export default function useLoginUser () {
+export default function useLoginPatient () {
     const { setAuth, setUser } = useAuthStore();
 
     return useMutation({
-        mutationFn: (data : LoginPayload) => loginUser(data),
+        mutationFn: (data : LoginPayload) => loginPatient(data),
         onSuccess: (data) => {
             const { accessToken, refreshToken } = data.token;
 
