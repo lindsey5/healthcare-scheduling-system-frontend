@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
 import useGetServices from "../../../hooks/service/use-get-services.hook"
 import Dropdown from "../../ui/Dropdown";
 import type { Service } from "../../../types/service.type";
@@ -26,7 +26,6 @@ export default function ServicesDropdown ({
         <Dropdown 
             onChange={(e) => {
                 onChange?.(e);
-                console.log(data?.services.find(service => service.id === Number(e.target.value)))
                 setSelectedService?.(data?.services.find(service => service.id === Number(e.target.value)) || null)
             }}
             error={error}

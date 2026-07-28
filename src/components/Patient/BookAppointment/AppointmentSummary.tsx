@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { ArrowLeft, ArrowRight, User, CalendarDays } from "lucide-react";
 import Button from "../../ui/Button";
 import Card from "../../ui/Card";
@@ -6,24 +6,43 @@ import type { AppointmentRecordFormData } from "../../../schemas/appointmentReco
 import type { AppointmentFormData } from "../../../schemas/appointmentSchema";
 import type { Doctor } from "../../../types/doctor.type";
 import type { Service } from "../../../types/service.type";
+import useCreateAppointment from "../../../hooks/appointment/use-create-appointment.hook";
+import { promiseToast } from "../../../utils/utils";
 
 interface AppointmentSummaryProps {
     prev: () => void;
+    next: () => void;
     patientInfo: AppointmentRecordFormData;
     appointmentInfo: AppointmentFormData;
     doctor: Doctor | null;
     service: Service | null;
+    setReferenceNumber: Dispatch<SetStateAction<string | undefined>>;
 }
 
 export default function AppointmentSummary({
     prev,
+    next,
+    setReferenceNumber,
     patientInfo,
     appointmentInfo,
     service,
     doctor
 }: AppointmentSummaryProps) {
-
+    const createAppointmentMutation = useCreateAppointment();
     const [confirmed, setConfirmed] = useState(false);
+
+    const handleSubmit = () => {
+        promiseToast(createAppointmentMutation.mutateAsync({
+            appointment: appointmentInfo,
+            appointmentRecord: {
+                ...patientInfo,
+                suffix: patientInfo.suffix === 'N/A' ? undefined : patientInfo.suffix
+            }
+        }), "top-center", (data) => {
+            setReferenceNumber(data.appointment.referenceNumber);
+            next();
+        })
+    }
 
     return (
         <Card className="p-6 space-y-8">
@@ -179,7 +198,8 @@ export default function AppointmentSummary({
                 <Button
                     className="px-6 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     type="submit"
-                    disabled={!confirmed}
+                    disabled={!confirmed || createAppointmentMutation.isPending}
+                    onClick={handleSubmit}
                 >
                     Submit Appointment
                     <ArrowRight size={18}/>

@@ -6,6 +6,7 @@ import PatientLayout from "../components/Patient/PatientLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import PatientDashboard from "../components/Patient/PatientDashboard";
 import BookAppointment from "../components/Patient/BookAppointment/BookAppointment";
+import AppointmentHistory from "../components/Patient/AppointmentHistory/AppointmentHistory";
 
 const router = createBrowserRouter([
     {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
             {
                 path: 'book-appointment',
                 Component: () => <BookAppointment />
+            },
+            {
+                path: 'appointments',
+                Component: () => <AppointmentHistory />
             }
         ]
     }

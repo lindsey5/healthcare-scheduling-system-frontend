@@ -40,7 +40,7 @@ export default function AvailableTimeSlotDropdown ({
             placeholder="Select Time Slot"
             value={value}
             disabled={disabled}
-            options={data?.availableTimes.map(time => ({ label: `${formatTime(time)}`, value: `${formatTime(time)}`})) || []}
+            options={data?.availableTimes.map(time => ({ label: `${formatTime(time)}`, value: time })) || []}
         />
     )
 }

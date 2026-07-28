@@ -62,7 +62,7 @@ export default function Dropdown({
                         error && 'border-red-500'
                     )}
                 >
-                    <option value="" disabled={!!value}>
+                    <option value="" disabled={!!value || options.some(option => option.value === "")}>
                         {placeholder}
                     </option>
 

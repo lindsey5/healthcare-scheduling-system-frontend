@@ -1,20 +1,23 @@
 import type { Doctor } from "./doctor.type";
+import type { PaginationParams, PaginationResponse } from "./pagination.type";
 import type { Patient } from "./patient.type";
 import type { Service } from "./service.type";
 
-export interface AppointmentAttributes {
+export interface Appointment {
     id: string;
+
+    referenceNumber: string;
 
     patientId: number;
     patient: Patient;
 
     serviceId: number;
-    serviced: Service;
+    service: Service;
 
     doctorId: number;
     doctor: Doctor;
 
-    appointmentDate: Date;
+    appointmentDate: string;
     appointmentTime: string;
 
     status:
@@ -26,7 +29,7 @@ export interface AppointmentAttributes {
         | "No Show"
         | "Rescheduled";
 
-    purposeOfVisit: string | null;
+    purposeOfVisit: string;
 
     createdAt: Date;
 
@@ -52,4 +55,13 @@ export interface AppointmentRecord {
 
     emergencyContactPerson?: string;
     emergencyContactNumber?: string;
+}
+
+export interface GetAppointmentsParams extends PaginationParams {
+    search?: string;
+    status?: string;
+}
+
+export interface GetAppointmentsResponse extends PaginationResponse {
+    appointments: Appointment[];
 }

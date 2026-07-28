@@ -5,7 +5,7 @@ export default function PatientHeader() {
     const { user } = useAuthStore();
 
     return (
-        <header className="h-20 bg-white border-b border-gray-200 px-6 flex items-center justify-between fixed top-0 left-72 right-0">
+        <header className="h-20 bg-white border-b border-gray-200 px-6 flex items-center justify-between fixed top-0 left-72 right-0 z-10">
 
             {/* Welcome */}
             <div>

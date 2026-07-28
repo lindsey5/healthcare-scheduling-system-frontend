@@ -10,10 +10,25 @@ export interface AuthState {
     logout: () => void
 }
 
-export interface AuthResponse { 
-    user: any;
+export type LoginPayload = {
+    email: string;
+    password: string;
+}
+
+export type AuthResponse = {
+    user: User,
     token: {
-        accessToken: string
-        refreshToken: string
-    }
+        refreshToken: string;
+        accessToken: string;
+    },
+    message?: string;
+}
+
+export interface User {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    createdAt: string;
+    role: string;
 }

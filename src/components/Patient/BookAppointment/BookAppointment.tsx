@@ -10,6 +10,7 @@ import { cn } from "../../../utils/utils";
 import { type Doctor } from "../../../types/doctor.type";
 import { type Service } from "../../../types/service.type";
 import AppointmentSummary from "./AppointmentSummary";
+import AppointmentSuccess from "./AppointmentSuccess";
 
 const steps = [
     "Purpose of Visit",
@@ -19,6 +20,7 @@ const steps = [
 ];
 
 export default function BookAppointment() {
+    const [referenceNumber, setReferenceNumber] = useState<string>();
     const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const { 
@@ -131,11 +133,17 @@ export default function BookAppointment() {
             {currentIndex === 2 && (
                 <AppointmentSummary 
                     prev={prev}
+                    next={next}
                     patientInfo={appointmentRecordWatch()}
                     appointmentInfo={appointmentWatch()}
                     doctor={selectedDoctor}
                     service={selectedService}
+                    setReferenceNumber={setReferenceNumber}
                 />
+            )}
+
+            {currentIndex === 3 && (
+                <AppointmentSuccess referenceNumber={referenceNumber} />
             )}
         </section>
     );

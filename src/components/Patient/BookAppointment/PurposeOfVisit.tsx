@@ -59,8 +59,8 @@ export default function PurposeOfVisit ({
                     className="bg-white"
                     onChange={(e) => {
                         setValue('appointmentDate', e.target.value);
-                        setValue('serviceId', NaN);
-                        setValue('doctorId', NaN);
+                        setValue('serviceId', 0);
+                        setValue('doctorId', 0);
                         setSelectedDoctor(null);
                         setSelectedService(null);
                     }}
@@ -74,19 +74,19 @@ export default function PurposeOfVisit ({
                     setSelectedService={setSelectedService}
                     onChange={(e) => {
                         setValue('serviceId', Number(e.target.value));
-                        setValue('doctorId', NaN);
+                        setValue('doctorId', 0);
                         setSelectedDoctor(null);
                     }}
                     error={errors.serviceId?.message}
                     disabled={!watch('appointmentDate')}
-                    value={watch('serviceId')}
+                    value={watch('serviceId') || undefined}
                     dayOfWeek={getDayOfWeek(watch('appointmentDate'))}
                 />
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <DoctorsDropdown
                         serviceId={watch("serviceId")}
                         disabled={!watch("serviceId")}
-                        value={watch("doctorId")}
+                        value={watch("doctorId") || undefined}
                         error={errors.doctorId?.message}
                         onChange={(e) => setValue("doctorId", Number(e.target.value))}
                         setSelectedDoctor={setSelectedDoctor}

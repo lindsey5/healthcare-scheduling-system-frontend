@@ -1,24 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiAxios } from "../../api/apiAxios";
-import type { User } from "../../types/user.type";
 import { useAuthStore } from "../../lib/store/authStore";
-
-type LoginPayload = {
-    email: string;
-    password: string;
-}
-
-type LoginResponse = {
-    user: User,
-    token: {
-        refreshToken: string;
-        accessToken: string;
-    },
-    message?: string;
-}
+import type { AuthResponse, LoginPayload } from "../../types/auth.type";
 
 const loginPatient = (data : LoginPayload) => 
-    apiAxios<LoginResponse>("/api/patients/login", {
+    apiAxios<AuthResponse>("/api/patients/login", {
         method: "POST",
         data
     })
