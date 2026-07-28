@@ -16,8 +16,8 @@ const TableRow = <T,>({ row, onRowClick }: TableRowProps<T>) => {
             }}
             className={cn(
                 "border-b border-gray-100 transition-all duration-200",
-                row.index % 2 === 0 ? "bg-white" : "bg-green-50/40",
-                onRowClick && "cursor-pointer hover:bg-green-100"
+                row.index % 2 === 0 ? "bg-white" : "bg-gray-100",
+                onRowClick && "cursor-pointer hover:bg-gray-200"
             )}
         >
             {row.getVisibleCells().map((cell) => {
@@ -223,7 +223,7 @@ const CustomizedTable = <T,>({
                 <TableSkeleton columns={cols} />
             ) : (
                 <>
-                    <div className="flex-grow overflow-auto rounded-xl">
+                    <div className="flex-grow overflow-auto">
                         <table className="w-full border-separate border-spacing-0 text-sm">
                             <TableColumns table={table} />
                             <TableRows

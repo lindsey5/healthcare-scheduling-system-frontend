@@ -45,7 +45,7 @@ export interface AppointmentRecord {
     lastName: string;
     suffix?: string;
 
-    birthDate: Date;
+    birthDate: string;
     gender: "Male" | "Female";
     civilStatus: "Single" | "Married" | "Widowed" | "Separated";
 

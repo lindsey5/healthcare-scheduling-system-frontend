@@ -1,17 +1,18 @@
 import type { ColumnDef, PaginationState } from "@tanstack/react-table"
 import type { Appointment } from "../../../types/appointment.type"
-import { useMemo, useState } from "react";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useDebounce } from "../../../hooks/useDebouce";
 import useGetMyAppointments from "../../../hooks/appointment/use-get-my-appointments.hook";
 import CustomizedTable from "../../ui/Table";
 import { formatDate, formatTime } from "../../../utils/utils";
 import AppointmentStatusChip from "../../ui/StatusChip";
 import Textfield from "../../ui/Textfield";
-import { Search } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import Dropdown from "../../ui/Dropdown";
 import { STATUS } from "../../../lib/contants/constants";
+import AppointmentModal from "./AppointmentModal";
 
-const columns : ColumnDef<Appointment>[] = [
+const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
     {
         header: "Reference Number",
         accessorKey: "referenceNumber",
@@ -41,10 +42,27 @@ const columns : ColumnDef<Appointment>[] = [
         header: "Date Submitted",
         accessorKey: "createdAt",
         cell: info => formatDate(info.getValue() as string)
+    },
+    {
+        header: "Action",
+        cell: ({ row }) => (
+            <div className="flex justify-center">
+                <button
+                    className="cursor-pointer hover:text-green-300"
+                    onClick={() => setAppointment(row.original)}
+                >
+                    <Eye size={18}/>
+                </button>
+            </div>
+        ),
+        meta: { align: 'center' }
     }
 ]
 
 export default function AppointmentHistory () {
+    const [showModal, setShowModal] = useState(false);
+    const [appointment, setAppointment] = useState<Appointment>();
+
     const [pagination, setPagination] = useState<PaginationState>({ pageSize: 50, pageIndex: 0 });
 
     const [search, setSearch] = useState("");
@@ -69,6 +87,15 @@ export default function AppointmentHistory () {
 
     return (
         <div className="p-6 flex-1 flex flex-col gap-10 max-h-screen overflow-auto">
+            <AppointmentModal 
+                close={() => {
+                    setShowModal(false);
+                    setAppointment(undefined);
+                }}
+                show={showModal}
+                appointment={appointment}
+            />
+            
             <div className="w-full space-y-5">
                 <h1 className="text-3xl font-bold text-[#1E3D15]">
                     Appointment History
@@ -102,11 +129,15 @@ export default function AppointmentHistory () {
                 data={data?.appointments || []}
                 pagination={pagination}
                 setPagination={setPagination}
-                columns={columns}
+                columns={columns(setAppointment)}
                 totalPages={data?.totalPages || 0}
                 showPagination
                 noDataMessage="No Appointments Found"
                 total={data?.total || 0}
+                onRowClick={(row) => {
+                    setAppointment(row);
+                    setShowModal(true)
+                }}
             />
         </div>
     )

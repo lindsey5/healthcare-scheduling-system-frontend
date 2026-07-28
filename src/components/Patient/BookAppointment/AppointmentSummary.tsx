@@ -7,7 +7,9 @@ import type { AppointmentFormData } from "../../../schemas/appointmentSchema";
 import type { Doctor } from "../../../types/doctor.type";
 import type { Service } from "../../../types/service.type";
 import useCreateAppointment from "../../../hooks/appointment/use-create-appointment.hook";
-import { promiseToast } from "../../../utils/utils";
+import { formatTime, promiseToast } from "../../../utils/utils";
+import SummarySection from "../../shared/SummarySection";
+import SummaryRow from "../../shared/SummaryRow";
 
 interface AppointmentSummaryProps {
     prev: () => void;
@@ -58,6 +60,40 @@ export default function AppointmentSummary({
                 </p>
             </div>
 
+            {/* Appointment Information */}
+            <SummarySection
+                title="Appointment Information"
+                icon={<CalendarDays size={20} />}
+            >
+                <SummaryRow
+                    label="Appointment Date"
+                    value={appointmentInfo.appointmentDate}
+                />
+
+                <SummaryRow
+                    label="Appointment Time"
+                    value={formatTime(appointmentInfo.appointmentTime)}
+                />
+
+                <SummaryRow
+                    label="Service"
+                    value={service?.serviceName}
+                />
+
+                <SummaryRow
+                    label="Doctor"
+                    value={
+                        doctor
+                            ? `Dr. ${doctor.firstname} ${doctor.lastname}`
+                            : "N/A"
+                    }
+                />
+
+                <SummaryRow
+                    label="Purpose of Visit"
+                    value={appointmentInfo.purposeOfVisit}
+                />
+            </SummarySection>
 
             {/* Patient Information */}
             <SummarySection
@@ -117,43 +153,6 @@ export default function AppointmentSummary({
                 />
             </SummarySection>
 
-
-            {/* Appointment Information */}
-            <SummarySection
-                title="Appointment Information"
-                icon={<CalendarDays size={20} />}
-            >
-                <SummaryRow
-                    label="Appointment Date"
-                    value={appointmentInfo.appointmentDate}
-                />
-
-                <SummaryRow
-                    label="Appointment Time"
-                    value={appointmentInfo.appointmentTime}
-                />
-
-                <SummaryRow
-                    label="Service"
-                    value={service?.serviceName}
-                />
-
-                <SummaryRow
-                    label="Doctor"
-                    value={
-                        doctor
-                            ? `Dr. ${doctor.firstname} ${doctor.lastname}`
-                            : "N/A"
-                    }
-                />
-
-                <SummaryRow
-                    label="Purpose of Visit"
-                    value={appointmentInfo.purposeOfVisit}
-                />
-            </SummarySection>
-
-
             {/* Confirmation Checkbox */}
             <div className="flex items-start gap-3 border-t border-gray-200 pt-5">
 
@@ -208,66 +207,5 @@ export default function AppointmentSummary({
             </div>
 
         </Card>
-    );
-}
-
-
-function SummarySection({
-    title,
-    icon,
-    children,
-}: {
-    title: string;
-    icon?: React.ReactNode;
-    children: React.ReactNode;
-}) {
-
-    return (
-        <div className="space-y-3">
-
-            <h2 className="flex items-center gap-2 text-xl font-bold text-[#1E3D15]">
-                {icon}
-                {title}
-            </h2>
-
-
-            <div className="border-t border-gray-200">
-
-                <table className="w-full text-sm">
-
-                    <tbody>
-                        {children}
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-    );
-}
-
-
-function SummaryRow({
-    label,
-    value,
-}: {
-    label: string;
-    value?: string;
-}) {
-
-    return (
-        <tr className="border-b border-gray-200">
-
-            <td className="w-[40%] bg-gray-50 px-4 py-3 font-bold text-[#1E3D15]">
-                {label}
-            </td>
-
-
-            <td className="px-4 py-3 text-gray-800 break-words">
-                {value || "N/A"}
-            </td>
-
-        </tr>
     );
 }
