@@ -9,6 +9,9 @@ import type { AppointmentFormData } from "../../../schemas/appointmentSchema";
 import type { FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import Button from "../../ui/Button";
 import { ArrowRight } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
+import type { Doctor } from "../../../types/doctor.type";
+import type { Service } from "../../../types/service.type";
 
 interface PurposeOfVisitProps {
     next: () => void;
@@ -16,6 +19,8 @@ interface PurposeOfVisitProps {
     errors: FieldErrors<AppointmentFormData>;
     watch: UseFormWatch<AppointmentFormData>;
     handleSubmit: UseFormHandleSubmit<AppointmentFormData>;
+    setSelectedDoctor: Dispatch<SetStateAction<Doctor | null>>;
+    setSelectedService: Dispatch<SetStateAction<Service | null>>;
 }
 
 export default function PurposeOfVisit ({ 
@@ -23,7 +28,9 @@ export default function PurposeOfVisit ({
     setValue,
     errors,
     watch,
-    handleSubmit
+    handleSubmit,
+    setSelectedDoctor,
+    setSelectedService
 } : PurposeOfVisitProps) {
 
 
@@ -34,8 +41,13 @@ export default function PurposeOfVisit ({
     return (
         <Card className="p-6 space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-[#1E3D15]">Purpose of Visit</h1>
-                <p className="text-gray-500 mt-2">Please select your preferred healthcare service, doctor, appointment schedule, and briefly describe your concern.</p>
+                <h1 className="text-2xl font-bold text-[#1E3D15]">
+                    Purpose of Visit
+                </h1>
+
+                <p className="text-sm text-gray-500 mt-1">
+                    Please select your preferred healthcare service, doctor, appointment schedule, and briefly describe your concern.
+                </p>
             </div>
             <form
                 onSubmit={handleSubmit(onSubmit)}
@@ -48,16 +60,22 @@ export default function PurposeOfVisit ({
                     onChange={(e) => {
                         setValue('appointmentDate', e.target.value);
                         setValue('serviceId', NaN);
-                        setValue('doctorId', NaN)
+                        setValue('doctorId', NaN);
+                        setSelectedDoctor(null);
+                        setSelectedService(null);
                     }}
                     value={watch('appointmentDate')}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={new Date().toLocaleDateString("en-CA", {
+                        timeZone: "Asia/Manila",
+                    })}
                     error={errors.appointmentDate?.message}
                 />
                 <ServicesDropdown 
+                    setSelectedService={setSelectedService}
                     onChange={(e) => {
                         setValue('serviceId', Number(e.target.value));
                         setValue('doctorId', NaN);
+                        setSelectedDoctor(null);
                     }}
                     error={errors.serviceId?.message}
                     disabled={!watch('appointmentDate')}
@@ -71,6 +89,7 @@ export default function PurposeOfVisit ({
                         value={watch("doctorId")}
                         error={errors.doctorId?.message}
                         onChange={(e) => setValue("doctorId", Number(e.target.value))}
+                        setSelectedDoctor={setSelectedDoctor}
                     />
 
                     <AvailableTimeSlotDropdown

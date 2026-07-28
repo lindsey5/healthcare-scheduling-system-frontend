@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, UserCircle } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 
 export default function PatientHeader() {

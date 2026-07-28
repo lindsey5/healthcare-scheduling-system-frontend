@@ -2,10 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiAxios } from "../../api/apiAxios";
 
 type GetAvailableTimeSlotResponse = {
-    availableTimes: {
-        startTime: string;
-        endTime: string;
-    } [];
+    availableTimes: string[];
 }
 
 type GetAvailableTimeSlotParams = {

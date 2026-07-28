@@ -1,5 +1,7 @@
+import type { Dispatch, SetStateAction } from "react";
 import useGetServices from "../../../hooks/service/use-get-services.hook"
 import Dropdown from "../../ui/Dropdown";
+import type { Service } from "../../../types/service.type";
 
 interface ServicesDropdownProps {
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -7,6 +9,7 @@ interface ServicesDropdownProps {
     disabled?: boolean;
     dayOfWeek?: string;
     value?: number;
+    setSelectedService?: Dispatch<SetStateAction<Service | null>>;
 }
 
 export default function ServicesDropdown ({ 
@@ -14,13 +17,18 @@ export default function ServicesDropdown ({
     error,
     disabled,
     dayOfWeek,
-    value
+    value,
+    setSelectedService
 } : ServicesDropdownProps) {
     const { data } = useGetServices(dayOfWeek);
 
     return (
         <Dropdown 
-            onChange={onChange}
+            onChange={(e) => {
+                onChange?.(e);
+                console.log(data?.services.find(service => service.id === Number(e.target.value)))
+                setSelectedService?.(data?.services.find(service => service.id === Number(e.target.value)) || null)
+            }}
             error={error}
             label="Healthcare Service *"
             placeholder="Select Service"

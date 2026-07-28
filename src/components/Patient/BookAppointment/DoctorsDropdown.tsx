@@ -1,5 +1,7 @@
+import type { Dispatch, SetStateAction } from "react";
 import useGetDoctors from "../../../hooks/doctor/use-get-doctors.hook";
 import Dropdown from "../../ui/Dropdown";
+import type { Doctor } from "../../../types/doctor.type";
 
 interface DoctorsDropdownProps {
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -7,6 +9,7 @@ interface DoctorsDropdownProps {
     serviceId?: number;
     disabled?: boolean;
     value?: number;
+    setSelectedDoctor?: Dispatch<SetStateAction<Doctor | null>>;
 }
 
 export default function DoctorsDropdown ({ 
@@ -14,13 +17,17 @@ export default function DoctorsDropdown ({
     error,
     serviceId,
     disabled,
-    value
+    value,
+    setSelectedDoctor
 } : DoctorsDropdownProps) {
     const { data } = useGetDoctors({ serviceId });
 
     return (
         <Dropdown 
-            onChange={onChange}
+            onChange={(e) => {
+                onChange?.(e);
+                setSelectedDoctor?.(data?.doctors.find(doctor => doctor.id === Number(e.target.value)) || null)
+            }}
             error={error}
             value={value}
             label="Assigned Doctor *"

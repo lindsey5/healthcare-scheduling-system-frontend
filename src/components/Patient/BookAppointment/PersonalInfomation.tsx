@@ -27,20 +27,21 @@ export default function PersonalInformation ({
     watch
 } : PersonalInfomationProps) {
 
-    const onSubmit = (data : AppointmentRecordFormData) => {
-        next()
-    }
-
     return (
         <Card className="p-6 space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-[#1E3D15]">Personal Information</h1>
-                <p className="text-gray-500 mt-2">Please complete all required personal information before proceeding. Fields marked with <span className="text-red-600">*</span> are required</p>
+                <h1 className="text-2xl font-bold text-[#1E3D15]">
+                    Personal Information
+                </h1>
+
+                <p className="text-sm text-gray-500 mt-1">
+                    Please complete all required personal information before proceeding. Fields marked with <span className="text-red-600">*</span> are required
+                </p>
             </div>
 
             <form
                 className="space-y-5"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(next)}
             >
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <Textfield 
@@ -120,6 +121,7 @@ export default function PersonalInformation ({
                         value={watch('contactNumber')}
                         registration={register('contactNumber')}
                         error={errors.contactNumber?.message}
+                        type="number"
                     />
                     <Textfield 
                         label="Email Address"
