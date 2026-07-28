@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PurposeOfVisit from "./PurposeOfVisit";
 import { appointmentSchema, type AppointmentFormData } from "../../../schemas/appointmentSchema";
 import { useForm } from "react-hook-form";
@@ -35,7 +35,6 @@ export default function BookAppointment() {
         handleSubmit : appointmentRecordHandleSubmit, 
         watch : appointmentRecordWatch, 
         setValue : appointmentRecordSetValue,
-        getValues
     } = useForm<AppointmentRecordFormData>({
         resolver: zodResolver(AppointmentRecordSchema)
     })
