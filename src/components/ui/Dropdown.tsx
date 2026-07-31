@@ -26,14 +26,14 @@ export default function Dropdown({
     value,
     ...props
 }: DropdownProps) {
-
     return (
         <div>
             {label && (
                 <label
-                    className={`block text-sm font-medium mb-2 ${
+                    className={cn(
+                        "block text-sm font-medium mb-2",
                         disabled ? "text-gray-400" : "text-gray-700"
-                    }`}
+                    )}
                 >
                     {label}
                 </label>
@@ -42,9 +42,10 @@ export default function Dropdown({
             <div className="relative">
                 {icon && (
                     <div
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+                        className={cn(
+                            "absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none",
                             disabled ? "text-gray-300" : "text-gray-400"
-                        }`}
+                        )}
                     >
                         {icon}
                     </div>
@@ -52,17 +53,20 @@ export default function Dropdown({
 
                 <select
                     {...props}
+                    value={value ?? ""}
                     disabled={disabled}
                     className={cn(
                         "w-full appearance-none rounded-xl border",
                         icon ? "pl-12" : "pl-4",
                         "pr-12 py-3 transition outline-none",
-                        disabled ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400" : "border-gray-300 bg-white text-gray-700 focus:border-green-600 focus:ring-2 focus:ring-green-100",
-                        className,
-                        error && 'border-red-500'
+                        disabled
+                            ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                            : "border-gray-300 bg-white text-gray-700 focus:border-green-600 focus:ring-2 focus:ring-green-100",
+                        error && "border-red-500",
+                        className
                     )}
                 >
-                    <option value="" disabled={!!value || options.some(option => option.value === "")}>
+                    <option value="" disabled>
                         {placeholder}
                     </option>
 
@@ -78,9 +82,10 @@ export default function Dropdown({
 
                 <ChevronDown
                     size={20}
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none ${
+                    className={cn(
+                        "absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none",
                         disabled ? "text-gray-300" : "text-gray-400"
-                    }`}
+                    )}
                 />
             </div>
 

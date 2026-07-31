@@ -8,3 +8,11 @@ export const STATUS = [
     "No Show",
     "Rescheduled",
 ]
+
+export const DAYS = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+];

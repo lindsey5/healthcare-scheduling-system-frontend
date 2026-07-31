@@ -9,6 +9,4 @@ export interface Service {
         | "Friday"
     startTime: string;
     endTime: string;
-    duration: number;
-    createdAt: Date;
 }

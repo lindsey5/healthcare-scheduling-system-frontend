@@ -3,7 +3,7 @@ import Hero from "./Hero";
 import About from "./About";
 import { useAuthStore } from "../../lib/store/authStore";
 import { Navigate } from "react-router-dom";
-import Services from "../Service/Services";
+import Services from "../shared/Services";
 
 export default function Home () {
     const { isAuthenticated, user } = useAuthStore();

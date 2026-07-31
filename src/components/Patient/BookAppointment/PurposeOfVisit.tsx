@@ -94,7 +94,6 @@ export default function PurposeOfVisit ({
 
                     <AvailableTimeSlotDropdown
                         appointmentDate={watch("appointmentDate")}
-                        serviceId={watch("serviceId")}
                         error={errors.appointmentTime?.message}
                         value={watch('appointmentTime')}
                         onChange={(e) => setValue('appointmentTime', e.target.value)}

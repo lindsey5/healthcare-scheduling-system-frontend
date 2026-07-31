@@ -1,35 +1,49 @@
-import { Clock } from "lucide-react";
+import { memo, useCallback, useState } from "react";
+import { Clock, Pencil } from "lucide-react";
+
 import useGetServices from "../../hooks/service/use-get-services.hook";
 import { cn, formatTime } from "../../utils/utils";
 import Card from "../ui/Card";
-
-const DAYS = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-];
-
-type Service = {
-    id: number;
-    serviceName: string;
-    startTime: string;
-    endTime: string;
-    duration: number;
-};
+import Button from "../ui/Button";
+import { DAYS } from "../../lib/contants/constants";
+import type { Service } from "../../types/service.type";
+import ServiceModal from "./ServiceModal";
 
 export default function Services() {
+    const [showModal, setShowModal] = useState(false);
+    const [service, setService] = useState<Service | null>(null);
+
+    const handleClose = useCallback(() => {
+        setShowModal(false);
+        setService(null);
+    }, []);
+
+    const handleOpen = useCallback((service: Service) => {
+        setService(service);
+        setShowModal(true);
+    }, []);
+
+    const handleCreate = useCallback(() => {
+        setService(null);
+        setShowModal(true);
+    }, []);
+
     return (
-        <section className="py-5 flex-1 flex flex-col min-h-200">
-            <div className="mb-8">
+        <div className="p-6 flex-1 flex flex-col gap-10 min-h-screen overflow-auto">
+            <ServiceModal
+                close={handleClose}
+                service={service}
+                show={showModal}
+            />
+
+            <div className="w-full flex justify-between flex-wrap items-center gap-5">
                 <h1 className="text-3xl font-bold text-[#1E3D15]">
-                    Available Services
+                    Healthcare Services
                 </h1>
 
-                <p className="text-gray-500 mt-2">
-                    Browse the healthcare services available each day.
-                </p>
+                <Button onClick={handleCreate}>
+                    Create Service
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 flex-1">
@@ -37,19 +51,22 @@ export default function Services() {
                     <ServicesContainer
                         key={day}
                         dayOfWeek={day}
+                        handleOpen={handleOpen}
                     />
                 ))}
             </div>
-        </section>
+        </div>
     );
 }
 
-function ServicesContainer({
+const ServicesContainer = memo(function ServicesContainer({
     dayOfWeek,
+    handleOpen,
 }: {
     dayOfWeek: string;
+    handleOpen: (service: Service) => void;
 }) {
-    const { data, isFetching } = useGetServices(dayOfWeek,);
+    const { data, isFetching } = useGetServices(dayOfWeek);
 
     const services: Service[] = data?.services ?? [];
 
@@ -86,15 +103,15 @@ function ServicesContainer({
                             className="bg-white rounded-xl border border-gray-300 p-4 animate-pulse"
                         >
                             <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
-
                             <div className="h-4 bg-gray-100 rounded w-1/2" />
                         </div>
                     ))
-                ) : services.length ? (
+                ) : services.length > 0 ? (
                     services.map((service) => (
                         <ServiceCard
                             key={service.id}
                             service={service}
+                            openModal={handleOpen}
                         />
                     ))
                 ) : (
@@ -105,12 +122,14 @@ function ServicesContainer({
             </div>
         </Card>
     );
-}
+});
 
-function ServiceCard({
+const ServiceCard = memo(function ServiceCard({
     service,
+    openModal,
 }: {
     service: Service;
+    openModal: (service: Service) => void;
 }) {
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
@@ -118,19 +137,31 @@ function ServiceCard({
                 <div className="w-1.5 bg-green-500 rounded-l-xl" />
 
                 <div className="flex-1 p-4">
-                    <h3 className="font-semibold text-gray-800 leading-tight">
-                        {service.serviceName}
-                    </h3>
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-800 leading-tight">
+                            {service.serviceName}
+                        </h3>
+
+                        <button
+                            type="button"
+                            onClick={() => openModal(service)}
+                            className="cursor-pointer p-2 rounded-lg text-gray-500 hover:bg-green-50 hover:text-green-600 transition"
+                            aria-label="Edit service"
+                        >
+                            <Pencil size={18} />
+                        </button>
+                    </div>
 
                     <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
                         <Clock size={15} />
 
                         <span>
-                            {formatTime(service.startTime)} - {formatTime(service.endTime)}
+                            {formatTime(service.startTime)} -{" "}
+                            {formatTime(service.endTime)}
                         </span>
                     </div>
                 </div>
             </div>
         </div>
     );
-}
+});

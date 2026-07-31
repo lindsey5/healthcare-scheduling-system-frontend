@@ -1,4 +1,4 @@
-import useGetgetAvailableTimeSlot from "../../../hooks/service/use-get-available-time-slot.hook";
+import useGetgetAvailableTimeSlot from "../../../hooks/appointment/use-get-available-time-slot.hook";
 import { formatTime } from "../../../utils/utils";
 import Dropdown from "../../ui/Dropdown";
 
@@ -6,7 +6,6 @@ interface AvailableTimeSlotDropdownProps {
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     error?: string;
     disabled?: boolean;
-    serviceId?: number;
     appointmentDate?: string;
     value?: string;
 }
@@ -16,10 +15,9 @@ export default function AvailableTimeSlotDropdown ({
     error,
     disabled,
     appointmentDate,
-    serviceId,
     value
 } : AvailableTimeSlotDropdownProps) {
-    if(!appointmentDate || !serviceId) {
+    if(!appointmentDate) {
         return (
             <Dropdown 
                 label="Available Time Slot *"
@@ -30,7 +28,7 @@ export default function AvailableTimeSlotDropdown ({
         )
     };
 
-    const { data } = useGetgetAvailableTimeSlot({ appointmentDate, serviceId });
+    const { data } = useGetgetAvailableTimeSlot(appointmentDate);
 
     return (
         <Dropdown 

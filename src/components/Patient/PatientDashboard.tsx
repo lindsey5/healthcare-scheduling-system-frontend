@@ -4,7 +4,7 @@ import {
     Stethoscope,
 } from "lucide-react";
 import DashboardCard from "../ui/DashboardCard";
-import Services from "../Service/Services";
+import Services from "../shared/Services";
 
 export default function PatientDashboard() {
     return (
