@@ -112,9 +112,9 @@ export default function Appointments () {
                 </h1>
                 <div className="w-full flex justify-between ">
                     <Textfield 
-                        className="text-sm w-100 bg-white"
+                        className="text-sm w-130 bg-white"
                         icon={<Search size={18}/>}
-                        placeholder="Search by Reference Number"
+                        placeholder="Search by reference number., booked by, service, doctor..."
                         onChange={(e) => {
                             setSearch(e.target.value);
                             setPagination(prev => ({ ...prev, pageIndex: 0 }));
