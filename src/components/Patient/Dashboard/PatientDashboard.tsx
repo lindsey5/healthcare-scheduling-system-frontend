@@ -1,8 +1,3 @@
-import {
-    CalendarDays,
-    ClipboardList,
-} from "lucide-react";
-import DashboardCard from "../../ui/DashboardCard";
 import Services from "../../shared/Services";
 import AvailableServicesCard from "../../shared/AvailableServicesCard";
 import { PatientCompletedAppointments, PatientPendingAppointments, PatientUpcomingAppointments } from "./PatientDashboardCards";
