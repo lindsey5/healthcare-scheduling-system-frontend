@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 import AppointmentHistory from "../components/Patient/AppointmentHistory/AppointmentHistory";
 import BookAppointment from "../components/Patient/BookAppointment/BookAppointment";
-import PatientDashboard from "../components/Patient/PatientDashboard";
+import PatientDashboard from "../components/Patient/Dashboard/PatientDashboard";
 import PatientLayout from "../components/Patient/PatientLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 
