@@ -53,7 +53,7 @@ export default function Dropdown({
 
                 <select
                     {...props}
-                    value={value ?? ""}
+                    value={value}
                     disabled={disabled}
                     className={cn(
                         "w-full appearance-none rounded-xl border",
@@ -66,7 +66,7 @@ export default function Dropdown({
                         className
                     )}
                 >
-                    <option value="" disabled>
+                    <option value="" disabled={!!value || options.some(option => option.value === "")}>
                         {placeholder}
                     </option>
 

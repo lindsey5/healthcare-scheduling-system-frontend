@@ -6,6 +6,7 @@ import {
     Users,
     UserCog,
     UserRound,
+    BriefcaseMedical,
     Settings,
     LogOut,
 } from "lucide-react";
@@ -26,6 +27,11 @@ const menuItems = [
         name: "Healthcare Services",
         icon: Stethoscope,
         path: "/admin/services",
+    },
+    {
+        name: "Doctors",
+        icon: BriefcaseMedical,
+        path: "/admin/doctors",
     },
     {
         name: "Staffs",
@@ -54,7 +60,7 @@ export default function AdminSidebar() {
     const { logout } = useAuthStore();
 
     return (
-        <aside className="fixed left-0 top-0 z-20 flex min-h-screen w-72 flex-col bg-[#1E3D15] text-white shadow-xl">
+        <aside className="overflow-y-auto fixed left-0 top-0 z-20 flex h-screen w-72 flex-col bg-[#1E3D15] text-white shadow-xl">
             {/* Logo */}
             <div className="border-b border-green-800 px-8 py-8">
                 <div className="flex items-center gap-4">

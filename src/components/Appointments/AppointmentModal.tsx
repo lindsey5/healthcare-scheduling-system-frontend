@@ -1,12 +1,12 @@
 import { CalendarDays, User, X } from "lucide-react";
-import type { Appointment } from "../../../types/appointment.type";
-import SummarySection from "../../shared/SummarySection";
-import Card from "../../ui/Card";
-import Modal from "../../ui/Modal";
-import SummaryRow from "../../shared/SummaryRow";
-import { formatTime, promiseToast } from "../../../utils/utils";
-import Button from "../../ui/Button";
-import useCancelAppointment from "../../../hooks/appointment/use-cancel-appointment.hook";
+import type { Appointment } from "../../types/appointment.type";
+import SummarySection from "../shared/SummarySection";
+import Card from "../ui/Card";
+import Modal from "../ui/Modal";
+import SummaryRow from "../shared/SummaryRow";
+import { formatTime, promiseToast } from "../../utils/utils";
+import AppointmentActionButtons from "./AppointmentActionButton";
+import useUpdateAppointment from "../../hooks/appointment/use-update-appointment.hook";
 
 interface AppointmentModalProps {
     show: boolean;
@@ -19,14 +19,18 @@ export default function AppointmentModal({
     show,
     appointment,
 }: AppointmentModalProps) {
-    const cancelAppointmentMutation = useCancelAppointment();
+    const updateAppointmentMutation = useUpdateAppointment();
 
-    const handleCancel = () => {
-        const isConfirm = confirm("Are you sure you want to cancel this appointment?");
+    const handleReschedule = (_: string) => {
+
+    }
+
+    const handleUpdate = (id: string, status: string) => {
+        const isConfirm = confirm(`Are you sure you want to update the status to ${status}`);
 
         if(!isConfirm) return;
 
-        promiseToast(cancelAppointmentMutation.mutateAsync(appointment?.id || ""));
+        promiseToast(updateAppointmentMutation.mutateAsync({ status, id }));
     }
 
     return (
@@ -137,15 +141,13 @@ export default function AppointmentModal({
                         }
                     />
                 </SummarySection>
-                {appointment?.status === 'Pending' && (
-                    <div className="flex justify-end">
-                        <Button
-                            variant="danger"
-                            onClick={handleCancel}
-                            disabled={cancelAppointmentMutation.isPending}
-                        >Cancel</Button>
-                    </div>
-                )}
+                <div className="flex justify-end">
+                    <AppointmentActionButtons 
+                        handleUpdate={handleUpdate}
+                        appointment={appointment}
+                        handleReschedule={handleReschedule}
+                    />
+                </div>
             </Card>
         </Modal>
     );

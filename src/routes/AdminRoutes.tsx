@@ -4,6 +4,7 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import AdminLogin from "../components/Auth/AdminLogin";
 import Appointments from "../components/Appointments/Appointments";
 import Services from "../components/Services/Services";
+import Doctors from "../components/Doctors/Doctors";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -21,7 +22,7 @@ export const AdminRoutes: RouteObject = {
             children: [
                 {
                     index: true,
-                    element: <Appointments />,
+                    element: <></>,
                 },
                 {
                     path: "appointments",
@@ -30,6 +31,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: "services",
                     element: <Services />
+                },
+                {
+                    path: 'doctors',
+                    element: <Doctors />
                 }
             ],
         },

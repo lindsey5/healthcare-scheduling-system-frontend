@@ -1,14 +1,8 @@
+import type { Appointment } from "../../types/appointment.type";
 import { cn } from "../../utils/utils";
 
 interface AppointmentStatusChipProps {
-    status:
-        | "Pending"
-        | "Approved"
-        | "Checked In"
-        | "Completed"
-        | "Cancelled"
-        | "No Show"
-        | "Rescheduled";
+    status: Appointment['status'];
 }
 
 const statusStyles = {
@@ -25,6 +19,9 @@ const statusStyles = {
         "bg-green-100 text-green-800 border-green-200",
 
     Cancelled:
+        "bg-red-100 text-red-800 border-red-200",
+
+    Rejected:
         "bg-red-100 text-red-800 border-red-200",
 
     "No Show":

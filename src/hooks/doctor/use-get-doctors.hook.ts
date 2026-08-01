@@ -7,8 +7,8 @@ type GetDoctorsResponse = {
 }
 
 type GetDoctorsParams = {
-    status?: string;
     serviceId?: number;
+    search?: string;
 }
 
 const getDoctors = (params: GetDoctorsParams) => 

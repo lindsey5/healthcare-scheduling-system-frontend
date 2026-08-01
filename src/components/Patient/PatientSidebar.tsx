@@ -36,7 +36,7 @@ export default function PatientSidebar() {
     const { logout } = useAuthStore();
 
     return (
-        <aside className="w-72 min-h-screen bg-[#1E3D15] text-white flex flex-col fixed left-0 top-0 z-10">
+        <aside className="overflow-y-auto w-72 min-h-screen bg-[#1E3D15] text-white flex flex-col fixed left-0 top-0 z-10">
             {/* Logo */}
             <div className="px-8 py-8 border-b border-green-800">
                 <div className="flex items-center gap-3">

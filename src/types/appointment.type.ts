@@ -26,6 +26,7 @@ export interface Appointment {
         | "Checked In"
         | "Completed"
         | "Cancelled"
+        | "Rejected"
         | "No Show"
         | "Rescheduled";
 

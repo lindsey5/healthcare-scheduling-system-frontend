@@ -10,7 +10,7 @@ import AppointmentStatusChip from "../ui/StatusChip";
 import Textfield from "../ui/Textfield";
 import Dropdown from "../ui/Dropdown";
 import { STATUS } from "../../lib/contants/constants";
-import AppointmentModal from "../Patient/AppointmentHistory/AppointmentModal";
+import AppointmentModal from "./AppointmentModal";
 import { Eye, Search } from "lucide-react";
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [

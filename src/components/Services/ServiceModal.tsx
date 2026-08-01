@@ -75,6 +75,13 @@ function ServiceModal ({
                 startTime: service.startTime,
                 endTime: service.endTime,
             });
+        }else {
+            reset({
+                serviceName: "",
+                dayOfWeek: "",
+                startTime: "",
+                endTime: ""
+            })
         }
     }, [service, show, reset]);
 
@@ -126,7 +133,7 @@ function ServiceModal ({
                         />
                     </div>
                     <div className="flex justify-end">
-                        <Button type="submit">
+                        <Button type="submit" disabled={createServiceMutation.isPending || updateServiceMutation.isPending}>
                             {service ? "Save Changes" : "Create Service"}
                         </Button>
                     </div>
