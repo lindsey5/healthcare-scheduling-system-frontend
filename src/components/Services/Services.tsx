@@ -1,15 +1,17 @@
 import { memo, useCallback, useState } from "react";
-import { Clock, Pencil } from "lucide-react";
+import { Clock, Pencil, Trash2 } from "lucide-react";
 
 import useGetServices from "../../hooks/service/use-get-services.hook";
-import { cn, formatTime } from "../../utils/utils";
+import { cn, formatTime, promiseToast } from "../../utils/utils";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
 import { DAYS } from "../../lib/contants/constants";
 import type { Service } from "../../types/service.type";
 import ServiceModal from "./ServiceModal";
+import useDeleteService from "../../hooks/service/use-delete-service.hook";
 
 export default function Services() {
+    const deleteServiceMutation = useDeleteService();
     const [showModal, setShowModal] = useState(false);
     const [service, setService] = useState<Service | null>(null);
 
@@ -27,6 +29,14 @@ export default function Services() {
         setService(null);
         setShowModal(true);
     }, []);
+
+    const handleDelete = useCallback((id: number) => {
+        const isConfirm = confirm('Are you sure do you want to delete this service?');
+
+        if(!isConfirm) return;
+
+        promiseToast(deleteServiceMutation.mutateAsync(id))
+    }, [])
 
     return (
         <div className="p-6 flex-1 flex flex-col gap-10 min-h-screen overflow-auto">
@@ -52,6 +62,7 @@ export default function Services() {
                         key={day}
                         dayOfWeek={day}
                         handleOpen={handleOpen}
+                        handleDelete={handleDelete}
                     />
                 ))}
             </div>
@@ -62,9 +73,11 @@ export default function Services() {
 const ServicesContainer = memo(function ServicesContainer({
     dayOfWeek,
     handleOpen,
+    handleDelete
 }: {
     dayOfWeek: string;
     handleOpen: (service: Service) => void;
+    handleDelete: (id: number) => void;
 }) {
     const { data, isFetching } = useGetServices(dayOfWeek);
 
@@ -112,6 +125,7 @@ const ServicesContainer = memo(function ServicesContainer({
                             key={service.id}
                             service={service}
                             openModal={handleOpen}
+                            handleDelete={handleDelete}
                         />
                     ))
                 ) : (
@@ -127,9 +141,11 @@ const ServicesContainer = memo(function ServicesContainer({
 const ServiceCard = memo(function ServiceCard({
     service,
     openModal,
+    handleDelete,
 }: {
     service: Service;
     openModal: (service: Service) => void;
+    handleDelete: (id: number) => void;
 }) {
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
@@ -141,24 +157,33 @@ const ServiceCard = memo(function ServiceCard({
                         <h3 className="font-semibold text-gray-800 leading-tight">
                             {service.serviceName}
                         </h3>
-
-                        <button
-                            type="button"
-                            onClick={() => openModal(service)}
-                            className="cursor-pointer p-2 rounded-lg text-gray-500 hover:bg-green-50 hover:text-green-600 transition"
-                            aria-label="Edit service"
-                        >
-                            <Pencil size={18} />
-                        </button>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+                    <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
                         <Clock size={15} />
-
                         <span>
                             {formatTime(service.startTime)} -{" "}
                             {formatTime(service.endTime)}
                         </span>
+                    </div>
+                    <div className="flex items-center gap-1 mt-4">
+                        <button
+                            type="button"
+                            onClick={() => openModal(service)}
+                            className="cursor-pointer rounded-lg p-2 text-gray-500 transition hover:bg-green-50 hover:text-green-600"
+                            aria-label="Edit service"
+                        >
+                            <Pencil size={16} />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => handleDelete(service.id)}
+                            className="cursor-pointer rounded-lg p-2 text-gray-500 transition hover:bg-red-50 hover:text-red-600"
+                            aria-label="Delete service"
+                        >
+                            <Trash2 size={16} />
+                        </button>
                     </div>
                 </div>
             </div>
