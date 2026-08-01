@@ -1,4 +1,4 @@
-import { CalendarDays, User, X } from "lucide-react";
+import { CalendarDays, QrCode, User, X } from "lucide-react";
 import type { Appointment } from "../../../types/appointment.type";
 import SummarySection from "../../shared/SummarySection";
 import Card from "../../ui/Card";
@@ -7,6 +7,8 @@ import SummaryRow from "../../shared/SummaryRow";
 import { formatTime, promiseToast } from "../../../utils/utils";
 import Button from "../../ui/Button";
 import useCancelAppointment from "../../../hooks/appointment/use-cancel-appointment.hook";
+import { useState } from "react";
+import QRCodeModal from "./QRCodeModal";
 
 interface AppointmentModalProps {
     show: boolean;
@@ -19,6 +21,7 @@ export default function AppointmentModal({
     show,
     appointment,
 }: AppointmentModalProps) {
+    const [showQr, setShowQr] = useState(false);
     const cancelAppointmentMutation = useCancelAppointment();
 
     const handleCancel = () => {
@@ -30,6 +33,7 @@ export default function AppointmentModal({
     }
 
     return (
+        <>
         <Modal
             onClose={close}
             open={show}
@@ -138,15 +142,25 @@ export default function AppointmentModal({
                     />
                 </SummarySection>
                 {appointment?.status === 'Pending' && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-3">
+                        <Button className="flex items-center gap-3" onClick={() => setShowQr(true)}>
+                            <QrCode size={18} />
+                            Show QR Code
+                        </Button>
                         <Button
                             variant="danger"
                             onClick={handleCancel}
                             disabled={cancelAppointmentMutation.isPending}
-                        >Cancel</Button>
+                        >Cancel Appointment</Button>
                     </div>
                 )}
             </Card>
         </Modal>
+        <QRCodeModal 
+            close={() => setShowQr(false)}
+            show={showQr}
+            referenceNumber={appointment?.referenceNumber || ""}
+        />
+        </>
     );
 }

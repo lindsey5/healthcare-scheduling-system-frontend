@@ -4,7 +4,11 @@ import {
     ClipboardList,
     Clock3,
     ShieldCheck,
+    Download,
 } from "lucide-react";
+import { useRef } from "react";
+import QRCode from "react-qr-code";
+import { toPng } from "html-to-image";
 import Button from "../../ui/Button";
 
 interface AppointmentSuccessProps {
@@ -14,8 +18,27 @@ interface AppointmentSuccessProps {
 export default function AppointmentSuccess({
     referenceNumber,
 }: AppointmentSuccessProps) {
+    const qrRef = useRef<HTMLDivElement>(null);
 
-    if(!referenceNumber) return null;
+    if (!referenceNumber) return null;
+
+    const downloadQRCode = async () => {
+        if (!qrRef.current) return;
+
+        try {
+            const dataUrl = await toPng(qrRef.current, {
+                cacheBust: true,
+                pixelRatio: 3,
+            });
+
+            const link = document.createElement("a");
+            link.download = `appointment-${referenceNumber}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (error) {
+            console.error("Failed to download QR Code:", error);
+        }
+    };
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4 py-10">
@@ -39,20 +62,43 @@ export default function AppointmentSuccess({
 
                 {/* Body */}
                 <div className="p-8">
-                    {/* Reference Number */}
+                    {/* QR Code */}
                     <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
                         <p className="text-sm font-medium text-gray-600">
-                            Reference Number
+                            Appointment QR Code
                         </p>
 
-                        <h2 className="mt-2 break-all text-3xl font-bold tracking-wider text-[#1E3D15]">
-                            {referenceNumber}
-                        </h2>
+                        <div className="mt-5 flex justify-center">
+                            <div
+                                ref={qrRef}
+                                className="inline-block rounded-xl bg-white p-6 shadow-md"
+                            >
+                                <QRCode
+                                    value={referenceNumber}
+                                    size={180}
+                                    bgColor="#FFFFFF"
+                                    fgColor="#1E3D15"
+                                    level="H"
+                                />
+                            </div>
+                        </div>
 
-                        <p className="mt-3 text-sm text-gray-600">
-                            Please save or take a screenshot of this reference
-                            number.
+                        <p className="mt-4 text-sm text-gray-600">
+                            Please save or download this QR code. Present it to
+                            the Barangay Health Center during your appointment
+                            for faster verification.
                         </p>
+
+                        <div className="flex justify-center">
+                            <Button
+                                className="mt-5 flex items-center"
+                                variant="secondary"
+                                onClick={downloadQRCode}
+                            >
+                                <Download className="mr-2 h-5 w-5" />
+                                Download QR Code
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Next Steps */}
@@ -98,8 +144,11 @@ export default function AppointmentSuccess({
                                         Track Your Appointment
                                     </p>
                                     <p className="text-sm text-gray-600">
-                                        You can monitor the status anytime from
-                                        the <span className="font-medium">Appointments History</span> page.
+                                        You can monitor the status anytime from{" "}
+                                        <span className="font-medium">
+                                            Appointment History
+                                        </span>{" "}
+                                        page.
                                     </p>
                                 </div>
                             </div>
@@ -115,14 +164,15 @@ export default function AppointmentSuccess({
                                         <span className="font-semibold">
                                             15 minutes
                                         </span>{" "}
-                                        before your scheduled appointment.
+                                        before your scheduled appointment and
+                                        present your QR code upon arrival.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <Button 
+                    <Button
                         className="mt-8 w-full"
                         onClick={() => window.location.reload()}
                     >
