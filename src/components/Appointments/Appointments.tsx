@@ -19,6 +19,15 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
         accessorKey: "referenceNumber",
     },
     {
+        header: 'Booked By',
+        cell: ({ row }) => (
+            <div>
+                <h1 className="font-semibold">{`${row.original.patient.firstname} ${row.original.patient.lastname}`}</h1>
+                <p>{row.original.patient.email}</p>
+            </div>
+        )
+    },
+    {
         header: "Service",
         cell:  ({ row }) => row.original.service.serviceName
     },
