@@ -8,6 +8,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import CustomizedTable from "../ui/Table";
 import Button from "../ui/Button";
 import DoctorModal from "./DoctorModal";
+import useDeleteDoctor from "../../hooks/doctor/use-delete-doctor.hook";
+import { promiseToast } from "../../utils/utils";
 
 const columns = ({
     handleDelete,
@@ -38,7 +40,10 @@ const columns = ({
             </button>
 
             <button
-                onClick={() => handleDelete(row.original.id)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(row.original.id);
+                }}
                 className="cursor-pointer rounded-md p-2 text-red-600 hover:bg-red-100 transition-colors"
                 title="Delete"
             >
@@ -50,6 +55,7 @@ const columns = ({
 ]
 
 export default function Doctors () {
+    const deleteDoctorMutation = useDeleteDoctor();
     const [showModal, setShowModal] = useState(false);
     const [doctor, setDoctor] = useState<Doctor>();
 
@@ -64,15 +70,17 @@ export default function Doctors () {
     }
 
     const handleDelete = (id : number) => {
+        const isConfirm = confirm("Are you sure you want to delete this doctor?");
 
+        if(!isConfirm) return;
+
+        promiseToast(deleteDoctorMutation.mutateAsync(id));
     }
 
     const handleClose = () => {
         setShowModal(false);
         setDoctor(undefined);
     }
-
-    const handleCreate = () => setShowModal(true);
 
     return (
         <div className="p-6 flex-1 flex flex-col gap-10 max-h-screen overflow-auto">
