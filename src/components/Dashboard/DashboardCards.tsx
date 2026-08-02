@@ -5,6 +5,7 @@ import {
     CircleCheckBig,
     Users,
     BriefcaseMedical,
+    CalendarX2,
 } from "lucide-react";
 import useGetPendingAppointments from "../../hooks/appointment/use-get-pending-appointments.hook";
 import DashboardCard from "../ui/DashboardCard";
@@ -70,7 +71,7 @@ export const CancelledAppointments = () => {
         <DashboardCard
             title="Cancelled Appointments"
             value={String(data?.cancelledAppointments ?? 0)}
-            icon={<CircleCheckBig />}
+            icon={<CalendarX2 />}
         />
     );
 };

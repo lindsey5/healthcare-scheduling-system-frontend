@@ -43,7 +43,7 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
         accessorKey: "createdAt",
         cell: info => formatDate(info.getValue() as string)
     },
-    {
+    {   
         header: "Action",
         cell: ({ row }) => (
             <div className="flex justify-center">
