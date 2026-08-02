@@ -5,18 +5,24 @@ type GetAvailableTimeSlotResponse = {
     availableTimes: string[];
 }
 
-const getAvailableTimeSlot = (appointmentDate: string) => 
+type GetAvailableTimeSlotParams = {
+    appointmentDate : string;
+    serviceId: number;
+}
+
+const getAvailableTimeSlot = ({ appointmentDate, serviceId } : GetAvailableTimeSlotParams) => 
     apiAxios<GetAvailableTimeSlotResponse>(`/api/appointments/available-time`, {
         method: "GET",
         params: {
-            appointmentDate
+            appointmentDate,
+            serviceId
         }
     })
 
-export default function useGetgetAvailableTimeSlot (appointmentDate : string) {
+export default function useGetgetAvailableTimeSlot (params : GetAvailableTimeSlotParams) {
     return useQuery<GetAvailableTimeSlotResponse, Error>({
-        queryKey: [`appointments/availableTime`, appointmentDate],
-        queryFn: () => getAvailableTimeSlot(appointmentDate),
+        queryKey: [`appointments/available-time`, params],
+        queryFn: () => getAvailableTimeSlot(params),
         refetchOnWindowFocus: false
     })
 }

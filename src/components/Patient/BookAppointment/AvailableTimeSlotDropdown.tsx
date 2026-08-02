@@ -8,6 +8,7 @@ interface AvailableTimeSlotDropdownProps {
     disabled?: boolean;
     appointmentDate?: string;
     value?: string;
+    serviceId: number;
 }
 
 export default function AvailableTimeSlotDropdown ({ 
@@ -15,6 +16,7 @@ export default function AvailableTimeSlotDropdown ({
     error,
     disabled,
     appointmentDate,
+    serviceId,
     value
 } : AvailableTimeSlotDropdownProps) {
     if(!appointmentDate) {
@@ -28,7 +30,7 @@ export default function AvailableTimeSlotDropdown ({
         )
     };
 
-    const { data } = useGetgetAvailableTimeSlot(appointmentDate);
+    const { data } = useGetgetAvailableTimeSlot({ appointmentDate, serviceId });
 
     return (
         <Dropdown 

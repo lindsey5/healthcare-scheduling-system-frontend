@@ -61,6 +61,7 @@ export default function PurposeOfVisit ({
                         setValue('appointmentDate', e.target.value);
                         setValue('serviceId', 0);
                         setValue('doctorId', 0);
+                        setValue('appointmentTime', "");
                         setSelectedDoctor(null);
                         setSelectedService(null);
                     }}
@@ -76,6 +77,7 @@ export default function PurposeOfVisit ({
                         setValue('serviceId', Number(e.target.value));
                         setValue('doctorId', 0);
                         setSelectedDoctor(null);
+                        setValue('appointmentTime', "");
                     }}
                     error={errors.serviceId?.message}
                     disabled={!watch('appointmentDate')}
@@ -97,6 +99,7 @@ export default function PurposeOfVisit ({
                         error={errors.appointmentTime?.message}
                         value={watch('appointmentTime')}
                         onChange={(e) => setValue('appointmentTime', e.target.value)}
+                        serviceId={watch('serviceId')}
                     />
                 </div>
 
