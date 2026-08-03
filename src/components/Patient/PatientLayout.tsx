@@ -4,7 +4,7 @@ import PatientHeader from "./PatientHeader";
 
 export default function PatientLayout () {
     return (
-        <div className="flex pl-72 pt-20">
+        <div className="w-full pl-72 pt-20">
             <PatientSidebar />
             <PatientHeader />
             <Outlet />

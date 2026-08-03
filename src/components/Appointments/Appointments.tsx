@@ -109,7 +109,7 @@ export default function Appointments () {
     const { data, isFetching } = useGetAppointments(debouncedParams);
 
     return (
-        <div className="p-6 flex-1 flex flex-col gap-10 max-h-screen overflow-auto">
+        <div className="p-6 space-y-5 overflow-auto">
             <AppointmentModal 
                 close={() => {
                     setShowModal(false);

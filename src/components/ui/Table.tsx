@@ -189,7 +189,7 @@ const CustomizedTable = <T,>({
     return (
         <div
             className={cn(
-                "min-h-0 flex flex-grow flex-col rounded-xl border border-gray-300 bg-white shadow-sm",
+                "max-h-screen flex flex-grow flex-col rounded-xl border border-gray-300 bg-white shadow-sm",
                 className
             )}
         >
@@ -223,7 +223,7 @@ const CustomizedTable = <T,>({
                 <TableSkeleton columns={cols} />
             ) : (
                 <>
-                    <div className="flex-grow overflow-auto">
+                    <div className="h-full overflow-auto">
                         <table className="w-full border-separate border-spacing-0 text-sm">
                             <TableColumns table={table} />
                             <TableRows

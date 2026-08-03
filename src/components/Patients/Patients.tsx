@@ -47,7 +47,7 @@ export default function Patients () {
     const { data, isFetching } = useGetPatients(params);
 
     return (
-        <div className="p-6 flex-1 flex flex-col gap-10 max-h-screen overflow-auto">
+        <div className="p-6 space-y-5 overflow-auto">
             <h1 className="text-3xl font-bold text-[#1E3D15]">
                 Registered Patients
             </h1>

@@ -1,30 +1,39 @@
-import { useState } from "react";
-import useGetDoctors from "../../hooks/doctor/use-get-doctors.hook"
-import { useDebounce } from "../../hooks/useDebouce";
-import Textfield from "../ui/Textfield";
 import { Pencil, Search, Trash2 } from "lucide-react";
-import type { Doctor } from "../../types/doctor.type";
+import Textfield from "../ui/Textfield";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useDebounce } from "../../hooks/useDebouce";
 import CustomizedTable from "../ui/Table";
+import { formatDate, promiseToast } from "../../utils/utils";
+import useGetAdmins from "../../hooks/admin/use-get-admins.hook";
+import type { Admin } from "../../types/admin.type";
+import AdminModal from "./AdminModal";
 import Button from "../ui/Button";
-import DoctorModal from "./DoctorModal";
-import useDeleteDoctor from "../../hooks/doctor/use-delete-doctor.hook";
-import { promiseToast } from "../../utils/utils";
+import useDeleteAdmin from "../../hooks/admin/use-delete-admin.hook";
 
-const columns = ({
-    handleDelete,
+const columns  = ({ 
     handleEdit,
-} : { 
-    handleEdit: (row : Doctor) => void;
+    handleDelete,
+} : {
     handleDelete: (id: number) => void;
-}) : ColumnDef<Doctor>[] => [
+    handleEdit: (admin : Admin) => void;
+ }) : ColumnDef<Admin>[] => [
     {
-        header: "Name",
-        cell: ({ row }) => `Dr. ${row.original.firstname} ${row.original.lastname}`
+        header: "First Name",
+        accessorKey: "firstname",
     },
     {
-        header: "Assigned Services",
-        cell: ({ row }) => row.original.doctorServices.length
+        header: "Last Name",
+        accessorKey: "lastname"
+    },
+    {
+        header: "Email",
+        accessorKey: "email"
+    },
+    {
+        header: "Date Created",
+        accessorKey: "createdAt",
+        cell: info => formatDate(info.getValue() as string)
     },
     {
         header: "Action",
@@ -54,65 +63,66 @@ const columns = ({
     }
 ]
 
-export default function Doctors () {
-    const deleteDoctorMutation = useDeleteDoctor();
+export default function Admins () {
+    const deleteAdminMutation = useDeleteAdmin();
+
+    const [admin, setAdmin] = useState<Admin | null>(null);
     const [showModal, setShowModal] = useState(false);
-    const [doctor, setDoctor] = useState<Doctor>();
 
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
 
-    const { data, isFetching } = useGetDoctors({ search: debouncedSearch });
+    const params = useMemo(() => ({
+        search: debouncedSearch,
+    }), [
+        debouncedSearch,
+    ])
 
-    const handleEdit = (row : Doctor) => {
-        setShowModal(true);
-        setDoctor(row);
+    const { data, isFetching } = useGetAdmins(params);
+
+    const handleEdit = (admin : Admin) => {
+        setAdmin(admin);
+        setShowModal(true)
     }
 
     const handleDelete = (id : number) => {
-        const isConfirm = confirm("Are you sure you want to delete this doctor?");
+        const isConfirm = confirm('Are you sure you want to delete this admin?');
 
         if(!isConfirm) return;
 
-        promiseToast(deleteDoctorMutation.mutateAsync(id));
+        promiseToast(deleteAdminMutation.mutateAsync(id));
     }
 
     const handleClose = () => {
         setShowModal(false);
-        setDoctor(undefined);
+        setAdmin(null);
     }
 
     return (
-        <div className="p-6 space-y-5 overflow-auto">
-            <DoctorModal 
+        <div className="p-6 flex-1 flex flex-col gap-10 overflow-auto">
+            <AdminModal 
+                admin={admin}
                 close={handleClose}
                 show={showModal}
-                doctor={doctor}
             />
             <h1 className="text-3xl font-bold text-[#1E3D15]">
-                Doctors
+                Admins
             </h1>
-            <div className="w-full flex justify-between ">
+            <div className="flex justify-between gap-5">
                 <Textfield 
                     className="text-sm w-100 bg-white"
                     icon={<Search size={18}/>}
-                    placeholder="Search by first name or last name"
+                    placeholder="Search by first name, last name or email..."
                     onChange={(e) => setSearch(e.target.value)}
                 />
-                <Button
-                    onClick={() => setShowModal(true)}
-                >Create Doctor</Button>
+                <Button onClick={() => setShowModal(true)}>Create Admin</Button>
             </div>
             <CustomizedTable 
                 isLoading={isFetching}
-                data={data?.doctors || []}
+                data={data?.admins || []}
                 columns={columns({ handleDelete, handleEdit })}
                 showPagination={false}
-                noDataMessage="No Appointments Found"
-                onRowClick={(row) => {
-                    setDoctor(row);
-                    setShowModal(true)
-                }}
+                noDataMessage="No Admins Found"
             />
         </div>
     )

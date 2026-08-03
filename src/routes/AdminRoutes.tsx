@@ -7,6 +7,8 @@ import Services from "../components/Services/Services";
 import Doctors from "../components/Doctors/Doctors";
 import Patients from "../components/Patients/Patients";
 import Dashboard from "../components/Dashboard/Dashboard";
+import Admins from "../components/Admins/Admins";
+import Staffs from "../components/Staffs/Staffs";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -37,6 +39,14 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'doctors',
                     element: <Doctors />
+                },
+                {
+                    path: 'admins',
+                    element: <Admins />
+                },
+                {
+                    path: 'staffs',
+                    element: <Staffs />
                 },
                 {
                     path: 'patients',
