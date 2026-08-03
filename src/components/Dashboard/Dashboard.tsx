@@ -1,5 +1,6 @@
 import AvailableServicesCard from "../shared/AvailableServicesCard";
 import { CancelledAppointments, CompletedAppointments, PendingAppointments, TodayAppointments, TotalDoctors, TotalPatients, UpcomingAppointments } from "./DashboardCards";
+import MonthlyAppointments from "./MonthlyAppointments";
 
 export default function Dashboard () {
     return (
@@ -17,6 +18,7 @@ export default function Dashboard () {
                 <CompletedAppointments />
                 <CancelledAppointments />
             </div>
+            <MonthlyAppointments />
         </main>
     )
 }

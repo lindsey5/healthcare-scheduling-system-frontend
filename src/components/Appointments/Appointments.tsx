@@ -5,13 +5,21 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useDebounce } from "../../hooks/useDebouce";
 import useGetAppointments from "../../hooks/appointment/use-get-appointments.hook";
 import CustomizedTable from "../ui/Table";
-import { formatDate, formatTime } from "../../utils/utils";
+import { formatDate, formatTime, getKeyByValue } from "../../utils/utils";
 import AppointmentStatusChip from "../ui/StatusChip";
 import Textfield from "../ui/Textfield";
 import Dropdown from "../ui/Dropdown";
 import { STATUS } from "../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
 import { Eye, Search } from "lucide-react";
+import type { SortOption } from "../../types/types";
+
+const options: Record<string, SortOption> = {
+    'Date Submitted - DESC': { sort: 'createdAt', order: 'desc' },
+    'Date Submitted - ASC': { sort: 'createdAt', order: 'asc' },
+    'Appointment Date - ASC' : { sort: 'appointmentDate', order: 'asc' },
+    'Appointment Date - DESC' : { sort: 'appointmentDate', order: 'desc' },
+};
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
     {
@@ -36,11 +44,11 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
         cell:  ({ row }) => `Dr. ${row.original.doctor.firstname} ${row.original.doctor.lastname}`
     },
     {
-        header: "Date",
+        header: "Appointment Date",
         accessorKey: "appointmentDate",
     },
     {
-        header: "Time",
+        header: "Appointment Time",
         accessorKey: "appointmentTime",
         cell: info => formatTime(info.getValue() as string)
     },
@@ -78,18 +86,23 @@ export default function Appointments () {
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
 
+    const [sort, setSort] = useState<SortOption>({ sort: 'createdAt', order: 'desc' });
+
     const [status, setStatus] = useState("");
 
     const params = useMemo(() => ({
         limit: pagination.pageSize,
         page: pagination.pageIndex + 1,
         search: debouncedSearch,
-        status
+        status,
+        sort: sort.sort,
+        order: sort.order,
     }), [
         pagination.pageSize,
         pagination.pageIndex,
         debouncedSearch,
-        status
+        status,
+        sort,
     ])
 
     const debouncedParams = useDebounce(params);
@@ -110,7 +123,7 @@ export default function Appointments () {
                 <h1 className="text-3xl font-bold text-[#1E3D15]">
                     Appointments
                 </h1>
-                <div className="w-full flex justify-between ">
+                <div className="w-full flex justify-between items-end flex-wrap gap-3">
                     <Textfield 
                         className="text-sm w-130 bg-white"
                         icon={<Search size={18}/>}
@@ -120,18 +133,32 @@ export default function Appointments () {
                             setPagination(prev => ({ ...prev, pageIndex: 0 }));
                         }}
                     />
-                    <Dropdown 
-                        className="text-sm"
-                        placeholder="Filter by status"
-                        onChange={(e) => {
-                            setStatus(e.target.value);
-                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
-                        }}
-                        options={[
-                            { label: "All", value: "" },
-                            ...STATUS.map(status => ({ label: status, value: status }))
-                        ]}
-                    />
+                    <div className="flex gap-3">
+                        <Dropdown 
+                            className="text-sm"
+                            label="Filter"
+                            placeholder="Filter by status"
+                            onChange={(e) => {
+                                setStatus(e.target.value);
+                                setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                            }}
+                            options={[
+                                { label: "All", value: "" },
+                                ...STATUS.map(status => ({ label: status, value: status }))
+                            ]}
+                        />
+
+                        <Dropdown 
+                            className="text-sm"
+                            label="Sort"
+                            options={Object.keys(options).map(opt => ({ label: opt, value: opt }))}
+                            onChange={(e) =>{ 
+                                setPagination(prev => ({ ...prev, pageIndex: 0 }))
+                                setSort(options[e.target.value])
+                            }}
+                            value={getKeyByValue(options, sort) || ""}
+                        />
+                    </div>
                 </div>
             </div>
             <CustomizedTable 

@@ -61,6 +61,10 @@ export interface AppointmentRecord {
 export interface GetAppointmentsParams extends PaginationParams {
     search?: string;
     status?: string;
+    startDate?: string;
+    endDate?: string;
+    sort?: string;
+    order?: string;
 }
 
 export interface GetAppointmentsResponse extends PaginationResponse {

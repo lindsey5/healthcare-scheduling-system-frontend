@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { sileo, type SileoPosition } from "sileo";
+import type { SortOption } from "../types/types";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -25,6 +26,19 @@ export const scrollTo = (to : string) => {
         behavior: "smooth",
     });
 };
+
+export function getKeyByValue(
+    obj: Record<string, SortOption>,
+    target: SortOption
+) {
+    return Object.keys(obj).find(key => {
+        const value = obj[key]
+        return (
+            value.sort === target.sort &&
+            value.order === target.order
+        )
+    })
+}
 
 export const promiseToast = <T extends { message?: string }>(
     promise: Promise<T>,
