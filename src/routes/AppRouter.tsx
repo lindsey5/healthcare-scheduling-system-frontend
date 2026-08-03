@@ -4,6 +4,7 @@ import UserLogin from "../components/Auth/PatientLogin";
 import UserSignUp from "../components/Auth/PatientSignup";
 import { PatientRoutes } from "./PatientRoutes";
 import { AdminRoutes } from "./AdminRoutes";
+import { StaffRoutes } from "./StaffRoutes";
 
 const router = createBrowserRouter([
     {
@@ -18,10 +19,9 @@ const router = createBrowserRouter([
         path: 'signup',
         Component: () => <UserSignUp />
     },
-
     PatientRoutes,
     AdminRoutes,
-
+    StaffRoutes
 ])
 
 export default function AppRouter () {
