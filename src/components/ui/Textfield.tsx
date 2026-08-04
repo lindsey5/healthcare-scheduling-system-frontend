@@ -53,7 +53,7 @@ export default function Textfield({
                     {...props}
                     type={inputType}
                     onChange={handleChange}
-                    className={cn("w-full border border-gray-300 rounded-xl",
+                    className={cn("w-full border border-gray-400 rounded-xl",
                         icon ? "pl-12" : "pl-4",
                         type === "password" ? "pr-12" : "pr-4",
                         "py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition",

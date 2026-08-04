@@ -5,21 +5,14 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useDebounce } from "../../hooks/useDebouce";
 import useGetAppointments from "../../hooks/appointment/use-get-appointments.hook";
 import CustomizedTable from "../ui/Table";
-import { formatDate, formatTime, getKeyByValue } from "../../utils/utils";
+import { formatDate, formatTime } from "../../utils/utils";
 import AppointmentStatusChip from "../ui/StatusChip";
 import Textfield from "../ui/Textfield";
 import Dropdown from "../ui/Dropdown";
 import { STATUS } from "../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
 import { Eye, Search } from "lucide-react";
-import type { SortOption } from "../../types/types";
-
-const options: Record<string, SortOption> = {
-    'Date Submitted - DESC': { sort: 'createdAt', order: 'desc' },
-    'Date Submitted - ASC': { sort: 'createdAt', order: 'asc' },
-    'Appointment Date - ASC' : { sort: 'appointmentDate', order: 'asc' },
-    'Appointment Date - DESC' : { sort: 'appointmentDate', order: 'desc' },
-};
+import { useSearchParams } from "react-router-dom";
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
     {
@@ -78,31 +71,40 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
 ]
 
 export default function Appointments () {
+    const [searchParams] = useSearchParams();
+    const s = searchParams.get("s");
+    const sd = searchParams.get("sd");
+    const ed = searchParams.get("ed");
+    const q = searchParams.get("q");
+
     const [showModal, setShowModal] = useState(false);
     const [appointment, setAppointment] = useState<Appointment>();
 
     const [pagination, setPagination] = useState<PaginationState>({ pageSize: 50, pageIndex: 0 });
 
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(q || "");
     const debouncedSearch = useDebounce(search);
 
-    const [sort, setSort] = useState<SortOption>({ sort: 'createdAt', order: 'desc' });
+    const [startDate, setStartDate] = useState(sd || "");
+    const [endDate, setEndDate] = useState(ed || "");
 
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState(s || "");
 
     const params = useMemo(() => ({
         limit: pagination.pageSize,
         page: pagination.pageIndex + 1,
         search: debouncedSearch,
         status,
-        sort: sort.sort,
-        order: sort.order,
+        startDate,
+        endDate,
+        sort: "appointmentDate"
     }), [
         pagination.pageSize,
         pagination.pageIndex,
         debouncedSearch,
         status,
-        sort,
+        startDate,
+        endDate,
     ])
 
     const debouncedParams = useDebounce(params);
@@ -132,8 +134,29 @@ export default function Appointments () {
                             setSearch(e.target.value);
                             setPagination(prev => ({ ...prev, pageIndex: 0 }));
                         }}
+                        value={search}
                     />
                     <div className="flex gap-3">
+                        <Textfield 
+                            label="From"
+                            className="text-sm"
+                            type="date"
+                            onChange={(e) => {
+                                setStartDate(e.target.value);
+                                setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                            }}
+                            value={startDate}
+                        />
+                        <Textfield 
+                            label="To"
+                            className="text-sm"
+                            type="date"
+                            onChange={(e) => {
+                                setEndDate(e.target.value);
+                                setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                            }}
+                            value={endDate}
+                        />
                         <Dropdown 
                             className="text-sm"
                             label="Filter"
@@ -146,17 +169,7 @@ export default function Appointments () {
                                 { label: "All", value: "" },
                                 ...STATUS.map(status => ({ label: status, value: status }))
                             ]}
-                        />
-
-                        <Dropdown 
-                            className="text-sm"
-                            label="Sort"
-                            options={Object.keys(options).map(opt => ({ label: opt, value: opt }))}
-                            onChange={(e) =>{ 
-                                setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                                setSort(options[e.target.value])
-                            }}
-                            value={getKeyByValue(options, sort) || ""}
+                            value={status}
                         />
                     </div>
                 </div>

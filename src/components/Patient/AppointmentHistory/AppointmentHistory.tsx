@@ -12,6 +12,7 @@ import Dropdown from "../../ui/Dropdown";
 import { STATUS } from "../../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
 import type { SortOption } from "../../../types/types";
+import { useSearchParams } from "react-router-dom";
 
 const options: Record<string, SortOption> = {
     'Date Submitted - DESC': { sort: 'createdAt', order: 'desc' },
@@ -68,6 +69,11 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
 ]
 
 export default function AppointmentHistory () {
+    const [searchParams] = useSearchParams();
+    const s = searchParams.get("s");
+    const sd = searchParams.get("sd");
+    const ed = searchParams.get("ed");
+
     const [showModal, setShowModal] = useState(false);
     const [appointment, setAppointment] = useState<Appointment>();
 
@@ -76,23 +82,26 @@ export default function AppointmentHistory () {
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
 
-    const [sort, setSort] = useState<SortOption>({ sort: 'createdAt', order: 'desc' });
+    const [startDate, setStartDate] = useState(sd || "");
+    const [endDate, setEndDate] = useState(ed || "");
 
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState(s || "");
 
     const params = useMemo(() => ({
         limit: pagination.pageSize,
         page: pagination.pageIndex + 1,
         search: debouncedSearch,
         status,
-        sort: sort.sort,
-        order: sort.order,
+        startDate,
+        endDate,
+        sort: "appointmentDate"
     }), [
         pagination.pageSize,
         pagination.pageIndex,
         debouncedSearch,
         status,
-        sort
+        startDate,
+        endDate
     ])
 
     const debouncedParams = useDebounce(params);
@@ -109,7 +118,7 @@ export default function AppointmentHistory () {
                 appointment={appointment}
             />
             
-            <div className="w-full flex justify-between items-end gap-3">
+            <div className="w-full flex justify-between items-end gap-3 flex-wrap">
                 <div className="space-y-5">
                     <h1 className="text-3xl font-bold text-[#1E3D15]">
                         Appointment History
@@ -125,8 +134,29 @@ export default function AppointmentHistory () {
                     />
                 </div>
                 <div className="flex gap-3">
+                    <Textfield 
+                        label="From"
+                        className="text-sm"
+                        type="date"
+                        onChange={(e) => {
+                            setStartDate(e.target.value);
+                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                        }}
+                        value={startDate}
+                    />
+                    <Textfield 
+                        label="To"
+                        className="text-sm"
+                        type="date"
+                        onChange={(e) => {
+                            setEndDate(e.target.value);
+                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                        }}
+                        value={endDate}
+                    />
                     <Dropdown 
                         className="text-sm"
+                        value={status}
                         placeholder="Filter by status"
                         label="Filter"
                         onChange={(e) => {
@@ -137,17 +167,6 @@ export default function AppointmentHistory () {
                             { label: "All", value: "" },
                             ...STATUS.map(status => ({ label: status, value: status }))
                         ]}
-                    />
-
-                    <Dropdown 
-                        className="text-sm"
-                        label="Sort"
-                        options={Object.keys(options).map(opt => ({ label: opt, value: opt }))}
-                        onChange={(e) =>{ 
-                            setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                            setSort(options[e.target.value])
-                        }}
-                        value={getKeyByValue(options, sort) || ""}
                     />
                 </div>
             </div>

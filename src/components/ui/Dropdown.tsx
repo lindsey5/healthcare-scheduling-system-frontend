@@ -61,7 +61,7 @@ export default function Dropdown({
                         "pr-12 py-3 transition outline-none",
                         disabled
                             ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                            : "border-gray-300 bg-white text-gray-700 focus:border-green-600 focus:ring-2 focus:ring-green-100",
+                            : "border-gray-400 bg-white text-gray-700 focus:border-green-600 focus:ring-2 focus:ring-green-100",
                         error && "border-red-500",
                         className
                     )}

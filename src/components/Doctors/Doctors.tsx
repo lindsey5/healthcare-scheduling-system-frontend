@@ -2,7 +2,7 @@ import { useState } from "react";
 import useGetDoctors from "../../hooks/doctor/use-get-doctors.hook"
 import { useDebounce } from "../../hooks/useDebouce";
 import Textfield from "../ui/Textfield";
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { CalendarDays, Pencil, Search, Trash2 } from "lucide-react";
 import type { Doctor } from "../../types/doctor.type";
 import type { ColumnDef } from "@tanstack/react-table";
 import CustomizedTable from "../ui/Table";
@@ -10,6 +10,7 @@ import Button from "../ui/Button";
 import DoctorModal from "./DoctorModal";
 import useDeleteDoctor from "../../hooks/doctor/use-delete-doctor.hook";
 import { promiseToast } from "../../utils/utils";
+import { useAuthStore } from "../../lib/store/authStore";
 
 const columns = ({
     handleDelete,
@@ -17,7 +18,10 @@ const columns = ({
 } : { 
     handleEdit: (row : Doctor) => void;
     handleDelete: (id: number) => void;
-}) : ColumnDef<Doctor>[] => [
+}) : ColumnDef<Doctor>[] => {
+    const { user } = useAuthStore();
+    
+    return [
     {
         header: "Name",
         cell: ({ row }) => `Dr. ${row.original.firstname} ${row.original.lastname}`
@@ -31,6 +35,16 @@ const columns = ({
         meta: { align: "center" },
         cell: ({ row }) => (
             <div className="flex items-center justify-center gap-2">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/${user.role}/appointments?q=${row.original.firstname} ${row.original.lastname}`
+                    }}
+                    className="cursor-pointer rounded-md p-2 text-blue-600 hover:bg-blue-100 transition-colors"
+                    title="View Appointments"
+                >
+                    <CalendarDays size={18} />
+                </button>
                 <button
                     onClick={() => handleEdit(row.original)}
                     className="cursor-pointer p-2 rounded-lg text-gray-600 hover:bg-green-50 hover:text-green-600 transition"
@@ -53,6 +67,7 @@ const columns = ({
         ),
     }
 ]
+}
 
 export default function Doctors () {
     const deleteDoctorMutation = useDeleteDoctor();
