@@ -4,7 +4,7 @@ import SummarySection from "../../shared/SummarySection";
 import Card from "../../ui/Card";
 import Modal from "../../ui/Modal";
 import SummaryRow from "../../shared/SummaryRow";
-import { formatTime, promiseToast } from "../../../utils/utils";
+import { formatDate, formatTime, promiseToast } from "../../../utils/utils";
 import Button from "../../ui/Button";
 import useCancelAppointment from "../../../hooks/appointment/use-cancel-appointment.hook";
 import { useState } from "react";
@@ -139,6 +139,10 @@ export default function AppointmentModal({
                                 ? `${appointment?.appointmentRecord.emergencyContactPerson} (${appointment?.appointmentRecord.emergencyContactNumber ?? ""})`
                                 : "N/A"
                         }
+                    />
+                    <SummaryRow
+                        label="Date Submitted"
+                        value={formatDate(appointment?.createdAt)}
                     />
                 </SummarySection>
                 {appointment?.status === 'Pending' && (

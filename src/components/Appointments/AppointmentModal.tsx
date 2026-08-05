@@ -4,7 +4,7 @@ import SummarySection from "../shared/SummarySection";
 import Card from "../ui/Card";
 import Modal from "../ui/Modal";
 import SummaryRow from "../shared/SummaryRow";
-import { formatTime, promiseToast } from "../../utils/utils";
+import { formatDate, formatTime, promiseToast } from "../../utils/utils";
 import AppointmentActionButtons from "./AppointmentActionButton";
 import useUpdateAppointment from "../../hooks/appointment/use-update-appointment.hook";
 
@@ -139,6 +139,10 @@ export default function AppointmentModal({
                                 ? `${appointment?.appointmentRecord.emergencyContactPerson} (${appointment?.appointmentRecord.emergencyContactNumber ?? ""})`
                                 : "N/A"
                         }
+                    />
+                    <SummaryRow
+                        label="Date Submitted"
+                        value={formatDate(appointment?.createdAt) || ""}
                     />
                 </SummarySection>
                 <div className="flex justify-end">

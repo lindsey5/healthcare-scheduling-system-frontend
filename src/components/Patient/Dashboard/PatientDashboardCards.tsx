@@ -17,9 +17,7 @@ export const PatientUpcomingAppointments = () => {
             value={String(data?.upcomingAppointments) || ""}
             icon={<CalendarDays />}
             onClick={() =>
-                navigate(
-                    `/patient/appointments?sd=${today}`
-                )
+                navigate(`/patient/appointments?sd=${today}&s=Approved`)
             }
         />
     )

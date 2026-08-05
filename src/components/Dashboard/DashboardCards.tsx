@@ -61,9 +61,7 @@ export const UpcomingAppointments = () => {
             value={String(data?.upcomingAppointments ?? 0)}
             icon={<CalendarClock />}
             onClick={() =>
-                navigate(
-                    `/${user.role}/appointments?sd=${today}`
-                )
+                navigate(`/${user.role}/appointments?sd=${today}&s=Approved`)
             }
         />
     );

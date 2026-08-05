@@ -35,6 +35,10 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
         cell:  ({ row }) => `Dr. ${row.original.doctor.firstname} ${row.original.doctor.lastname}`
     },
     {
+        header: "Status",
+        cell: ({ row }) => <AppointmentStatusChip status={row.original.status} />
+    },
+        {
         header: "Date",
         accessorKey: "appointmentDate",
     },
@@ -42,15 +46,6 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
         header: "Time",
         accessorKey: "appointmentTime",
         cell: info => formatTime(info.getValue() as string)
-    },
-    {
-        header: "Status",
-        cell: ({ row }) => <AppointmentStatusChip status={row.original.status} />
-    },
-    {
-        header: "Date Submitted",
-        accessorKey: "createdAt",
-        cell: info => formatDate(info.getValue() as string)
     },
     {   
         header: "Action",
