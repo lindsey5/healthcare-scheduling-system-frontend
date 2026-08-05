@@ -28,16 +28,19 @@ const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefine
     },
     {
         header: "Status",
-        cell: ({ row }) => <AppointmentStatusChip status={row.original.status} />
+        cell: ({ row }) => <AppointmentStatusChip status={row.original.status} />,
+        meta: { align: 'center' }
     },
         {
-        header: "Date",
+        header: "Appointment Date",
         accessorKey: "appointmentDate",
+        meta: { align: 'center' }
     },
     {
-        header: "Time",
+        header: "Appointment Time",
         accessorKey: "appointmentTime",
-        cell: info => formatTime(info.getValue() as string)
+        cell: info => formatTime(info.getValue() as string),
+        meta: { align: 'center' }
     },
     {   
         header: "Action",
@@ -81,7 +84,7 @@ export default function AppointmentHistory () {
         status,
         startDate,
         endDate,
-        sort: "appointmentDate"
+        sort: "createdAt"
     }), [
         pagination.pageSize,
         pagination.pageIndex,

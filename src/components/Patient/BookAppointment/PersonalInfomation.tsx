@@ -47,21 +47,21 @@ export default function PersonalInformation ({
                     <Textfield 
                         label="First Name *"
                         placeholder="Enter your first name"
-                        registration={register('firstName')}
+                        onChange={(e) => setValue("firstName", e.target.value.toUpperCase()) }
                         error={errors.firstName?.message}
                         value={watch('firstName')}
                     />
                     <Textfield 
                         label="Middle Name"
                         placeholder="Optional"
-                        registration={register('middleName')}
+                        onChange={(e) => setValue("middleName", e.target.value.toUpperCase()) }
                         error={errors.middleName?.message}
                         value={watch('middleName')}
                     />
                     <Textfield 
                         label="Last Name *"
                         placeholder="Enter your last name"
-                        registration={register('lastName')}
+                        onChange={(e) => setValue("lastName", e.target.value.toUpperCase()) }
                         error={errors.lastName?.message}
                         value={watch('lastName')}
                     />
@@ -137,7 +137,7 @@ export default function PersonalInformation ({
                     placeholder="House No., Street, Barangay, Municipality"
                     rows={5}
                     value={watch('completeAddress')}
-                    registration={register('completeAddress')}
+                    onChange={(e) => setValue("completeAddress", e.target.value.toUpperCase()) }
                     error={errors.completeAddress?.message}
                 />
 

@@ -92,7 +92,7 @@ export default function Appointments () {
         status,
         startDate,
         endDate,
-        sort: "appointmentDate"
+        sort: "createdAt"
     }), [
         pagination.pageSize,
         pagination.pageIndex,
