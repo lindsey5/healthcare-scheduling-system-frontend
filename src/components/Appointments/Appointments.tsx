@@ -73,7 +73,7 @@ export default function Appointments () {
     const ed = searchParams.get("ed");
     const q = searchParams.get("q");
 
-    const socket = useSocket({ namespace: '/patient-notification' });
+    useSocket({ namespace: '/patient-notification' });
 
     const [showModal, setShowModal] = useState(false);
     const [appointment, setAppointment] = useState<Appointment>();
