@@ -8,7 +8,7 @@ export default function AvailableServicesCard ({ onClick } : { onClick?: () => v
     return (
         <DashboardCard 
             title="Available Services"
-            value={String(data?.services.length)}
+            value={String(data?.services.length || 0)}
             icon={<Stethoscope />}
             onClick={onClick}
         />
