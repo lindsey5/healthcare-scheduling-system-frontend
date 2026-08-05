@@ -13,6 +13,7 @@ import { STATUS } from "../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
 import { Eye, Search } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useSocket } from "../../hooks/useSocket";
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
     {
@@ -71,6 +72,8 @@ export default function Appointments () {
     const sd = searchParams.get("sd");
     const ed = searchParams.get("ed");
     const q = searchParams.get("q");
+
+    const socket = useSocket({ namespace: '/patient-notification' });
 
     const [showModal, setShowModal] = useState(false);
     const [appointment, setAppointment] = useState<Appointment>();

@@ -1,5 +1,5 @@
-import { Bell } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
+import PatientNotificationBell from "./Notification/PatientNotificationBell";
 
 export default function PatientHeader() {
     const { user } = useAuthStore();
@@ -35,32 +35,7 @@ export default function PatientHeader() {
             ">
 
                 {/* Notification */}
-                <button
-                    className="
-                        relative
-                        p-2.5
-                        rounded-full
-                        hover:bg-green-50
-                        transition
-                    "
-                >
-                    <Bell 
-                        size={22}
-                        className="text-[#1E3D15]"
-                    />
-
-                    <span className="
-                        absolute
-                        top-2
-                        right-2
-                        w-2
-                        h-2
-                        bg-red-500
-                        rounded-full
-                    ">
-                    </span>
-
-                </button>
+                <PatientNotificationBell />
             </div>
 
         </header>

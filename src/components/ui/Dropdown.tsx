@@ -66,7 +66,7 @@ export default function Dropdown({
                         className
                     )}
                 >
-                    <option value="" disabled={!!value || options.some(option => option.value === "")}>
+                    <option disabled={!!value || options.some(option => option.value === "")}>
                         {placeholder}
                     </option>
 

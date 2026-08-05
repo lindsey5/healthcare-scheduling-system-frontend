@@ -100,6 +100,7 @@ export default function PurposeOfVisit ({
                         value={watch('appointmentTime')}
                         onChange={(e) => setValue('appointmentTime', e.target.value)}
                         serviceId={watch('serviceId')}
+                        disabled={!watch("serviceId")}
                     />
                 </div>
 
