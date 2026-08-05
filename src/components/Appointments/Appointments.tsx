@@ -5,7 +5,7 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useDebounce } from "../../hooks/useDebouce";
 import useGetAppointments from "../../hooks/appointment/use-get-appointments.hook";
 import CustomizedTable from "../ui/Table";
-import { formatDate, formatTime } from "../../utils/utils";
+import { formatTime } from "../../utils/utils";
 import AppointmentStatusChip from "../ui/StatusChip";
 import Textfield from "../ui/Textfield";
 import Dropdown from "../ui/Dropdown";

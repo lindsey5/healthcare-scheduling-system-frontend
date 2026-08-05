@@ -4,7 +4,7 @@ import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useDebounce } from "../../../hooks/useDebouce";
 import useGetMyAppointments from "../../../hooks/appointment/use-get-my-appointments.hook";
 import CustomizedTable from "../../ui/Table";
-import { formatDate, formatTime, getKeyByValue } from "../../../utils/utils";
+import { formatTime } from "../../../utils/utils";
 import AppointmentStatusChip from "../../ui/StatusChip";
 import Textfield from "../../ui/Textfield";
 import { Eye, Search } from "lucide-react";
@@ -13,13 +13,6 @@ import { STATUS } from "../../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
 import type { SortOption } from "../../../types/types";
 import { useSearchParams } from "react-router-dom";
-
-const options: Record<string, SortOption> = {
-    'Date Submitted - DESC': { sort: 'createdAt', order: 'desc' },
-    'Date Submitted - ASC': { sort: 'createdAt', order: 'asc' },
-    'Appointment Date - ASC' : { sort: 'appointmentDate', order: 'asc' },
-    'Appointment Date - DESC' : { sort: 'appointmentDate', order: 'desc' },
-};
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
     {
