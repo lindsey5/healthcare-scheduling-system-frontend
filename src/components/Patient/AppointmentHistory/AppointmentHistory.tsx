@@ -11,7 +11,6 @@ import { Eye, Search } from "lucide-react";
 import Dropdown from "../../ui/Dropdown";
 import { STATUS } from "../../../lib/contants/constants";
 import AppointmentModal from "./AppointmentModal";
-import type { SortOption } from "../../../types/types";
 import { useSearchParams } from "react-router-dom";
 
 const columns = (setAppointment : Dispatch<SetStateAction<Appointment | undefined>>) : ColumnDef<Appointment>[] => [
