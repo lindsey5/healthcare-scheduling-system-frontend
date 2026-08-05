@@ -1,11 +1,18 @@
 import type { Appointment } from "./appointment.type";
 
-export interface PatientNotification {
+interface Notification {
     id: number;
     appointmentId: string;
     appointment: Appointment;
-    patientId: number;
     message: string;
     isRead: boolean;
     createdAt: Date;
+}
+
+export interface PatientNotification extends Notification{
+    patientId: number;
+}
+
+export interface AdminNotification extends Notification {
+    adminId: number;
 }

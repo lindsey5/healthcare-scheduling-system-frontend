@@ -59,6 +59,11 @@ export default function AppointmentModal({
                     />
 
                     <SummaryRow
+                        label="Booked By"
+                        value={`${appointment?.patient.firstname} ${appointment?.patient.lastname} - ${appointment?.patient.email}`}
+                    />
+
+                    <SummaryRow
                         label="Appointment Date"
                         value={appointment?.appointmentDate}
                     />
@@ -86,6 +91,11 @@ export default function AppointmentModal({
                     <SummaryRow
                         label="Status"
                         value={appointment?.status}
+                    />
+
+                    <SummaryRow
+                        label="Date Submitted"
+                        value={formatDate(appointment?.createdAt) || ""}
                     />
                 </SummarySection>
 
