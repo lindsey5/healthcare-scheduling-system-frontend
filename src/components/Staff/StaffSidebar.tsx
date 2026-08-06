@@ -8,6 +8,7 @@ import {
     ClipboardMinus,
     Settings,
     LogOut,
+    QrCode,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 
@@ -33,14 +34,9 @@ const menuItems = [
         path: "/staff/doctors",
     },
     {
-        name: "Check In",
-        icon: ClipboardCheck,
-        path: "/staff/check-in",
-    },
-    {
-        name: "Check Out",
-        icon: ClipboardMinus,
-        path: "/staff/check-out",
+        name: "Scan QR",
+        icon: QrCode,
+        path: "/staff/scan-qr",
     },
     {
         name: "Settings",
