@@ -1,15 +1,14 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useAuthStore } from "../../lib/store/authStore";
-import PatientNotificationBell from "./Notification/PatientNotificationBell";
 import { Menu } from "lucide-react";
 
-interface PatientHeaderProps {
+interface AdminHeaderProps {
     setShowSide: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function PatientHeader({ 
+export default function AdminHeader({ 
     setShowSide,
-} : PatientHeaderProps) {
+} : AdminHeaderProps) {
     const { user } = useAuthStore();
 
     return (
@@ -28,17 +27,12 @@ export default function PatientHeader({
                     </h1>
 
                     <p className="text-sm text-gray-500 mt-1">
-                        Manage your healthcare appointments easily
+                        Manage your healthcare system efficiently
                     </p>
                 </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-5">
-
-                {/* Notification */}
-                <PatientNotificationBell />
-            </div>
 
         </header>
     );

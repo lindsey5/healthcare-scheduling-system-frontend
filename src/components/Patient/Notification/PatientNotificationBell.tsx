@@ -96,7 +96,7 @@ export default function PatientNotificationBell() {
             {/* Bell */}
             <button
                 onClick={() => setOpen((prev) => !prev)}
-                className="relative flex items-center justify-center rounded-full p-2.5 transition hover:bg-green-50"
+                className="relative flex items-center justify-center rounded-full p-2.5 transition hover:bg-green-50 border border-gray-300 cursor-pointer"
             >
                 <Bell size={22} className="text-[#1E3D15]" />
 
