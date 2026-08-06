@@ -88,8 +88,8 @@ export default function AppointmentActionButtons({
             );
 
         case "Rescheduled":
-        case "Checked In":
             return (
+                
                 <Button
                     disabled={disabled}
                     variant="success"
@@ -99,6 +99,29 @@ export default function AppointmentActionButtons({
                 >
                     Complete
                 </Button>
+            );
+        case "Checked In":
+            return (
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        disabled={disabled}
+                        variant="secondary"
+                        onClick={() =>
+                            handleReschedule(appointment.id)
+                        }
+                    >
+                        Reschedule
+                    </Button>
+                    <Button
+                        disabled={disabled}
+                        variant="success"
+                        onClick={() =>
+                            handleUpdate(appointment.id, "Completed")
+                        }
+                    >
+                        Complete
+                    </Button>
+                </div>
             );
 
         case "Completed":
