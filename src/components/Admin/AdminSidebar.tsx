@@ -9,6 +9,7 @@ import {
     BriefcaseMedical,
     Settings,
     LogOut,
+    QrCode,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 
@@ -47,6 +48,11 @@ const menuItems = [
         name: "Patients",
         icon: UserRound,
         path: "/admin/patients",
+    },
+    {
+        name: "Scan QR",
+        icon: QrCode,
+        path: "/admin/scan-qr",
     },
     {
         name: "Settings",

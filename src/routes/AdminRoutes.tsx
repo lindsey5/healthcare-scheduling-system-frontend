@@ -9,6 +9,7 @@ import Patients from "../components/Patients/Patients";
 import Dashboard from "../components/Dashboard/Dashboard";
 import Admins from "../components/Admins/Admins";
 import Staffs from "../components/Staffs/Staffs";
+import ScanQr from "../components/ScanQr/ScanQr";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -51,6 +52,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'patients',
                     element: <Patients />
+                },
+                {
+                    path: 'scan-qr',
+                    element: <ScanQr />
                 }
             ],
         },
