@@ -4,8 +4,6 @@ import {
     CalendarDays,
     Stethoscope,
     BriefcaseMedical,
-    ClipboardCheck,
-    ClipboardMinus,
     Settings,
     LogOut,
     QrCode,
