@@ -14,7 +14,7 @@ export const PatientUpcomingAppointments = () => {
     return (
         <DashboardCard 
             title="Upcoming Appointments"
-            value={String(data?.upcomingAppointments) || ""}
+            value={String(data?.upcomingAppointments ?? 0)}
             icon={<CalendarDays />}
             onClick={() =>
                 navigate(`/patient/appointments?sd=${today}&s=Approved`)
@@ -30,7 +30,7 @@ export const PatientPendingAppointments = () => {
     return (
         <DashboardCard 
             title="Pending Appointments"
-            value={String(data?.pendingAppointments) || ""}
+            value={String(data?.pendingAppointments ?? 0)}
             icon={<CalendarDays />}
              onClick={() => navigate(`/patient/appointments?s=Pending`)}
         />
@@ -44,7 +44,7 @@ export const PatientCompletedAppointments = () => {
     return (
         <DashboardCard 
             title="Completed Visits"
-            value={String(data?.completedAppointments) || ""}
+            value={String(data?.completedAppointments ?? 0)}
             icon={<CalendarDays />}
             onClick={() => navigate(`/patient/appointments?s=Completed`)}
         />
