@@ -27,6 +27,11 @@ const menuItems = [
         path: "/admin/appointments",
     },
     {
+        name: "Scan QR",
+        icon: QrCode,
+        path: "/admin/scan-qr",
+    },
+    {
         name: "Healthcare Services",
         icon: Stethoscope,
         path: "/admin/services",
@@ -50,11 +55,6 @@ const menuItems = [
         name: "Patients",
         icon: UserRound,
         path: "/admin/patients",
-    },
-    {
-        name: "Scan QR",
-        icon: QrCode,
-        path: "/admin/scan-qr",
     },
     {
         name: "Settings",

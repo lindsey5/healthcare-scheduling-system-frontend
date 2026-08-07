@@ -24,6 +24,11 @@ const menuItems = [
         path: "/staff/appointments",
     },
     {
+        name: "Scan QR",
+        icon: QrCode,
+        path: "/staff/scan-qr",
+    },
+    {
         name: "Healthcare Services",
         icon: Stethoscope,
         path: "/staff/services",
@@ -32,11 +37,6 @@ const menuItems = [
         name: "Doctors",
         icon: BriefcaseMedical,
         path: "/staff/doctors",
-    },
-    {
-        name: "Scan QR",
-        icon: QrCode,
-        path: "/staff/scan-qr",
     },
     {
         name: "Settings",

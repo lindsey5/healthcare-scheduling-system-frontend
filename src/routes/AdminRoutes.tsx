@@ -7,9 +7,9 @@ import Services from "../components/Services/Services";
 import Doctors from "../components/Doctors/Doctors";
 import Patients from "../components/Patients/Patients";
 import Dashboard from "../components/Dashboard/Dashboard";
-import Admins from "../components/Admins/Admins";
-import Staffs from "../components/Staffs/Staffs";
-import ScanQr from "../components/ScanQr/ScanQr";
+import Admins from "../components/Admin/Admins/Admins";
+import Staffs from "../components/Admin/Staffs/Staffs";
+import QrScanner from "../components/QrScanner/QrScanner";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -55,7 +55,7 @@ export const AdminRoutes: RouteObject = {
                 },
                 {
                     path: 'scan-qr',
-                    element: <ScanQr />
+                    element: <QrScanner />
                 }
             ],
         },

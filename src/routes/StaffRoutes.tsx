@@ -5,7 +5,7 @@ import Services from "../components/Services/Services";
 import Doctors from "../components/Doctors/Doctors";
 import Dashboard from "../components/Dashboard/Dashboard";
 import StaffLayout from "../components/Staff/StaffLayout";
-import ScanQr from "../components/ScanQr/ScanQr";
+import QrScanner from "../components/QrScanner/QrScanner";
 
 export const StaffRoutes: RouteObject = {
     path: "staff",
@@ -33,7 +33,7 @@ export const StaffRoutes: RouteObject = {
         },
         {
             path: 'scan-qr',
-            Component: () => <ScanQr />
+            Component: () => <QrScanner />
         },
         {
             path: 'settings',

@@ -4,7 +4,7 @@ import { ScanLine, CheckCircle2, CircleAlert } from "lucide-react";
 import AppointmentModal from "../Appointments/AppointmentModal";
 import useGetAppointment from "../../hooks/appointment/use-get-appointment.hook";
 
-export default function ScanQr() {
+export default function QrScanner() {
     const [refNo, setRefNo] = useState("");
     const [status, setStatus] = useState<
         "idle" | "scanning" | "success" | "error"

@@ -1,15 +1,15 @@
 import { useForm } from "react-hook-form";
-import Card from "../ui/Card";
-import Modal from "../ui/Modal";
+import Card from "../../ui/Card";
+import Modal from "../../ui/Modal";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { promiseToast } from "../../utils/utils";
-import Textfield from "../ui/Textfield";
-import Button from "../ui/Button";
+import { promiseToast } from "../../../utils/utils";
+import Textfield from "../../ui/Textfield";
+import Button from "../../ui/Button";
 import { useEffect } from "react";
-import useCreateAdmin from "../../hooks/admin/use-create-admin.hook";
-import useUpdateAdmin from "../../hooks/admin/use-update-admin.hook";
-import { CreateUserSchema, UpdateUserSchema, type CreateUserFormData, type UpdateUserFormData } from "../../schemas/userSchema";
-import type { Admin } from "../../types/admin.type";
+import useCreateAdmin from "../../../hooks/admin/use-create-admin.hook";
+import useUpdateAdmin from "../../../hooks/admin/use-update-admin.hook";
+import { CreateUserSchema, UpdateUserSchema, type CreateUserFormData, type UpdateUserFormData } from "../../../schemas/userSchema";
+import type { Admin } from "../../../types/admin.type";
 
 interface AdminModalProps {
     show: boolean;

@@ -1,15 +1,15 @@
 import { Pencil, Search, Trash2 } from "lucide-react";
-import Textfield from "../ui/Textfield";
+import Textfield from "../../ui/Textfield";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useDebounce } from "../../hooks/useDebouce";
-import CustomizedTable from "../ui/Table";
-import { formatDate, promiseToast } from "../../utils/utils";
-import useGetAdmins from "../../hooks/admin/use-get-admins.hook";
-import type { Admin } from "../../types/admin.type";
+import { useDebounce } from "../../../hooks/useDebouce";
+import CustomizedTable from "../../ui/Table";
+import { formatDate, promiseToast } from "../../../utils/utils";
+import useGetAdmins from "../../../hooks/admin/use-get-admins.hook";
+import type { Admin } from "../../../types/admin.type";
 import AdminModal from "./AdminModal";
-import Button from "../ui/Button";
-import useDeleteAdmin from "../../hooks/admin/use-delete-admin.hook";
+import Button from "../../ui/Button";
+import useDeleteAdmin from "../../../hooks/admin/use-delete-admin.hook";
 
 const columns  = ({ 
     handleEdit,

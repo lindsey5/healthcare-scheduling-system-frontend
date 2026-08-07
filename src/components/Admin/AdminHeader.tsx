@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useAuthStore } from "../../lib/store/authStore";
 import { Menu } from "lucide-react";
+import AdminNotificationBell from "./Notification/AdminNotificationBell";
 
 interface AdminHeaderProps {
     setShowSide: Dispatch<SetStateAction<boolean>>;
@@ -32,7 +33,7 @@ export default function AdminHeader({
                 </div>
             </div>
 
-            {/* Actions */}
+            <AdminNotificationBell />
 
         </header>
     );

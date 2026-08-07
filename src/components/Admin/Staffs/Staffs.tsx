@@ -2,18 +2,18 @@ import { Pencil, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import Textfield from "../ui/Textfield";
-import CustomizedTable from "../ui/Table";
-import Button from "../ui/Button";
+import Textfield from "../../ui/Textfield";
+import CustomizedTable from "../../ui/Table";
+import Button from "../../ui/Button";
 import StaffModal from "./StaffModal";
 
-import { useDebounce } from "../../hooks/useDebouce";
-import { formatDate, promiseToast } from "../../utils/utils";
+import { useDebounce } from "../../../hooks/useDebouce";
+import { formatDate, promiseToast } from "../../../utils/utils";
 
-import useGetStaffs from "../../hooks/staff/use-get-staffs.hook";
-import useDeleteStaff from "../../hooks/staff/use-delete-staff.hook";
+import useGetStaffs from "../../../hooks/staff/use-get-staffs.hook";
+import useDeleteStaff from "../../../hooks/staff/use-delete-staff.hook";
 
-import type { Staff } from "../../types/staff.type";
+import type { Staff } from "../../../types/staff.type";
 
 const columns = ({
     handleEdit,
