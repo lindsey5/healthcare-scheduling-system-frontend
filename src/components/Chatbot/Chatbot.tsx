@@ -19,6 +19,8 @@ interface Message {
 export default function Chatbot() {
     const chatbotMutation = useChatbot();
 
+    const [threadId, setThreadId] = useState("");
+
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState("");
 
@@ -26,8 +28,7 @@ export default function Chatbot() {
         {
             id: 1,
             role: "assistant",
-            content:
-                "Hello! I'm the Bagumbayan Health Center AI Assistant. How can I help you today?",
+            content: "Hello! I'm the Bagumbayan Health Center AI Assistant. How can I help you today?",
         },
     ]);
 
@@ -56,18 +57,17 @@ export default function Chatbot() {
         setInput("");
 
         try {
-            const response = await chatbotMutation.mutateAsync(message);
+            const response = await chatbotMutation.mutateAsync({ message, thread_id: threadId });
 
             setMessages((prev) => [
                 ...prev,
                 {
                     id: Date.now() + 1,
                     role: "assistant",
-                    content:
-                        response.message ??
-                        "Sorry, I wasn't able to process your request.",
+                    content: response.message ?? "Sorry, I wasn't able to process your request.",
                 },
             ]);
+            if(!threadId) setThreadId(response.thread_id)
         } catch (error) {
             console.error("Chat error:", error);
 
@@ -76,16 +76,13 @@ export default function Chatbot() {
                 {
                     id: Date.now() + 1,
                     role: "assistant",
-                    content:
-                        "Sorry, I'm having trouble connecting to the AI service right now.",
+                    content: "Sorry, I'm having trouble connecting to the AI service right now.",
                 },
             ]);
         }
     };
 
-    const handleKeyDown = (
-        e: React.KeyboardEvent<HTMLInputElement>
-    ) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
@@ -97,7 +94,7 @@ export default function Chatbot() {
             {/* Chat Window */}
             <div
                 className={cn(
-                    "fixed bottom-24 right-6 z-50 flex h-[600px] w-[380px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl",
+                    "fixed bottom-24 right-6 z-50 flex h-[600px] w-[90vw] md:w-[380px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl",
                     !isOpen && "hidden"
                 )}
             >
@@ -151,14 +148,13 @@ export default function Chatbot() {
 
                                 <div
                                     className={cn(
-                                        "max-w-[75%] rounded-2xl px-4 py-3 text-sm",
+                                        "rounded-2xl px-4 py-3 text-sm",
                                         isUser
                                             ? "rounded-br-md bg-green-600 text-white"
                                             : "rounded-bl-md border border-gray-200 bg-white text-gray-700"
                                     )}
-                                >
-                                    {message.content}
-                                </div>
+                                    dangerouslySetInnerHTML={{ __html: message.content }}
+                                />
 
                                 {isUser && (
                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-600">
@@ -189,7 +185,7 @@ export default function Chatbot() {
 
                 {/* Input */}
                 <div className="border-t bg-white p-3">
-                    <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
+                    <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
                         <input
                             type="text"
                             value={input}
@@ -204,12 +200,12 @@ export default function Chatbot() {
 
                         <button
                             onClick={sendMessage}
-                            disabled={!input.trim() || chatbotMutation.isPending}
+                            disabled={chatbotMutation.isPending}
                             className={cn(
                                 "flex h-9 w-9 items-center justify-center rounded-lg text-white transition",
-                                input.trim() && !chatbotMutation.isPending
-                                    ? "bg-green-600 hover:bg-green-700"
-                                    : "cursor-not-allowed bg-gray-300"
+                                chatbotMutation.isPending
+                                    ? "cursor-not-allowed bg-gray-300"
+                                    : "bg-green-600 hover:bg-green-700"
                             )}
                         >
                             <Send size={17} />

@@ -2,13 +2,17 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ShieldCheck } from "lucide-react";
 import Textfield from "../ui/Textfield";
 import { useForm } from "react-hook-form";
-import { type CreateUserFormData, CreateUserSchema } from "../../schemas/userSchema";
+import {
+    type CreateUserFormData,
+    CreateUserSchema,
+} from "../../schemas/userSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { promiseToast } from "../../utils/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useVerifyUser from "../../hooks/patient/use-verify-patient.hook";
 import useRegisterPatient from "../../hooks/patient/use-register-patient.hook";
 import { useAuthStore } from "../../lib/store/authStore";
+import useResendVerificationCode from "../../hooks/patient/use-patient-resend-verification-code.hook";
 
 type VerificationModalProps = {
     open: boolean;
@@ -20,23 +24,58 @@ export function VerificationModal({
     email,
 }: VerificationModalProps) {
     const navigate = useNavigate();
+    const resendVerificationCodeMutation = useResendVerificationCode();
     const verifyUserMutation = useVerifyUser();
-    const [verificationCode, setVerificationCode] = useState('');
+
+    const [verificationCode, setVerificationCode] = useState("");
+    const [resendCooldown, setResendCooldown] = useState(60);
+
+    // Start/reset cooldown whenever modal opens
+    useEffect(() => {
+        if (!open) return;
+
+        setResendCooldown(60);
+    }, [open]);
+
+    // Countdown
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+
+        const timer = setInterval(() => {
+            setResendCooldown((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [resendCooldown]);
 
     const onClose = () => window.location.reload();
 
     const onSubmit = () => {
-        promiseToast(verifyUserMutation.mutateAsync({
-            email, 
-            verificationCode
-        }), "top-center", () => navigate('/patient'))
-    }
+        promiseToast(
+            verifyUserMutation.mutateAsync({
+                email,
+                verificationCode,
+            }),
+            "top-center",
+            () => navigate("/patient")
+        );
+    };
+
+    const handleResend = async () => {
+        if (resendCooldown > 0 || resendVerificationCodeMutation.isPending) return;
+
+        promiseToast(resendVerificationCodeMutation.mutateAsync(email), "top-center", () => {
+            setResendCooldown(60);
+            setVerificationCode("");
+        })
+    };
 
     if (!open) return null;
 
     return (
         <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/50 px-4">
             <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in duration-200">
+                
                 <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
                         <Mail className="text-[#1E3D15]" size={30} />
@@ -60,10 +99,35 @@ export function VerificationModal({
                         label="Verification Code"
                         placeholder="Enter 6-digit code"
                         value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
+                        onChange={(e) =>
+                            setVerificationCode(e.target.value)
+                        }
                         icon={<ShieldCheck size={20} />}
                         maxLength={6}
                     />
+                </div>
+
+                {/* Resend */}
+                <div className="mt-4 text-center">
+                    {resendCooldown > 0 ? (
+                        <p className="text-sm text-gray-500">
+                            Didn't receive the code? Resend in{" "}
+                            <span className="font-semibold text-[#1E3D15]">
+                                {resendCooldown}s
+                            </span>
+                        </p>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleResend}
+                            disabled={resendVerificationCodeMutation.isPending}
+                            className="text-sm font-semibold text-green-700 hover:underline disabled:opacity-50"
+                        >
+                            {resendVerificationCodeMutation.isPending
+                                ? "Sending..."
+                                : "Resend Verification Code"}
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex gap-3 mt-8">
@@ -78,10 +142,15 @@ export function VerificationModal({
                     <button
                         type="button"
                         onClick={onSubmit}
-                        disabled={verifyUserMutation.isPending || !verificationCode}
+                        disabled={
+                            verifyUserMutation.isPending ||
+                            verificationCode.length !== 6
+                        }
                         className="flex-1 bg-[#1E3D15] text-white rounded-xl py-3 font-semibold hover:bg-green-800 disabled:opacity-60"
                     >
-                        {verifyUserMutation.isPending ? "Loading..." : "Verify"}
+                        {verifyUserMutation.isPending
+                            ? "Loading..."
+                            : "Verify"}
                     </button>
                 </div>
             </div>
@@ -91,33 +160,45 @@ export function VerificationModal({
 
 export default function PatientSignUp() {
     const registerMutation = useRegisterPatient();
+
     const [showVerify, setShowVerify] = useState(false);
+
     const { isAuthenticated, user } = useAuthStore();
 
-    const { register, formState: { errors }, handleSubmit, watch } = useForm<CreateUserFormData>({
-        resolver: zodResolver(CreateUserSchema)
-    })
+    const {
+        register,
+        formState: { errors },
+        handleSubmit,
+        watch,
+    } = useForm<CreateUserFormData>({
+        resolver: zodResolver(CreateUserSchema),
+    });
 
-    const onSubmit = async (data : CreateUserFormData) => {
-        promiseToast(registerMutation.mutateAsync(data), "top-center", () => {
-            setShowVerify(true)
-        })
-    }
+    const onSubmit = async (data: CreateUserFormData) => {
+        promiseToast(
+            registerMutation.mutateAsync(data),
+            "top-center",
+            () => {
+                setShowVerify(true);
+            }
+        );
+    };
 
-    if(isAuthenticated()){
-        return <Navigate to={`/${user.role}`} replace />
+    if (isAuthenticated()) {
+        return <Navigate to={`/${user.role}`} replace />;
     }
 
     return (
         <section className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12">
-            <VerificationModal 
-                email={watch('email')}
+            <VerificationModal
+                email={watch("email")}
                 open={showVerify}
             />
+
             <div className="max-w-6xl w-full grid lg:grid-cols-2 bg-white rounded-3xl shadow-xl overflow-hidden">
+
                 {/* Left Side */}
                 <div className="hidden lg:flex flex-col bg-[#1E3D15] text-white p-12">
-
                     <h1 className="text-5xl font-bold leading-tight">
                         Create Your
                         <br />
@@ -138,6 +219,7 @@ export default function PatientSignUp() {
                 {/* Right Side */}
                 <div className="p-8 md:p-12 flex flex-col justify-center">
                     <div className="max-w-md mx-auto w-full">
+
                         <h2 className="text-3xl font-bold text-[#1E3D15]">
                             Create Account
                         </h2>
@@ -146,52 +228,52 @@ export default function PatientSignUp() {
                             Fill in your information to get started.
                         </p>
 
-                        <form 
+                        <form
                             className="mt-8 space-y-5"
                             onSubmit={handleSubmit(onSubmit)}
                         >
                             <div className="grid grid-cols-2 gap-4">
-                                <Textfield 
+                                <Textfield
                                     label="Firstname"
                                     placeholder="Firstname"
                                     icon={<User size={20} />}
-                                    registration={register('firstname')}
+                                    registration={register("firstname")}
                                     error={errors.firstname?.message}
                                 />
 
-                                <Textfield 
+                                <Textfield
                                     label="Lastname"
                                     placeholder="Lastname"
                                     icon={<User size={20} />}
-                                    registration={register('lastname')}
+                                    registration={register("lastname")}
                                     error={errors.lastname?.message}
                                 />
                             </div>
 
-                            <Textfield 
+                            <Textfield
                                 label="Email"
                                 type="email"
                                 placeholder="Enter your email"
                                 icon={<Mail size={20} />}
-                                registration={register('email')}
+                                registration={register("email")}
                                 error={errors.email?.message}
                             />
 
-                            <Textfield 
+                            <Textfield
                                 label="Password"
                                 type="password"
                                 placeholder="Create a password"
                                 icon={<Lock size={20} />}
-                                registration={register('password')}
+                                registration={register("password")}
                                 error={errors.password?.message}
                             />
 
-                            <Textfield 
+                            <Textfield
                                 label="Confirm Password"
                                 type="password"
                                 placeholder="Confirm your password"
                                 icon={<Lock size={20} />}
-                                registration={register('confirmPassword')}
+                                registration={register("confirmPassword")}
                                 error={errors.confirmPassword?.message}
                             />
 
@@ -200,7 +282,9 @@ export default function PatientSignUp() {
                                 disabled={registerMutation.isPending}
                                 className="w-full bg-[#1E3D15] hover:bg-green-800 text-white font-semibold py-3 rounded-xl transition"
                             >
-                                Create Account
+                                {registerMutation.isPending
+                                    ? "Creating Account..."
+                                    : "Create Account"}
                             </button>
                         </form>
 

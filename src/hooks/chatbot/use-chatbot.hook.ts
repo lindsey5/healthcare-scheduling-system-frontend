@@ -8,7 +8,7 @@ type ChatbotResponse = {
     message: string;
 }
 
-const sendMessage = async (message: string): Promise<ChatbotResponse> => {
+const sendMessage = async (message: string, thread_id?: string): Promise<ChatbotResponse> => {
     const response = await fetch(
         `${AI_URL}/api/chat`,
         {
@@ -16,7 +16,7 @@ const sendMessage = async (message: string): Promise<ChatbotResponse> => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({ message, thread_id }),
         }
     );
 
@@ -31,6 +31,6 @@ const sendMessage = async (message: string): Promise<ChatbotResponse> => {
 
 export default function useChatbot () {
     return useMutation({
-        mutationFn: (message: string) => sendMessage(message)
+        mutationFn: ({ message, thread_id } : { message: string, thread_id?: string }) => sendMessage(message, thread_id)
     })
 }
