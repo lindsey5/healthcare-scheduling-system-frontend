@@ -94,7 +94,7 @@ export default function Chatbot() {
             {/* Chat Window */}
             <div
                 className={cn(
-                    "fixed bottom-24 right-6 z-50 flex h-[600px] w-[90vw] md:w-[380px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl",
+                    "fixed bottom-24 right-6 z-50 flex h-[70vh] max-h-[600px] w-[90vw] md:w-[380px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl",
                     !isOpen && "hidden"
                 )}
             >
