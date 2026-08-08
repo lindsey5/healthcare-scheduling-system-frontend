@@ -32,14 +32,8 @@ export default function PatientNotificationBell() {
         limit: pagination.pageSize,
     });
 
-    useSocket({
+    const socket = useSocket({
         namespace: "/patient-notification",
-        events: {
-            "patient-notification": (notification: PatientNotification) => {
-                setNotifications((prev) => [notification, ...prev]);
-                setUnread((prev) => prev + 1);
-            },
-        },
     });
 
     useEffect(() => {
@@ -53,6 +47,11 @@ export default function PatientNotificationBell() {
             );
         }
 
+        socket?.on("patient-notification", (notification: PatientNotification) => {
+            setNotifications((prev) => [notification, ...prev]);
+            setUnread((prev) => prev + 1);
+        })
+
         function handleClickOutside(e: MouseEvent) {
             if (
                 dropdownRef.current &&
@@ -63,7 +62,12 @@ export default function PatientNotificationBell() {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            if(socket){
+                socket.off("patient-notification")
+            }
+        }
     }, [data]);
 
     const handleRead = (notification : PatientNotification) => {

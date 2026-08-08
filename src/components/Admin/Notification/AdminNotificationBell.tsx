@@ -32,15 +32,7 @@ export default function AdminNotificationBell() {
         limit: pagination.pageSize,
     });
 
-    useSocket({
-        namespace: "/admin-notification",
-        events: {
-            "admin-notification": (notification: AdminNotification) => {
-                setNotifications((prev) => [notification, ...prev]);
-                setUnread((prev) => prev + 1);
-            },
-        },
-    });
+    const socket = useSocket({ namespace: "/admin-notification" });
 
     useEffect(() => {
         if (data) {
@@ -52,6 +44,12 @@ export default function AdminNotificationBell() {
                     : [...prev, ...data.adminNotifications]
             );
         }
+
+        socket?.on("admin-notification", (notification: AdminNotification) => {
+            setNotifications((prev) => [notification, ...prev]);
+            setUnread((prev) => prev + 1);
+        })
+        
 
         function handleClickOutside(e: MouseEvent) {
             if (

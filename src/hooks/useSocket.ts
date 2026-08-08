@@ -7,10 +7,9 @@ const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface UseSocketOptions {
     namespace: string;
-    events?: { [event: string]: (...args: any[]) => void };
 }
 
-export const useSocket = ({ namespace, events = {} }: UseSocketOptions) => {
+export const useSocket = ({ namespace }: UseSocketOptions) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const { accessToken, refreshToken, setAuth } = useAuthStore();
     
@@ -30,10 +29,6 @@ export const useSocket = ({ namespace, events = {} }: UseSocketOptions) => {
                     setAuth(data.token.accessToken, data.token.refreshToken);
                 })
 
-                // Register event listeners
-                Object.entries(events).forEach(([event, callback]) => {
-                    newSocket.on(event, callback);
-                });
 
                 setSocket(newSocket);
             }catch(error : any) {
@@ -44,10 +39,6 @@ export const useSocket = ({ namespace, events = {} }: UseSocketOptions) => {
 
         return () => {
             if(socket){
-                Object.entries(events).forEach(([event]) => {
-                    socket.off(event);
-                });
-
                 socket.disconnect();
             }
         };
