@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useAuthStore } from "../../lib/store/authStore";
 import { Menu } from "lucide-react";
+import StaffNotificationBell from "./Notification/StaffNotificationBell";
 
 interface StaffHeaderProps {
     setShowSide: Dispatch<SetStateAction<boolean>>;
@@ -33,7 +34,7 @@ export default function StaffHeader({
             </div>
 
             {/* Actions */}
-
+            <StaffNotificationBell />
         </header>
     );
 }

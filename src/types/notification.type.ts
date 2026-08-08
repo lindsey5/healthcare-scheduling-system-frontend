@@ -16,3 +16,7 @@ export interface PatientNotification extends Notification{
 export interface AdminNotification extends Notification {
     adminId: number;
 }
+
+export interface StaffNotification extends Notification {
+    staffId: number;
+}

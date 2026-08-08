@@ -47,10 +47,12 @@ export default function PatientNotificationBell() {
             );
         }
 
-        socket?.on("patient-notification", (notification: PatientNotification) => {
-            setNotifications((prev) => [notification, ...prev]);
-            setUnread((prev) => prev + 1);
-        })
+        if(socket) {
+            socket.on("patient-notification", (notification: PatientNotification) => {
+                setNotifications((prev) => [notification, ...prev]);
+                setUnread((prev) => prev + 1);
+            })
+        }
 
         function handleClickOutside(e: MouseEvent) {
             if (
@@ -68,7 +70,7 @@ export default function PatientNotificationBell() {
                 socket.off("patient-notification")
             }
         }
-    }, [data]);
+    }, [data, socket]);
 
     const handleRead = (notification : PatientNotification) => {
         setShowModal(true);

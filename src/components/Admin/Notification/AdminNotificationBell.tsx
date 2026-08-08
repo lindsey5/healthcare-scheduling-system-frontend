@@ -45,11 +45,12 @@ export default function AdminNotificationBell() {
             );
         }
 
-        socket?.on("admin-notification", (notification: AdminNotification) => {
-            setNotifications((prev) => [notification, ...prev]);
-            setUnread((prev) => prev + 1);
-        })
-        
+        if(socket) {
+            socket.on("admin-notification", (notification: AdminNotification) => {
+                setNotifications((prev) => [notification, ...prev]);
+                setUnread((prev) => prev + 1);
+            })
+        }
 
         function handleClickOutside(e: MouseEvent) {
             if (
@@ -61,8 +62,14 @@ export default function AdminNotificationBell() {
         }
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [data]);
+        
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            if(socket){
+                socket.off("admin-notification")
+            }
+        }
+    }, [data, socket]);
 
     const handleRead = (notification : AdminNotification) => {
         setShowModal(true);
