@@ -1,5 +1,6 @@
+import type { User } from "./user.type";
 
-export interface AuthState {
+export type AuthState = {
     user: any;
     accessToken: string | null
     refreshToken: string | null
@@ -22,13 +23,4 @@ export type AuthResponse = {
         accessToken: string;
     },
     message?: string;
-}
-
-export interface User {
-    id: number;
-    firstname: string;
-    lastname: string;
-    email: string;
-    createdAt: string;
-    role: string;
 }

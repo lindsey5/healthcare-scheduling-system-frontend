@@ -3,9 +3,9 @@ import {
     LayoutDashboard,
     CalendarPlus,
     History,
-    Settings,
     LogOut,
     X,
+    UserRound,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -28,9 +28,9 @@ const menuItems = [
         path: "/patient/appointments",
     },
     {
-        name: "Settings",
-        icon: Settings,
-        path: "/patient/settings",
+        name: "Profile",
+        icon: UserRound,
+        path: "/patient/profile",
     },
 ];
 

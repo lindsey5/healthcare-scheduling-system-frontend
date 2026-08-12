@@ -4,6 +4,7 @@ import BookAppointment from "../components/Patient/BookAppointment/BookAppointme
 import PatientDashboard from "../components/Patient/Dashboard/PatientDashboard";
 import PatientLayout from "../components/Patient/PatientLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import PatientProfile from "../components/Patient/Profile/PatientProfile";
 
 export const PatientRoutes : RouteObject = {
     path: 'patient',
@@ -25,5 +26,9 @@ export const PatientRoutes : RouteObject = {
             path: 'appointments',
             Component: () => <AppointmentHistory />
         },
+        {
+            path: 'profile',
+            Component: () => <PatientProfile />
+        }
     ]
 }

@@ -17,8 +17,10 @@ export default function Textfield({
     registration,
     icon,
     onChange,
+    disabled,
     ...props
 }: InputProps) {
+
     const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,15 +37,31 @@ export default function Textfield({
 
     return (
         <div>
+
             {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                    className={cn(
+                        "block text-sm font-medium mb-2",
+                        disabled
+                            ? "text-gray-400"
+                            : "text-gray-700"
+                    )}
+                >
                     {label}
                 </label>
             )}
 
             <div className="relative">
+
                 {icon && (
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div
+                        className={cn(
+                            "absolute left-4 top-1/2 -translate-y-1/2",
+                            disabled
+                                ? "text-gray-300"
+                                : "text-gray-400"
+                        )}
+                    >
                         {icon}
                     </div>
                 )}
@@ -51,22 +69,36 @@ export default function Textfield({
                 <input
                     {...registration}
                     {...props}
+                    disabled={disabled}
                     type={inputType}
                     onChange={handleChange}
-                    className={cn("w-full border border-gray-400 rounded-xl",
+                    className={cn(
+                        "w-full border rounded-xl",
                         icon ? "pl-12" : "pl-4",
                         type === "password" ? "pr-12" : "pr-4",
-                        "py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition",
+                        "py-3 outline-none transition",
+
+                        disabled
+                            ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed"
+                            : "bg-white border-gray-400 text-gray-900 focus:border-green-600 focus:ring-2 focus:ring-green-100",
+
                         className,
-                        error && 'border-red-500'
+
+                        error && !disabled && "border-red-500"
                     )}
                 />
 
                 {type === "password" && (
                     <button
                         type="button"
+                        disabled={disabled}
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className={cn(
+                            "absolute right-4 top-1/2 -translate-y-1/2",
+                            disabled
+                                ? "text-gray-300 cursor-not-allowed"
+                                : "text-gray-400 hover:text-gray-600"
+                        )}
                     >
                         {showPassword ? (
                             <EyeOff size={20} />
@@ -75,6 +107,7 @@ export default function Textfield({
                         )}
                     </button>
                 )}
+
             </div>
 
             {error && (
@@ -82,6 +115,7 @@ export default function Textfield({
                     {error}
                 </span>
             )}
+
         </div>
     );
 }
