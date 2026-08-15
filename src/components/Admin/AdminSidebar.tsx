@@ -7,7 +7,6 @@ import {
     UserCog,
     UserRound,
     BriefcaseMedical,
-    Settings,
     LogOut,
     QrCode,
     X,
@@ -57,9 +56,9 @@ const menuItems = [
         path: "/admin/patients",
     },
     {
-        name: "Settings",
-        icon: Settings,
-        path: "/admin/settings",
+        name: "Profile",
+        icon: UserRound,
+        path: "/admin/profile",
     },
 ];
 

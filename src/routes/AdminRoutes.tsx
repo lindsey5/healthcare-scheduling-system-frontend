@@ -10,6 +10,7 @@ import Dashboard from "../components/Dashboard/Dashboard";
 import Admins from "../components/Admin/Admins/Admins";
 import Staffs from "../components/Admin/Staffs/Staffs";
 import QrScanner from "../components/QrScanner/QrScanner";
+import AdminProfile from "../components/Admin/Profile/AdminProfile";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -56,6 +57,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'scan-qr',
                     element: <QrScanner />
+                },
+                {
+                    path: 'profile',
+                    element: <AdminProfile />
                 }
             ],
         },

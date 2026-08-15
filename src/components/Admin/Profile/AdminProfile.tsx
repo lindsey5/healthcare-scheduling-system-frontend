@@ -1,20 +1,20 @@
 import { useState } from "react";
-import useUpdatePatientOwn from "../../../hooks/patient/use-update-patient-own.hook"
 import type { PasswordFormData, ProfileFormData } from "../../../schemas/profileSchema";
 import { promiseToast } from "../../../utils/utils";
 import Profile from "../../shared/Profile"
 import Button from "../../ui/Button";
 import ChangePassword from "../../shared/ChangePassword";
-import usePatientChangePassword from "../../../hooks/patient/use-patient-change-password.hook";
+import useUpdateAdminProfile from "../../../hooks/admin/use-update-admin-profile.hook";
+import useAdminChangePassword from "../../../hooks/admin/use-admin-change-password.hook";
 
-export default function PatientProfile () {
+export default function AdminProfile () {
     const [showChangePass, setShowChangePass] = useState(false);
     
-    const changePasswordMutation = usePatientChangePassword();
-    const updatePatientMutation = useUpdatePatientOwn();
+    const changePasswordMutation = useAdminChangePassword();
+    const updateAdminMutation = useUpdateAdminProfile();
 
     const handleSubmit = (data : ProfileFormData) => {
-        promiseToast(updatePatientMutation.mutateAsync(data));
+        promiseToast(updateAdminMutation.mutateAsync(data));
     }
 
     const handleChangePassword = (data : PasswordFormData) => {
@@ -35,8 +35,7 @@ export default function PatientProfile () {
             </div>
             <Profile 
                 submit={handleSubmit} 
-                loading={updatePatientMutation.isPending} 
-                canEditEmail={false}
+                loading={updateAdminMutation.isPending} 
             />
             <ChangePassword 
                 close={() => setShowChangePass(false)}

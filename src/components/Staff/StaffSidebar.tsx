@@ -4,10 +4,10 @@ import {
     CalendarDays,
     Stethoscope,
     BriefcaseMedical,
-    Settings,
     LogOut,
     QrCode,
     X,
+    UserRound,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -39,9 +39,9 @@ const menuItems = [
         path: "/staff/doctors",
     },
     {
-        name: "Settings",
-        icon: Settings,
-        path: "/staff/settings",
+        name: "Profile",
+        icon: UserRound,
+        path: "/staff/profile",
     },
 ];
 

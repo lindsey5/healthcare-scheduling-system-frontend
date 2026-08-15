@@ -14,11 +14,13 @@ import Button from "../ui/Button";
 interface ProfileProps {
     submit: (data : ProfileFormData) => void | Promise<void>;
     loading: boolean;
+    canEditEmail?: boolean;
 }
 
 export default function Profile({
     submit,
-    loading
+    loading,
+    canEditEmail = true
 } : ProfileProps) {
     const { user } = useAuthStore();
 
@@ -32,6 +34,7 @@ export default function Profile({
         defaultValues: {
             firstname: "",
             lastname: "",
+            email: ""
         },
     });
 
@@ -40,6 +43,7 @@ export default function Profile({
             reset({
                 firstname: user.firstname,
                 lastname: user.lastname,
+                email: user.email
             });
         }
     }, [user, reset]);
@@ -86,18 +90,13 @@ export default function Profile({
                         error={errors.lastname?.message}
                     />
 
-                    <div>
-                        <Textfield 
-                            label="Email"
-                            value={user.email}
-                            disabled
+                    <Textfield 
+                        label="Email"
+                        disabled={!canEditEmail}
+                        registration={register("email")}
+                        error={errors.email?.message}
 
-                        />
-
-                        <p className="mt-1 text-xs text-gray-500">
-                            Your email address cannot be changed.
-                        </p>
-                    </div>
+                    />
 
                     <div className="flex justify-end pt-2">
                         <Button type="submit" disabled={loading}>
