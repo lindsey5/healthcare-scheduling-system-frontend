@@ -1,10 +1,10 @@
 import type { RouteObject } from "react-router-dom";
-import AppointmentHistory from "../components/Patient/AppointmentHistory/AppointmentHistory";
-import BookAppointment from "../components/Patient/BookAppointment/BookAppointment";
-import PatientDashboard from "../components/Patient/Dashboard/PatientDashboard";
-import PatientLayout from "../components/Patient/PatientLayout";
+import AppointmentHistory from "../pages/Patient/AppointmentHistory/AppointmentHistory";
+import BookAppointment from "../pages/Patient/BookAppointment/BookAppointment";
+import PatientDashboard from "../pages/Patient/Dashboard/PatientDashboard";
+import PatientLayout from "../pages/Patient/PatientLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
-import PatientProfile from "../components/Patient/Profile/PatientProfile";
+import PatientProfile from "../pages/Patient/Profile/PatientProfile";
 
 export const PatientRoutes : RouteObject = {
     path: 'patient',

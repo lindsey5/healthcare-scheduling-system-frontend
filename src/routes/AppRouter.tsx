@@ -1,10 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "../components/Home/Home";
-import UserLogin from "../components/Auth/PatientLogin";
-import UserSignUp from "../components/Auth/PatientSignup";
+import Home from "../pages/Home/Home";
+import UserLogin from "../pages/Auth/PatientLogin";
+import UserSignUp from "../pages/Auth/PatientSignup";
 import { PatientRoutes } from "./PatientRoutes";
 import { AdminRoutes } from "./AdminRoutes";
 import { StaffRoutes } from "./StaffRoutes";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
+import ResetPassword from "../pages/Auth/ResetPassword";
 
 const router = createBrowserRouter([
     {
@@ -18,6 +20,14 @@ const router = createBrowserRouter([
     {
         path: 'signup',
         Component: () => <UserSignUp />
+    },
+    {
+        path: 'forgot-password',
+        Component: () => <ForgotPassword />
+    },
+    {
+        path: 'reset-password/:token',
+        Component: () => <ResetPassword />
     },
     PatientRoutes,
     AdminRoutes,

@@ -1,11 +1,11 @@
 import type { RouteObject } from "react-router-dom";
 import { ProtectedRoute } from "../components/ProtectedRoute";
-import Appointments from "../components/Appointments/Appointments";
-import Services from "../components/Services/Services";
-import Doctors from "../components/Doctors/Doctors";
-import Dashboard from "../components/Dashboard/Dashboard";
-import StaffLayout from "../components/Staff/StaffLayout";
-import QrScanner from "../components/QrScanner/QrScanner";
+import Appointments from "../pages/Appointments/Appointments";
+import Services from "../pages/Services/Services";
+import Doctors from "../pages/Doctors/Doctors";
+import Dashboard from "../pages/Dashboard/Dashboard";
+import StaffLayout from "../pages/Staff/StaffLayout";
+import QrScanner from "../pages/QrScanner/QrScanner";
 
 export const StaffRoutes: RouteObject = {
     path: "staff",

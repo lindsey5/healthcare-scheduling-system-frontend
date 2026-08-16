@@ -1,16 +1,16 @@
 import type { RouteObject } from "react-router-dom";
-import AdminLayout from "../components/Admin/AdminLayout";
+import AdminLayout from "../pages/Admin/AdminLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
-import AdminLogin from "../components/Auth/AdminLogin";
-import Appointments from "../components/Appointments/Appointments";
-import Services from "../components/Services/Services";
-import Doctors from "../components/Doctors/Doctors";
-import Patients from "../components/Patients/Patients";
-import Dashboard from "../components/Dashboard/Dashboard";
-import Admins from "../components/Admin/Admins/Admins";
-import Staffs from "../components/Admin/Staffs/Staffs";
-import QrScanner from "../components/QrScanner/QrScanner";
-import AdminProfile from "../components/Admin/Profile/AdminProfile";
+import AdminLogin from "../pages/Auth/AdminLogin";
+import Appointments from "../pages/Appointments/Appointments";
+import Services from "../pages/Services/Services";
+import Doctors from "../pages/Doctors/Doctors";
+import Patients from "../pages/Patients/Patients";
+import Dashboard from "../pages/Dashboard/Dashboard";
+import Admins from "../pages/Admin/Admins/Admins";
+import Staffs from "../pages/Admin/Staffs/Staffs";
+import QrScanner from "../pages/QrScanner/QrScanner";
+import AdminProfile from "../pages/Admin/Profile/AdminProfile";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
