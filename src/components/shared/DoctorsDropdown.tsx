@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
-import useGetDoctors from "../../../hooks/doctor/use-get-doctors.hook";
-import Dropdown from "../../../components/ui/Dropdown";
-import type { Doctor } from "../../../types/doctor.type";
+import useGetDoctors from "../../hooks/doctor/use-get-doctors.hook";
+import Dropdown from "../ui/Dropdown";
+import type { Doctor } from "../../types/doctor.type";
 
 interface DoctorsDropdownProps {
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -10,6 +10,7 @@ interface DoctorsDropdownProps {
     disabled?: boolean;
     value?: number;
     setSelectedDoctor?: Dispatch<SetStateAction<Doctor | null>>;
+    label?: string;
 }
 
 export default function DoctorsDropdown ({ 
@@ -18,6 +19,7 @@ export default function DoctorsDropdown ({
     serviceId,
     disabled,
     value,
+    label,
     setSelectedDoctor
 } : DoctorsDropdownProps) {
     const { data } = useGetDoctors({ serviceId });
@@ -30,7 +32,7 @@ export default function DoctorsDropdown ({
             }}
             error={error}
             value={value}
-            label="Assigned Doctor *"
+            label={label || "Assigned Doctor *"}
             placeholder="Select Doctor"
             disabled={disabled}
             options={data?.doctors.map(doctor => ({ label: `Dr. ${doctor.firstname} ${doctor.lastname}`, value: doctor.id })) || []}

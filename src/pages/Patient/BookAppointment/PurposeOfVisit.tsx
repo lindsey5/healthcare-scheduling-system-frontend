@@ -1,8 +1,8 @@
 import ServicesDropdown from "./ServicesDropdown";
 import Textfield from "../../../components/ui/Textfield";
-import DoctorsDropdown from "./DoctorsDropdown";
+import DoctorsDropdown from "../../../components/shared/DoctorsDropdown";
 import { getDayOfWeek } from "../../../utils/utils";
-import AvailableTimeSlotDropdown from "./AvailableTimeSlotDropdown";
+import AvailableTimeSlotDropdown from "../../../components/shared/AvailableTimeSlotDropdown";
 import Card from "../../../components/ui/Card";
 import Textarea from "../../../components/ui/Textarea";
 import type { AppointmentFormData } from "../../../schemas/appointmentSchema";

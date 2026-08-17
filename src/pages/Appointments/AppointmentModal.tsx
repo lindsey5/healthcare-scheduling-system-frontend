@@ -7,6 +7,8 @@ import SummaryRow from "../../components/shared/SummaryRow";
 import { formatDate, formatTime, promiseToast } from "../../utils/utils";
 import AppointmentActionButtons from "./AppointmentActionButton";
 import useUpdateAppointment from "../../hooks/appointment/use-update-appointment.hook";
+import RescheduleAppointmentModal from "./RescheduleAppointmentModal";
+import { useState } from "react";
 
 interface AppointmentModalProps {
     show: boolean;
@@ -20,10 +22,7 @@ export default function AppointmentModal({
     appointment,
 }: AppointmentModalProps) {
     const updateAppointmentMutation = useUpdateAppointment();
-
-    const handleReschedule = (_: string) => {
-
-    }
+    const [showReschedule, setShowReschedule] = useState(false);
 
     const handleUpdate = (id: string, status: string) => {
         const isConfirm = confirm(`Are you sure you want to update the status to ${status}`);
@@ -33,7 +32,10 @@ export default function AppointmentModal({
         promiseToast(updateAppointmentMutation.mutateAsync({ status, id }));
     }
 
+    const handleReschedule = () => setShowReschedule(true);
+
     return (
+        <>
         <Modal
             onClose={close}
             open={show}
@@ -159,5 +161,11 @@ export default function AppointmentModal({
                 </div>
             </Card>
         </Modal>
+        <RescheduleAppointmentModal 
+            appointment={appointment}
+            show={showReschedule}
+            close={() => setShowReschedule(false)}
+        />
+        </>
     );
 }

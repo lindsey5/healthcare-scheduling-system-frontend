@@ -53,15 +53,13 @@ export const UpcomingAppointments = () => {
     const { user } = useAuthStore();
     const { data } = useGetUpcomingAppointments();
 
-    const today = new Date().toISOString().split("T")[0];
-
     return (
         <DashboardCard
             title="Upcoming Appointments"
             value={String(data?.upcomingAppointments ?? 0)}
             icon={<CalendarClock />}
             onClick={() =>
-                navigate(`/${user.role}/appointments?sd=${today}&s=Approved`)
+                navigate(`/${user.role}/appointments`)
             }
         />
     );

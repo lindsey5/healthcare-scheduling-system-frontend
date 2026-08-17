@@ -9,16 +9,12 @@ export const PatientUpcomingAppointments = () => {
     const { data } = useGetPatientUpcomingAppointments();
     const navigate = useNavigate();
 
-    const today = new Date().toISOString().split("T")[0];
-
     return (
         <DashboardCard 
             title="Upcoming Appointments"
             value={String(data?.upcomingAppointments ?? 0)}
             icon={<CalendarDays />}
-            onClick={() =>
-                navigate(`/patient/appointments?sd=${today}&s=Approved`)
-            }
+            onClick={() => navigate(`/patient/appointments`)}
         />
     )
 }

@@ -25,3 +25,26 @@ export const appointmentSchema = z.object({
 });
 
 export type AppointmentFormData = z.infer<typeof appointmentSchema>;
+
+export const rescheduleAppointmentSchema = z.object({
+    newAppointmentDate: z
+        .string("Select preferred appointment date")
+        .min(1, "Select preferred appointment date"),
+
+    newDoctorId: z
+        .number("Select preferred doctor")
+        .min(1, "Select preferred doctor"),
+
+    newAppointmentTime: z
+        .string("Select preferred time")
+        .min(1, "Select preferred time"),
+
+    reason: z
+        .string("Reason is required")
+        .min(1, "Reason is required")
+        .max(500, "Must not exceed 500 characters")
+        .trim()
+});
+
+export type RescheduleAppointmentFormData = z.infer<typeof rescheduleAppointmentSchema>;
+
