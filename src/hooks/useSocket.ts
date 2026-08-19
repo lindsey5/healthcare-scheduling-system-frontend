@@ -3,7 +3,8 @@ import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "../lib/store/authStore";
 import { authService } from "../services/AuthService";
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SOCKET_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface UseSocketOptions {
     namespace: string;
@@ -12,37 +13,48 @@ interface UseSocketOptions {
 export const useSocket = ({ namespace }: UseSocketOptions) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const { accessToken, refreshToken, setAuth } = useAuthStore();
-    
+
     useEffect(() => {
-        if (!accessToken) return;
-
-        const connectSocket = () => {
-            try{
-                const newSocket = io(`${SOCKET_URL}${namespace}`, {
-                    auth: { token: `Bearer ${accessToken}` },
-                });
-
-                newSocket.on("connect", () => console.log("Connected to socket"))
-                
-                newSocket.on("connect_error", async () => {
-                    const data = await authService.refreshAccessToken(refreshToken || "");
-                    setAuth(data.token.accessToken, data.token.refreshToken);
-                })
-
-
-                setSocket(newSocket);
-            }catch(error : any) {
-                console.error("Error connecting to socket:", error.message);
-            }
+        if (!accessToken) {
+            setSocket(null);
+            return;
         }
-        connectSocket();
 
-        return () => {
-            if(socket){
-                socket.disconnect();
+        const newSocket = io(`${SOCKET_URL}${namespace}`, {
+            auth: {
+                token: `Bearer ${accessToken}`,
+            },
+        });
+
+        newSocket.on("connect", () => {
+            console.log("Connected to socket");
+        });
+
+        newSocket.on("connect_error", async (error) => {
+            console.error("Socket connection error:", error.message);
+
+            try {
+                const data = await authService.refreshAccessToken(
+                    refreshToken || ""
+                );
+
+                setAuth(
+                    data.token.accessToken,
+                    data.token.refreshToken
+                );
+            } catch (error) {
+                console.error("Failed to refresh token:", error);
             }
+        });
+
+        setSocket(newSocket);
+
+        // Cleanup
+        return () => {
+            newSocket.disconnect();
+            setSocket(null);
         };
-    }, [accessToken]);
+    }, [accessToken, namespace]);
 
     return socket;
 };

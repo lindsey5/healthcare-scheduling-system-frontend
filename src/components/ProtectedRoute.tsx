@@ -12,7 +12,7 @@ type ProtectedRouteProps = {
 export const ProtectedRoute = ({
     children,
     requireAuthentication = true,
-    role='patient',
+    role,
     redirectTo = '/',
 }: ProtectedRouteProps) => {
     const { isAuthenticated, user } = useAuthStore();

@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import PatientSidebar from "./PatientSidebar";
 import PatientHeader from "./PatientHeader";
 import { useState } from "react";
-import Chatbot from "../../components/Chatbot/Chatbot";
+import ChatWidget from "../../components/PatientChat/ChatWidget";
 
 export default function PatientLayout () {
     const [showSide, setShowSide] = useState(false);
@@ -17,7 +17,7 @@ export default function PatientLayout () {
                 setShowSide={setShowSide}
             />
             <Outlet />
-            <Chatbot />
+            <ChatWidget />
         </div>
     )
 }

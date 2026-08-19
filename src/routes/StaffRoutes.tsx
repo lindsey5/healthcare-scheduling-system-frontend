@@ -6,6 +6,7 @@ import Doctors from "../pages/Doctors/Doctors";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import StaffLayout from "../pages/Staff/StaffLayout";
 import QrScanner from "../pages/QrScanner/QrScanner";
+import StaffProfile from "../pages/Staff/Profile/StaffProfile";
 
 export const StaffRoutes: RouteObject = {
     path: "staff",
@@ -36,8 +37,8 @@ export const StaffRoutes: RouteObject = {
             Component: () => <QrScanner />
         },
         {
-            path: 'settings',
-            Component: () => <></>
+            path: 'profile',
+            Component: () => <StaffProfile />
         }
     ],
 };
