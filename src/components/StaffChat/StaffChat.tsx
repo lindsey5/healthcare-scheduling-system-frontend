@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../../hooks/useSocket";
 import { cn, timeAgo } from "../../utils/utils";
-import { Headset, MessageCircle, Send, X } from "lucide-react";
+import {
+    Headset,
+    MessageCircle,
+    Send,
+    X,
+} from "lucide-react";
 import type {
     ConversationMessage,
     Message,
@@ -11,6 +16,7 @@ import useGetStaffConversation from "../../hooks/conversation/use-get-staff-conv
 
 export default function StaffChat() {
     const [isOpen, setIsOpen] = useState(false);
+
     const [conversationId, setConversationId] =
         useState<number | null>(null);
 
@@ -33,148 +39,342 @@ export default function StaffChat() {
     const [isFetchingMore, setIsFetchingMore] =
         useState(false);
 
-    const topRef = useRef<HTMLDivElement | null>(null);
+    /*
+     * Chat scroll container
+     */
+    const chatContainerRef =
+        useRef<HTMLDivElement | null>(null);
+
+    /*
+     * Bottom scroll target
+     */
+    const messagesEndRef =
+        useRef<HTMLDivElement | null>(null);
+
+    /*
+     * Used to preserve scroll position
+     * when loading older messages.
+     */
+    const previousScrollHeightRef =
+        useRef(0);
+
+    /*
+     * Prevent multiple pagination requests.
+     */
+    const isLoadingOlderRef =
+        useRef(false);
+
+    /*
+     * Determines whether we should
+     * automatically scroll to bottom.
+     */
+    const shouldScrollToBottom =
+        useRef(true);
 
     const {
         data,
         isLoading,
         isFetching,
-        refetch
+        refetch,
     } = useGetStaffConversation({
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
     });
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({
-            behavior: "smooth",
-        });
-    }, [messages]);
+    /*
+     * Determine if there are more pages.
+     */
+    const hasMore =
+        data !== undefined &&
+        pagination.pageIndex + 1 <
+            data.totalPages;
 
     /*
-     * Infinite scroll
+     * Scroll to bottom.
+     *
+     * This happens for:
+     * - Initial messages
+     * - New messages
+     * - Sending a message
+     *
+     * It does NOT happen when loading
+     * older messages.
      */
     useEffect(() => {
-        const target = topRef.current;
-
-        if (!target || messages.length === 0) {
+        if (!shouldScrollToBottom.current) {
             return;
         }
 
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (
-                    !entry.isIntersecting ||
-                    isLoading ||
-                    isFetching ||
-                    isFetchingMore
-                ) {
-                    return;
-                }
-
-                if (
-                    data?.total !== undefined &&
-                    messages.length >= data.total
-                ) {
-                    return;
-                }
-
-                setIsFetchingMore(true);
-
-                setPagination((prev) => ({
-                    ...prev,
-                    pageIndex: prev.pageIndex + 1,
-                }));
-            },
-            {
-                threshold: 0.3,
-            }
-        );
-
-        observer.observe(target);
-
-        return () => {
-            observer.disconnect();
-        };
-    }, [
-        isLoading,
-        isFetching,
-        isFetchingMore,
-        data?.total,
-        messages.length,
-    ]);
+        if (messages.length > 0) {
+            messagesEndRef.current?.scrollIntoView({
+                behavior: "smooth",
+            });
+        }
+    }, [messages]);
 
     /*
-     * Handle API messages
+     * Handle chat scrolling.
+     *
+     * Older messages are loaded ONLY when
+     * the user actually reaches the top.
+     */
+    const handleScroll = () => {
+        const container =
+            chatContainerRef.current;
+
+        if (!container) return;
+
+        /*
+         * User must actually be at the top.
+         */
+        if (container.scrollTop > 5) {
+            return;
+        }
+
+        /*
+         * Don't fetch if:
+         * - initial request is loading
+         * - another request is running
+         * - already fetching older messages
+         * - no more pages exist
+         */
+        if (
+            isLoading ||
+            isFetching ||
+            isLoadingOlderRef.current ||
+            isFetchingMore ||
+            !hasMore
+        ) {
+            return;
+        }
+
+        /*
+         * Mark as loading immediately.
+         *
+         * This prevents multiple scroll events
+         * from triggering multiple requests.
+         */
+        isLoadingOlderRef.current = true;
+        setIsFetchingMore(true);
+
+        /*
+         * Prevent automatic bottom scrolling.
+         */
+        shouldScrollToBottom.current = false;
+
+        /*
+         * Save current scroll height.
+         *
+         * After older messages are inserted,
+         * we'll calculate the difference and
+         * restore the user's position.
+         */
+        previousScrollHeightRef.current =
+            container.scrollHeight;
+
+        setPagination((prev) => ({
+            ...prev,
+            pageIndex: prev.pageIndex + 1,
+        }));
+    };
+
+    /*
+     * Handle API messages.
      */
     useEffect(() => {
         if (!data) return;
 
+        /*
+         * Set conversation.
+         */
         if (data.conversation) {
-            setConversationId(data.conversation.id);
+            setConversationId(
+                data.conversation.id
+            );
         }
 
         const newMessages: ConversationMessage[] =
-            data.messages.map((message) => ({
-                id: message.id,
-                message: message.message,
-                createdAt: message.createdAt,
-                senderType: message.senderType,
-            }));
+            [...data.messages]
+                .map((message) => ({
+                    message: message.message,
+                    createdAt:
+                        message.createdAt,
+                    senderType:
+                        message.senderType,
+                }));
 
+        /*
+         * First page.
+         */
         if (pagination.pageIndex === 0) {
+            shouldScrollToBottom.current =
+                true;
+
             setMessages(newMessages);
-        } else {
-            // Older messages go before existing messages
+        }
+
+        /*
+         * Older page.
+         */
+        else {
+            shouldScrollToBottom.current =
+                false;
+
             setMessages((prev) => [
                 ...newMessages,
                 ...prev,
             ]);
         }
 
+        /*
+         * Request completed.
+         */
         setIsFetchingMore(false);
-    }, [data, pagination.pageIndex]);
+        isLoadingOlderRef.current = false;
+    }, [
+        data,
+        pagination.pageIndex,
+    ]);
 
     /*
-     * Socket listeners
+     * Preserve scroll position after
+     * older messages are inserted.
+     */
+    useEffect(() => {
+        const container =
+            chatContainerRef.current;
+
+        if (!container) return;
+
+        /*
+         * Initial page.
+         */
+        if (pagination.pageIndex === 0) {
+            if (messages.length > 0) {
+                container.scrollTop =
+                    container.scrollHeight;
+            }
+
+            return;
+        }
+
+        /*
+         * Don't adjust until the fetch
+         * has completed.
+         */
+        if (isFetchingMore) {
+            return;
+        }
+
+        const previousHeight =
+            previousScrollHeightRef.current;
+
+        if (previousHeight <= 0) {
+            return;
+        }
+
+        const newHeight =
+            container.scrollHeight;
+
+        /*
+         * Difference between old and new
+         * content height.
+         */
+        const heightDifference =
+            newHeight - previousHeight;
+
+        /*
+         * Keep the user at the same message
+         * after inserting older messages.
+         */
+        container.scrollTop =
+            heightDifference;
+
+        previousScrollHeightRef.current = 0;
+    }, [
+        messages,
+        pagination.pageIndex,
+        isFetchingMore,
+    ]);
+
+    /*
+     * Socket listeners.
      */
     useEffect(() => {
         if (!socket) return;
 
-        const handleNewConversation = (id: number) => {
+        /*
+         * New conversation.
+         */
+        const handleNewConversation = (
+            id: number
+        ) => {
             setConversationId(id);
-            refetch();
-            // Reset pagination when a new conversation arrives
+
+            /*
+             * Reset pagination.
+             */
             setPagination({
                 pageSize: 10,
                 pageIndex: 0,
             });
 
+            /*
+             * Clear current messages.
+             */
             setMessages([]);
+
+            setIsFetchingMore(false);
+            isLoadingOlderRef.current = false;
+
+            /*
+             * Next messages should scroll
+             * to the bottom.
+             */
+            shouldScrollToBottom.current =
+                true;
+
+            /*
+             * Fetch the new conversation.
+             */
+            refetch();
         };
 
-        const handleNewMessage = (message: Message) => {
+        /*
+         * New message.
+         */
+        const handleNewMessage = (
+            message: Message
+        ) => {
+            const newMessage: ConversationMessage =
+                {
+                    message: message.message,
+                    createdAt:
+                        message.createdAt,
+                    senderType:
+                        message.senderType,
+                };
+
+            /*
+             * New messages should scroll
+             * to the bottom.
+             */
+            shouldScrollToBottom.current =
+                true;
+
             setMessages((prev) => [
                 ...prev,
-                {
-                    id: message.id,
-                    message: message.message,
-                    createdAt: message.createdAt,
-                    senderType: message.senderType,
-                },
+                newMessage,
             ]);
         };
 
+        /*
+         * Conversation ended.
+         */
         const handleEndConversation = () => {
             setConversationId(null);
-        }
-
-        socket.on(
-            "conversation:end",
-            handleEndConversation
-        )
+            setInput("");
+        };
 
         socket.on(
             "conversation:new",
@@ -186,39 +386,47 @@ export default function StaffChat() {
             handleNewMessage
         );
 
+        socket.on(
+            "conversation:end",
+            handleEndConversation
+        );
+
         return () => {
-            socket.off("conversation:end")
+            socket.off(
+                "conversation:new",
+                handleNewConversation
+            );
 
-            socket.off("conversation:new");
+            socket.off(
+                "message:new",
+                handleNewMessage
+            );
 
-            socket.off("message:new");
+            socket.off(
+                "conversation:end",
+                handleEndConversation
+            );
         };
-    }, [socket]);
+    }, [socket, refetch]);
 
     /*
-     * Handle input
+     * Handle input.
      */
     const handleKeyDown = (
         e: React.KeyboardEvent<HTMLInputElement>
     ) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (
+            e.key === "Enter" &&
+            !e.shiftKey
+        ) {
             e.preventDefault();
+
             sendMessage();
         }
     };
 
-    /**
-     * 
-     * End Conversation
-     */
-
-    const endConversation = () => {
-        socket?.emit("conversation:end", conversationId);
-        setConversationId(null);
-    }
-
     /*
-     * Send message
+     * Send message.
      */
     const sendMessage = () => {
         if (
@@ -229,16 +437,26 @@ export default function StaffChat() {
             return;
         }
 
-        const message = input.trim();
+        const message =
+            input.trim();
 
-        // Optimistic update
+        /*
+         * Optimistic message.
+         */
+        const optimisticMessage:
+            ConversationMessage = {
+                message,
+                createdAt:
+                    new Date().toISOString(),
+                senderType: "Staff",
+            };
+
+        shouldScrollToBottom.current =
+            true;
+
         setMessages((prev) => [
             ...prev,
-            {
-                message,
-                createdAt: new Date().toISOString(),
-                senderType: "Staff",
-            },
+            optimisticMessage,
         ]);
 
         socket.emit("message:send", {
@@ -247,6 +465,26 @@ export default function StaffChat() {
             senderType: "Staff"
         });
 
+        setInput("");
+    };
+
+    /*
+     * End conversation.
+     */
+    const endConversation = () => {
+        if (
+            !socket ||
+            !conversationId
+        ) {
+            return;
+        }
+
+        socket.emit(
+            "conversation:end",
+            conversationId
+        );
+
+        setConversationId(null);
         setInput("");
     };
 
@@ -268,14 +506,18 @@ export default function StaffChat() {
 
                         <div>
                             <h3 className="font-semibold">
-                                {data?.conversation.patient ? `${data.conversation.patient.firstname} ${data.conversation.patient.lastname}` : 'Patient Support'}
+                                {data?.conversation?.patient
+                                    ? `${data.conversation.patient.firstname} ${data.conversation.patient.lastname}`
+                                    : "Patient Support"}
                             </h3>
 
                             <p className="text-xs text-green-100">
-                                {data?.conversation.patient ? 
-                                    data.conversation.patient.email
-                                    :
-                                    conversationId
+                                {data?.conversation?.patient
+                                    ? data
+                                          .conversation
+                                          .patient
+                                          .email
+                                    : conversationId
                                     ? "Active conversation"
                                     : "Waiting for a patient"}
                             </p>
@@ -296,15 +538,15 @@ export default function StaffChat() {
                 {/* Chat Content */}
                 <div className="flex min-h-0 flex-1 flex-col">
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+                    <div
+                        ref={chatContainerRef}
+                        onScroll={
+                            handleScroll
+                        }
+                        className="flex-1 overflow-y-auto bg-gray-50 p-4"
+                    >
                         {messages.length > 0 ? (
                             <>
-                                {/* Infinite scroll trigger */}
-                                <div
-                                    ref={topRef}
-                                    className="h-1"
-                                />
-
                                 {/* Loading older messages */}
                                 {isFetchingMore && (
                                     <div className="py-2 text-center text-xs text-gray-400">
@@ -314,14 +556,17 @@ export default function StaffChat() {
 
                                 <div className="space-y-4">
                                     {messages.map(
-                                        (message, index) => {
+                                        (
+                                            message,
+                                            index
+                                        ) => {
                                             const isStaff =
                                                 message.senderType ===
                                                 "Staff";
 
                                             return (
                                                 <div
-                                                    key={index}
+                                                    key={`${message.createdAt}-${index}`}
                                                     className={cn(
                                                         "flex gap-2",
                                                         isStaff
@@ -363,7 +608,9 @@ export default function StaffChat() {
                                                                     : "text-gray-400"
                                                             )}
                                                         >
-                                                            {timeAgo(message.createdAt)}
+                                                            {timeAgo(
+                                                                message.createdAt
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -373,10 +620,11 @@ export default function StaffChat() {
                                 </div>
                             </>
                         ) : (
-                            /* Empty state */
                             <div className="flex h-full flex-col items-center justify-center px-6 text-center">
                                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
-                                    <MessageCircle size={30} />
+                                    <MessageCircle
+                                        size={30}
+                                    />
                                 </div>
 
                                 <h3 className="text-sm font-semibold text-gray-700">
@@ -389,7 +637,13 @@ export default function StaffChat() {
                                 </p>
                             </div>
                         )}
-                        <div ref={messagesEndRef} />
+
+                        {/* Bottom scroll target */}
+                        <div
+                            ref={
+                                messagesEndRef
+                            }
+                        />
                     </div>
 
                     {/* Message Input */}
@@ -413,7 +667,9 @@ export default function StaffChat() {
 
                                 <button
                                     type="button"
-                                    onClick={sendMessage}
+                                    onClick={
+                                        sendMessage
+                                    }
                                     disabled={
                                         !input.trim()
                                     }
@@ -424,13 +680,19 @@ export default function StaffChat() {
                                             : "bg-green-600 hover:bg-green-700"
                                     )}
                                 >
-                                    <Send size={17} />
+                                    <Send
+                                        size={17}
+                                    />
                                 </button>
                             </div>
+
+                            {/* End Conversation */}
                             <button
                                 type="button"
-                                onClick={endConversation}
-                                className="mt-3 mb-2 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                                onClick={
+                                    endConversation
+                                }
+                                className="mb-2 mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
                             >
                                 End Conversation
                             </button>
@@ -459,7 +721,9 @@ export default function StaffChat() {
                 {isOpen ? (
                     <X size={25} />
                 ) : (
-                    <MessageCircle size={25} />
+                    <MessageCircle
+                        size={25}
+                    />
                 )}
             </button>
         </>
