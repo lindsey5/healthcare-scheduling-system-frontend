@@ -252,11 +252,14 @@ export default function StaffChat() {
 
                         <div>
                             <h3 className="font-semibold">
-                                Patient Support
+                                {data?.conversation.patient ? `${data.conversation.patient.firstname} ${data.conversation.patient.lastname}` : 'Patient Support'}
                             </h3>
 
                             <p className="text-xs text-green-100">
-                                {conversationId
+                                {data?.conversation.patient ? 
+                                    <p className="text-xs">{data.conversation.patient.email}</p>
+                                    :
+                                    conversationId
                                     ? "Active conversation"
                                     : "Waiting for a patient"}
                             </p>

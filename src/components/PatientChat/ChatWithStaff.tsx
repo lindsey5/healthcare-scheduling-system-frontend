@@ -99,7 +99,7 @@ export default function ChatWithStaff() {
     useEffect(() => {
         if (!data) return;
 
-        if (data.conversation.status === "Active") {
+        if (data.conversation.status === "Active" && data.conversation.assignedStaffId !== null) {
             setStatus("active");
         }
 
