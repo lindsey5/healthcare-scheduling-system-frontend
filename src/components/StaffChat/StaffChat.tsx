@@ -89,7 +89,7 @@ export default function StaffChat() {
                 }));
             },
             {
-                threshold: 0.1,
+                threshold: 0.3,
             }
         );
 
@@ -146,7 +146,6 @@ export default function StaffChat() {
         const handleNewConversation = (id: number) => {
             setConversationId(id);
             refetch();
-
             // Reset pagination when a new conversation arrives
             setPagination({
                 pageSize: 10,
@@ -274,7 +273,7 @@ export default function StaffChat() {
 
                             <p className="text-xs text-green-100">
                                 {data?.conversation.patient ? 
-                                    <p className="text-xs">{data.conversation.patient.email}</p>
+                                    data.conversation.patient.email
                                     :
                                     conversationId
                                     ? "Active conversation"
