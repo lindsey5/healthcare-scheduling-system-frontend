@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSocket } from "../../hooks/useSocket";
 import { cn, timeAgo } from "../../utils/utils";
 import {
@@ -17,59 +17,27 @@ import useGetStaffConversation from "../../hooks/conversation/use-get-staff-conv
 export default function StaffChat() {
     const [isOpen, setIsOpen] = useState(false);
 
-    const [conversationId, setConversationId] =
-        useState<number | null>(null);
+    const [conversationId, setConversationId] = useState<number | null>(null);
 
     const [input, setInput] = useState("");
 
-    const socket = useSocket({
-        namespace: "/conversation",
-    });
+    const socket = useSocket({namespace: "/conversation" });
 
-    const [messages, setMessages] = useState<
-        ConversationMessage[]
-    >([]);
+    const [messages, setMessages] = useState<ConversationMessage[]>([]);
 
-    const [pagination, setPagination] =
-        useState<PaginationState>({
-            pageSize: 10,
-            pageIndex: 0,
-        });
+    const [pagination, setPagination] = useState<PaginationState>({ pageSize: 10, pageIndex: 0 });
 
-    const [isFetchingMore, setIsFetchingMore] =
-        useState(false);
-
-    /*
-     * Chat scroll container
-     */
-    const chatContainerRef =
-        useRef<HTMLDivElement | null>(null);
-
-    /*
-     * Bottom scroll target
-     */
-    const messagesEndRef =
-        useRef<HTMLDivElement | null>(null);
-
-    /*
-     * Used to preserve scroll position
-     * when loading older messages.
-     */
-    const previousScrollHeightRef =
-        useRef(0);
-
-    /*
-     * Prevent multiple pagination requests.
-     */
-    const isLoadingOlderRef =
-        useRef(false);
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const chatContainerRef = useRef<HTMLDivElement | null>(null);
+    const messagesEndRef =useRef<HTMLDivElement | null>(null);
+    const previousScrollHeightRef = useRef(0);
+    const isLoadingOlderRef = useRef(false);
 
     /*
      * Determines whether we should
      * automatically scroll to bottom.
      */
-    const shouldScrollToBottom =
-        useRef(true);
+    const shouldScrollToBottom = useRef(true);
 
     const {
         data,
@@ -84,10 +52,9 @@ export default function StaffChat() {
     /*
      * Determine if there are more pages.
      */
-    const hasMore =
-        data !== undefined &&
-        pagination.pageIndex + 1 <
-            data.totalPages;
+    const hasMore = useMemo(() => {
+        return  data !== undefined && pagination.pageIndex + 1 < data.totalPages;
+    }, [data, pagination])
 
     /*
      * Scroll to bottom.
@@ -124,51 +91,19 @@ export default function StaffChat() {
 
         if (!container) return;
 
-        /*
-         * User must actually be at the top.
-         */
         if (container.scrollTop > 5) {
             return;
         }
 
-        /*
-         * Don't fetch if:
-         * - initial request is loading
-         * - another request is running
-         * - already fetching older messages
-         * - no more pages exist
-         */
-        if (
-            isLoading ||
-            isFetching ||
-            isLoadingOlderRef.current ||
-            isFetchingMore ||
-            !hasMore
-        ) {
+        if (isLoading || isFetching || isLoadingOlderRef.current || isFetchingMore || !hasMore) {
             return;
         }
 
-        /*
-         * Mark as loading immediately.
-         *
-         * This prevents multiple scroll events
-         * from triggering multiple requests.
-         */
         isLoadingOlderRef.current = true;
         setIsFetchingMore(true);
 
-        /*
-         * Prevent automatic bottom scrolling.
-         */
         shouldScrollToBottom.current = false;
 
-        /*
-         * Save current scroll height.
-         *
-         * After older messages are inserted,
-         * we'll calculate the difference and
-         * restore the user's position.
-         */
         previousScrollHeightRef.current =
             container.scrollHeight;
 
@@ -184,65 +119,34 @@ export default function StaffChat() {
     useEffect(() => {
         if (!data) return;
 
-        /*
-         * Set conversation.
-         */
-        if (data.conversation) {
-            setConversationId(
-                data.conversation.id
-            );
-        }
+        if (data.conversation) setConversationId(data.conversation.id);
 
-        const newMessages: ConversationMessage[] =
-            [...data.messages]
-                .map((message) => ({
-                    message: message.message,
-                    createdAt:
-                        message.createdAt,
-                    senderType:
-                        message.senderType,
-                }));
+        const newMessages: ConversationMessage[] = [...data.messages]
+        .map((message) => ({
+            message: message.message,
+            createdAt: message.createdAt,
+            senderType: message.senderType,
+        }));
 
-        /*
-         * First page.
-         */
         if (pagination.pageIndex === 0) {
-            shouldScrollToBottom.current =
-                true;
-
+            shouldScrollToBottom.current = true;
             setMessages(newMessages);
+        } else {
+            shouldScrollToBottom.current = false;
+
+            setMessages((prev) => [...newMessages, ...prev ]);
         }
 
-        /*
-         * Older page.
-         */
-        else {
-            shouldScrollToBottom.current =
-                false;
-
-            setMessages((prev) => [
-                ...newMessages,
-                ...prev,
-            ]);
-        }
-
-        /*
-         * Request completed.
-         */
         setIsFetchingMore(false);
         isLoadingOlderRef.current = false;
-    }, [
-        data,
-        pagination.pageIndex,
-    ]);
+    }, [data, pagination.pageIndex]);
 
     /*
      * Preserve scroll position after
      * older messages are inserted.
      */
     useEffect(() => {
-        const container =
-            chatContainerRef.current;
+        const container = chatContainerRef.current;
 
         if (!container) return;
 
@@ -250,11 +154,7 @@ export default function StaffChat() {
          * Initial page.
          */
         if (pagination.pageIndex === 0) {
-            if (messages.length > 0) {
-                container.scrollTop =
-                    container.scrollHeight;
-            }
-
+            if (messages.length > 0) container.scrollTop = container.scrollHeight;
             return;
         }
 
@@ -273,8 +173,7 @@ export default function StaffChat() {
             return;
         }
 
-        const newHeight =
-            container.scrollHeight;
+        const newHeight = container.scrollHeight;
 
         /*
          * Difference between old and new
@@ -291,11 +190,7 @@ export default function StaffChat() {
             heightDifference;
 
         previousScrollHeightRef.current = 0;
-    }, [
-        messages,
-        pagination.pageIndex,
-        isFetchingMore,
-    ]);
+    }, [messages, pagination.pageIndex, isFetchingMore]);
 
     /*
      * Socket listeners.
@@ -306,153 +201,82 @@ export default function StaffChat() {
         /*
          * New conversation.
          */
-        const handleNewConversation = (
-            id: number
-        ) => {
+        const handleNewConversation = (id: number) => {
             setConversationId(id);
 
-            /*
-             * Reset pagination.
-             */
             setPagination({
                 pageSize: 10,
                 pageIndex: 0,
             });
 
-            /*
-             * Clear current messages.
-             */
             setMessages([]);
 
             setIsFetchingMore(false);
             isLoadingOlderRef.current = false;
 
-            /*
-             * Next messages should scroll
-             * to the bottom.
-             */
-            shouldScrollToBottom.current =
-                true;
+            shouldScrollToBottom.current = true;
 
-            /*
-             * Fetch the new conversation.
-             */
             refetch();
         };
 
         /*
          * New message.
          */
-        const handleNewMessage = (
-            message: Message
-        ) => {
-            const newMessage: ConversationMessage =
-                {
-                    message: message.message,
-                    createdAt:
-                        message.createdAt,
-                    senderType:
-                        message.senderType,
-                };
+        const handleNewMessage = (message: Message) => {
+            const newMessage: ConversationMessage = {
+                message: message.message,
+                createdAt: message.createdAt,
+                senderType: message.senderType,
+            };
 
-            /*
-             * New messages should scroll
-             * to the bottom.
-             */
-            shouldScrollToBottom.current =
-                true;
+            shouldScrollToBottom.current = true;
 
-            setMessages((prev) => [
-                ...prev,
-                newMessage,
-            ]);
+            setMessages((prev) => [...prev, newMessage]);
         };
 
-        /*
-         * Conversation ended.
-         */
         const handleEndConversation = () => {
             setConversationId(null);
             setInput("");
         };
 
-        socket.on(
-            "conversation:new",
-            handleNewConversation
-        );
+        socket.on("conversation:new", handleNewConversation);
 
-        socket.on(
-            "message:new",
-            handleNewMessage
-        );
+        socket.on("message:new", handleNewMessage);
 
-        socket.on(
-            "conversation:end",
-            handleEndConversation
-        );
+        socket.on("conversation:end", handleEndConversation);
 
         return () => {
-            socket.off(
-                "conversation:new",
-                handleNewConversation
-            );
+            socket.off("conversation:new");
 
-            socket.off(
-                "message:new",
-                handleNewMessage
-            );
+            socket.off("message:new");
 
-            socket.off(
-                "conversation:end",
-                handleEndConversation
-            );
+            socket.off("conversation:end");
         };
     }, [socket, refetch]);
 
-    /*
-     * Handle input.
-     */
-    const handleKeyDown = (
-        e: React.KeyboardEvent<HTMLInputElement>
-    ) => {
-        if (
-            e.key === "Enter" &&
-            !e.shiftKey
-        ) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-
             sendMessage();
         }
     };
 
-    /*
-     * Send message.
-     */
+
     const sendMessage = () => {
-        if (
-            !socket ||
-            !conversationId ||
-            !input.trim()
-        ) {
+        if (!socket || !conversationId || !input.trim()) {
             return;
         }
 
-        const message =
-            input.trim();
+        const message = input.trim();
 
-        /*
-         * Optimistic message.
-         */
-        const optimisticMessage:
-            ConversationMessage = {
-                message,
-                createdAt:
-                    new Date().toISOString(),
-                senderType: "Staff",
-            };
 
-        shouldScrollToBottom.current =
-            true;
+        const optimisticMessage: ConversationMessage = {
+            message,
+            createdAt: new Date().toISOString(),
+            senderType: "Staff",
+        };
+
+        shouldScrollToBottom.current = true;
 
         setMessages((prev) => [
             ...prev,
@@ -468,14 +292,9 @@ export default function StaffChat() {
         setInput("");
     };
 
-    /*
-     * End conversation.
-     */
+
     const endConversation = () => {
-        if (
-            !socket ||
-            !conversationId
-        ) {
+        if (!socket || !conversationId) {
             return;
         }
 
