@@ -155,19 +155,21 @@ export default function AppointmentModal({
                         value={formatDate(appointment?.createdAt)}
                     />
                 </SummarySection>
-                {appointment?.status === 'Pending' && (
-                    <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-3">
+                    {['Pending', 'Approved', 'Rescheduled'].includes(appointment?.status || "") && (
                         <Button className="flex items-center gap-3" onClick={() => setShowQr(true)}>
                             <QrCode size={18} />
                             Show QR Code
                         </Button>
+                    )}
+                    {appointment?.status === 'Pending' && (
                         <Button
                             variant="danger"
                             onClick={handleCancel}
                             disabled={cancelAppointmentMutation.isPending}
                         >Cancel Appointment</Button>
-                    </div>
-                )}
+                    )}
+                </div>
             </Card>
         </Modal>
         <QRCodeModal 
