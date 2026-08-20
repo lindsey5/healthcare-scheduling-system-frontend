@@ -39,6 +39,7 @@ export default function StaffChat() {
         data,
         isLoading,
         isFetching,
+        refetch
     } = useGetStaffConversation({
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
@@ -144,6 +145,7 @@ export default function StaffChat() {
 
         const handleNewConversation = (id: number) => {
             setConversationId(id);
+            refetch();
 
             // Reset pagination when a new conversation arrives
             setPagination({
