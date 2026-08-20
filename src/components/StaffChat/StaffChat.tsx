@@ -166,6 +166,15 @@ export default function StaffChat() {
             ]);
         };
 
+        const handleEndConversation = () => {
+            setConversationId(null);
+        }
+
+        socket.on(
+            "conversation:end",
+            handleEndConversation
+        )
+
         socket.on(
             "conversation:new",
             handleNewConversation
@@ -177,15 +186,11 @@ export default function StaffChat() {
         );
 
         return () => {
-            socket.off(
-                "conversation:new",
-                handleNewConversation
-            );
+            socket.off("conversation:end")
 
-            socket.off(
-                "message:new",
-                handleNewMessage
-            );
+            socket.off("conversation:new");
+
+            socket.off("message:new");
         };
     }, [socket]);
 
@@ -200,6 +205,16 @@ export default function StaffChat() {
             sendMessage();
         }
     };
+
+    /**
+     * 
+     * End Conversation
+     */
+
+    const endConversation = () => {
+        socket?.emit("conversation:end", conversationId);
+        setConversationId(null);
+    }
 
     /*
      * Send message
@@ -411,6 +426,13 @@ export default function StaffChat() {
                                     <Send size={17} />
                                 </button>
                             </div>
+                            <button
+                                type="button"
+                                onClick={endConversation}
+                                className="mt-3 mb-2 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                            >
+                                End Conversation
+                            </button>
                         </div>
                     )}
                 </div>

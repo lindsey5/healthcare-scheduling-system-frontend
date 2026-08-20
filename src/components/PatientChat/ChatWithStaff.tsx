@@ -103,10 +103,6 @@ export default function ChatWithStaff() {
             setStatus("active");
         }
 
-        if (data.conversation.status === "Closed") {
-            setStatus("ended");
-        }
-
         const newMessages: ConversationMessage[] =
             data.messages.map((message) => ({
                 message: message.message,
@@ -154,20 +150,22 @@ export default function ChatWithStaff() {
             ]);
         };
 
+        const handleEndConversation = () => {
+            setStatus("ended");
+        }
+
         socket.on("conversation:status", handleConversationStatus);
 
         socket.on("message:new", handleNewMessage);
 
-        return () => {
-            socket.off(
-                "conversation:status",
-                handleConversationStatus
-            );
+        socket.on("conversation:end", handleEndConversation);
 
-            socket.off(
-                "message:new",
-                handleNewMessage
-            );
+        return () => {
+            socket.off("conversation:status");
+
+            socket.off("conversation:end")
+
+            socket.off("message:new");
         };
     }, [socket]);
 
@@ -177,6 +175,11 @@ export default function ChatWithStaff() {
     const handleStart = () => {
         socket?.emit("conversation:start");
     };
+
+    const endConversation = () => {
+        socket?.emit("conversation:end", data?.conversation.id);
+        setStatus("ended");
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -291,7 +294,8 @@ export default function ChatWithStaff() {
 
             {/* Input */}
             <div className="border-t bg-white p-3">
-                {status === "waiting" ? (
+                {status !== 'active' ? (
+                    <>
                     <Button
                         disabled={isLoading}
                         className="w-full"
@@ -299,11 +303,14 @@ export default function ChatWithStaff() {
                     >
                         Start Conversation
                     </Button>
-                ) : status === "ended" ? (
-                    <p className="text-center text-sm text-gray-500">
-                        Conversation has been ended
-                    </p>
+                    {status === "ended" && (
+                        <p className="text-center text-sm text-gray-500 mt-1">
+                            Conversation has been ended
+                        </p>
+                    )}
+                    </>
                 ) : (
+                    <>
                     <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
                         <input
                             type="text"
@@ -330,6 +337,14 @@ export default function ChatWithStaff() {
                             <Send size={17} />
                         </button>
                     </div>
+                    <button
+                        type="button"
+                        onClick={endConversation}
+                        className="mt-3 mb-2 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                    >
+                        End Conversation
+                    </button>
+                    </>
                 )}
             </div>
         </>
