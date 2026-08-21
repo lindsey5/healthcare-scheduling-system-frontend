@@ -8,10 +8,12 @@ import {
 } from "lucide-react";
 import Chatbot from "./Chatbot";
 import ChatWithStaff from "./ChatWithStaff";
+import { useAuthStore } from "../../lib/store/authStore";
 
 type ChatMode = "ai" | "staff";
 
 export default function ChatWidget() {
+    const { user } = useAuthStore();
     const [mode, setMode] = useState<ChatMode>("ai");
     const [isOpen, setIsOpen] = useState(false);
 
@@ -76,18 +78,20 @@ export default function ChatWidget() {
                             AI Assistant
                         </button>
 
-                        <button
-                            onClick={() => setMode("staff")}
-                            className={cn(
-                                "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
-                                mode === "staff"
-                                    ? "bg-white text-green-600 shadow-sm"
-                                    : "text-gray-500 hover:text-gray-700"
-                            )}
-                        >
-                            <Headset size={16} />
-                            Staff
-                        </button>
+                        {user && (
+                            <button
+                                onClick={() => setMode("staff")}
+                                className={cn(
+                                    "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
+                                    mode === "staff"
+                                        ? "bg-white text-green-600 shadow-sm"
+                                        : "text-gray-500 hover:text-gray-700"
+                                )}
+                            >
+                                <Headset size={16} />
+                                Staff
+                            </button>
+                        )}
                     </div>
                 </div>
 
