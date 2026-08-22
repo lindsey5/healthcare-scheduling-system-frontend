@@ -1,577 +1,286 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSocket } from "../../hooks/useSocket";
-import { cn, timeAgo } from "../../utils/utils";
+import { useEffect, useState } from "react";
 import {
-    Headset,
     MessageCircle,
-    Send,
     X,
+    Search,
+    Headset,
 } from "lucide-react";
-import type {
-    ConversationMessage,
-    Message,
-} from "../../types/conversation.type";
-import type { PaginationState } from "@tanstack/react-table";
-import useGetStaffConversation from "../../hooks/conversation/use-get-staff-conversation.hook";
-import useGetUnreadMessages from "../../hooks/conversation/use-get-unread-messages.hook";
-import useReadAllMessages from "../../hooks/conversation/use-read-all-messages.hook";
+import { cn } from "../../utils/utils";
+import { useSocket } from "../../hooks/useSocket";
+import useGetStaffConversations from "../../hooks/conversation/use-get-staff-conversations.hook";
+import StaffChatWidget from "./StaffChatWidget";
+import type { Conversation } from "../../types/conversation.type";
 
 export default function StaffChat() {
     const [isOpen, setIsOpen] = useState(false);
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [activeConversationId, setActiveConversationId] =
+        useState<number | null>(null);
 
-    const [conversationId, setConversationId] = useState<number | null>(null);
-
-    const readAllMutation = useReadAllMessages();
-
-    const [input, setInput] = useState("");
-
-    const socket = useSocket({namespace: "/conversation" });
-
-    const [messages, setMessages] = useState<ConversationMessage[]>([]);
-
-    const [unread, setUnread] = useState(0);
-
-    const [pagination, setPagination] = useState<PaginationState>({ pageSize: 10, pageIndex: 0 });
-
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
-    const chatContainerRef = useRef<HTMLDivElement | null>(null);
-    const messagesEndRef =useRef<HTMLDivElement | null>(null);
-    const previousScrollHeightRef = useRef(0);
-    const isLoadingOlderRef = useRef(false);
-
-    const { data : unreadMessages } = useGetUnreadMessages();
-
-    /*
-     * Determines whether we should
-     * automatically scroll to bottom.
-     */
-    const shouldScrollToBottom = useRef(true);
-
-    const {
-        data,
-        isLoading,
-        isFetching,
-        refetch,
-    } = useGetStaffConversation({
-        page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
+    const socket = useSocket({
+        namespace: "/conversation",
     });
 
-    /*
-     * Determine if there are more pages.
-     */
-    const hasMore = useMemo(() => {
-        return  data !== undefined && pagination.pageIndex + 1 < data.totalPages;
-    }, [data, pagination])
+    const { data } =
+        useGetStaffConversations();
 
     /*
-     * Scroll to bottom.
-     *
-     * This happens for:
-     * - Initial messages
-     * - New messages
-     * - Sending a message
-     *
-     * It does NOT happen when loading
-     * older messages.
-     */
-    useEffect(() => {
-        if (!shouldScrollToBottom.current) {
-            return;
-        }
-
-        if (messages.length > 0) {
-            messagesEndRef.current?.scrollIntoView({
-                behavior: "smooth",
-            });
-        }
-    }, [messages]);
-
-    useEffect(() => {
-        if(!unreadMessages) return;
-        setUnread(unreadMessages.unread);
-    }, [unreadMessages])
-
-    /*
-     * Handle chat scrolling.
-     *
-     * Older messages are loaded ONLY when
-     * the user actually reaches the top.
-     */
-    const handleScroll = () => {
-        const container =
-            chatContainerRef.current;
-
-        if (!container) return;
-
-        if (container.scrollTop > 5) {
-            return;
-        }
-
-        if (isLoading || isFetching || isLoadingOlderRef.current || isFetchingMore || !hasMore) {
-            return;
-        }
-
-        isLoadingOlderRef.current = true;
-        setIsFetchingMore(true);
-
-        shouldScrollToBottom.current = false;
-
-        previousScrollHeightRef.current =
-            container.scrollHeight;
-
-        setPagination((prev) => ({
-            ...prev,
-            pageIndex: prev.pageIndex + 1,
-        }));
-    };
-
-    const handleReadAll = () => {
-        setUnread(0);
-        readAllMutation.mutate();
-    }
-
-    /*
-     * Handle API messages.
+     * Load conversations.
      */
     useEffect(() => {
         if (!data) return;
 
-        if (data.conversation) setConversationId(data.conversation.id);
-
-        const newMessages: ConversationMessage[] = [...data.messages]
-        .map((message) => ({
-            message: message.message,
-            createdAt: message.createdAt,
-            senderType: message.senderType,
-        }));
-
-        if (pagination.pageIndex === 0) {
-            shouldScrollToBottom.current = true;
-            setMessages(newMessages);
-        } else {
-            shouldScrollToBottom.current = false;
-
-            setMessages((prev) => [...newMessages, ...prev ]);
-        }
-
-        setIsFetchingMore(false);
-        isLoadingOlderRef.current = false;
-    }, [data, pagination.pageIndex]);
+        setConversations(data.conversations);
+    }, [data]);
 
     /*
-     * Preserve scroll position after
-     * older messages are inserted.
-     */
-    useEffect(() => {
-        const container = chatContainerRef.current;
-
-        if (!container) return;
-
-        /*
-         * Initial page.
-         */
-        if (pagination.pageIndex === 0) {
-            if (messages.length > 0) container.scrollTop = container.scrollHeight;
-            return;
-        }
-
-        /*
-         * Don't adjust until the fetch
-         * has completed.
-         */
-        if (isFetchingMore) {
-            return;
-        }
-
-        const previousHeight =
-            previousScrollHeightRef.current;
-
-        if (previousHeight <= 0) {
-            return;
-        }
-
-        const newHeight = container.scrollHeight;
-
-        /*
-         * Difference between old and new
-         * content height.
-         */
-        const heightDifference =
-            newHeight - previousHeight;
-
-        /*
-         * Keep the user at the same message
-         * after inserting older messages.
-         */
-        container.scrollTop =
-            heightDifference;
-
-        previousScrollHeightRef.current = 0;
-    }, [messages, pagination.pageIndex, isFetchingMore]);
-
-    /*
-     * Socket listeners.
+     * New conversation.
      */
     useEffect(() => {
         if (!socket) return;
 
-        /*
-         * New conversation.
-         */
-        const handleNewConversation = (id: number) => {
-            setConversationId(id);
+        const handleNewConversation = (conversation: Conversation) => {
+            setConversations(prev => [...prev, conversation]);
 
-            setPagination({
-                pageSize: 10,
-                pageIndex: 0,
-            });
-
-            setMessages([]);
-
-            setIsFetchingMore(false);
-            isLoadingOlderRef.current = false;
-
-            shouldScrollToBottom.current = true;
-
-            refetch();
+            /*
+             * Open chat when patient starts
+             * a new conversation.
+             */
+            setIsOpen(true);
         };
 
-        /*
-         * New message.
-         */
-        const handleNewMessage = (message: Message) => {
-            const newMessage: ConversationMessage = {
-                message: message.message,
-                createdAt: message.createdAt,
-                senderType: message.senderType,
-            };
-
-            shouldScrollToBottom.current = true;
-
-            setUnread(prev => prev + 1);
-
-            setMessages((prev) => [...prev, newMessage]);
-        };
-
-        const handleEndConversation = () => {
-            setConversationId(null);
-            setInput("");
-            setUnread(0);
-        };
-
-        socket.on("conversation:new", handleNewConversation);
-
-        socket.on("message:new", handleNewMessage);
-
-        socket.on("conversation:end", handleEndConversation);
-
-        return () => {
-            socket.off("conversation:new");
-
-            socket.off("message:new");
-
-            socket.off("conversation:end");
-        };
-    }, [socket, refetch]);
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    };
-
-
-    const sendMessage = () => {
-        if (!socket || !conversationId || !input.trim()) {
-            return;
-        }
-
-        const message = input.trim();
-
-
-        const optimisticMessage: ConversationMessage = {
-            message,
-            createdAt: new Date().toISOString(),
-            senderType: "Staff",
-        };
-
-        shouldScrollToBottom.current = true;
-
-        setMessages((prev) => [
-            ...prev,
-            optimisticMessage,
-        ]);
-
-        socket.emit("message:send", {
-            conversationId,
-            message,
-            senderType: "Staff"
-        });
-
-        setInput("");
-    };
-
-
-    const endConversation = () => {
-        if (!socket || !conversationId) {
-            return;
-        }
-
-        socket.emit(
-            "conversation:end",
-            conversationId
+        socket.on(
+            "conversation:new",
+            handleNewConversation
         );
 
-        setConversationId(null);
-        setInput("");
+        return () => {
+            socket.off(
+                "conversation:new",
+                handleNewConversation
+            );
+        };
+    }, [socket]);
+
+    /*
+     * Remove conversation.
+     */
+    const handleRemoveConversation = (
+        conversationId: number
+    ) => {
+        setConversations(prev => prev.filter(conversation => conversation.id !== conversationId));
+
+        setActiveConversationId((current) => {
+            if (current !== conversationId) {
+                return current;
+            }
+
+            return null;
+        });
+    };
+
+    /*
+     * Toggle chat.
+     */
+    const toggleChat = () => {
+        setIsOpen((prev) => !prev);
     };
 
     return (
         <>
-            {/* Chat Window */}
-            <div
-                className={cn(
-                    "fixed bottom-24 right-6 z-50 flex h-[70vh] max-h-[600px] w-[90vw] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl md:w-[380px]",
-                    !isOpen && "hidden"
-                )}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between bg-green-600 px-5 py-4 text-white">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                            <Headset size={22} />
+            {/* Chat Panel */}
+            {isOpen && (
+                <div className="fixed bottom-24 right-6 z-50 flex h-[650px] w-[calc(100vw-48px)] max-w-[850px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                    {/* Conversation List */}
+                    <div className="flex w-[280px] shrink-0 flex-col border-r border-gray-200 bg-white">
+                        {/* List Header */}
+                        <div className="border-b border-gray-200 p-4">
+                            <div className="mb-4 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-base font-semibold text-gray-800">
+                                        Messages
+                                    </h2>
+
+                                    <p className="text-xs text-gray-400">
+                                        Patient conversations
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={toggleChat}
+                                    className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            {/* Search */}
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                                <Search
+                                    size={15}
+                                    className="text-gray-400"
+                                />
+
+                                <input
+                                    type="text"
+                                    placeholder="Search patients..."
+                                    className="w-full bg-transparent text-xs text-gray-700 outline-none placeholder:text-gray-400"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <h3 className="font-semibold">
-                                {data?.conversation?.patient
-                                    ? `${data.conversation.patient.firstname} ${data.conversation.patient.lastname}`
-                                    : "Patient Support"}
-                            </h3>
+                        {/* Conversations */}
+                        <div className="min-h-0 flex-1 overflow-y-auto">
+                            {conversations.length ? (
+                                conversations.map(
+                                    (conversation) => {
+                                        const isActive =
+                                            conversation.id ===
+                                            activeConversationId;
 
-                            <p className="text-xs text-green-100">
-                                {data?.conversation?.patient
-                                    ? data
-                                          .conversation
-                                          .patient
-                                          .email
-                                    : conversationId
-                                    ? "Active conversation"
-                                    : "Waiting for a patient"}
-                            </p>
-                        </div>
-                    </div>
+                                        const patient =
+                                            conversation.patient;
 
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setIsOpen(false)
-                        }
-                        className="rounded-lg p-2 transition hover:bg-white/10"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+                                        const patientName =
+                                            patient
+                                                ? `${patient.firstname} ${patient.lastname}`
+                                                : "Patient";
 
-                {/* Chat Content */}
-                <div className="flex min-h-0 flex-1 flex-col">
-                    {/* Messages */}
-                    <div
-                        ref={chatContainerRef}
-                        onScroll={
-                            handleScroll
-                        }
-                        className="flex-1 overflow-y-auto bg-gray-50 p-4"
-                    >
-                        {messages.length > 0 ? (
-                            <>
-                                {/* Loading older messages */}
-                                {isFetchingMore && (
-                                    <div className="py-2 text-center text-xs text-gray-400">
-                                        Loading older messages...
-                                    </div>
-                                )}
-
-                                <div className="space-y-4">
-                                    {messages.map(
-                                        (
-                                            message,
-                                            index
-                                        ) => {
-                                            const isStaff =
-                                                message.senderType ===
-                                                "Staff";
-
-                                            return (
+                                        return (
+                                            <button
+                                                key={conversation.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    setActiveConversationId(
+                                                        conversation.id
+                                                    )
+                                                }
+                                                className={cn(
+                                                    "flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3 text-left transition",
+                                                    isActive
+                                                        ? "bg-green-50"
+                                                        : "hover:bg-gray-50"
+                                                )}
+                                            >
+                                                {/* Avatar */}
                                                 <div
-                                                    key={`${message.createdAt}-${index}`}
                                                     className={cn(
-                                                        "flex gap-2",
-                                                        isStaff
-                                                            ? "justify-end"
-                                                            : "justify-start"
+                                                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                                                        isActive
+                                                            ? "bg-green-600 text-white"
+                                                            : "bg-gray-100 text-gray-500"
                                                     )}
                                                 >
-                                                    {/* Patient avatar */}
-                                                    {!isStaff && (
-                                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
-                                                            <Headset
-                                                                size={
-                                                                    17
-                                                                }
-                                                            />
-                                                        </div>
-                                                    )}
+                                                    <Headset
+                                                        size={18}
+                                                    />
+                                                </div>
 
-                                                    {/* Message */}
-                                                    <div
-                                                        className={cn(
-                                                            "max-w-[75%] rounded-2xl px-4 py-3 text-sm",
-                                                            isStaff
-                                                                ? "rounded-br-md bg-green-600 text-white"
-                                                                : "rounded-bl-md border border-gray-200 bg-white text-gray-700"
-                                                        )}
-                                                    >
-                                                        <p className="break-words">
+                                                {/* Patient */}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <p
+                                                            className={cn(
+                                                                "truncate text-sm font-medium",
+                                                                isActive
+                                                                    ? "text-green-700"
+                                                                    : "text-gray-700"
+                                                            )}
+                                                        >
                                                             {
-                                                                message.message
+                                                                patientName
                                                             }
                                                         </p>
 
-                                                        <p
-                                                            className={cn(
-                                                                "mt-1 text-xs",
-                                                                isStaff
-                                                                    ? "text-green-100"
-                                                                    : "text-gray-400"
-                                                            )}
-                                                        >
-                                                            {timeAgo(
-                                                                message.createdAt
-                                                            )}
-                                                        </p>
+                                                        <span className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
                                                     </div>
+
+                                                    <p className="mt-0.5 truncate text-xs text-gray-400">
+                                                        Active conversation
+                                                    </p>
                                                 </div>
-                                            );
-                                        }
-                                    )}
+                                            </button>
+                                        );
+                                    }
+                                )
+                            ) : (
+                                <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+                                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                                        <MessageCircle
+                                            size={22}
+                                        />
+                                    </div>
+
+                                    <p className="text-sm font-medium text-gray-600">
+                                        No conversations
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-gray-400">
+                                        Patient messages will appear
+                                        here.
+                                    </p>
                                 </div>
-                            </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Chat */}
+                    <div className="min-w-0 flex-1">
+                        {activeConversationId !== null &&
+                        socket ? (
+                            <StaffChatWidget
+                                conversationId={
+                                    activeConversationId
+                                }
+                                socket={socket}
+                                handleRemove={
+                                    handleRemoveConversation
+                                }
+                            />
                         ) : (
-                            <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+                            <div className="flex h-full flex-col items-center justify-center bg-gray-50 px-6 text-center">
                                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
                                     <MessageCircle
-                                        size={30}
+                                        size={28}
                                     />
                                 </div>
 
                                 <h3 className="text-sm font-semibold text-gray-700">
-                                    You don't have messages yet
+                                    Select a conversation
                                 </h3>
 
-                                <p className="mt-1 text-xs text-gray-400">
-                                    New patient conversations
-                                    will appear here.
+                                <p className="mt-1 max-w-xs text-xs leading-relaxed text-gray-400">
+                                    Choose a patient from the
+                                    conversation list to start
+                                    chatting.
                                 </p>
                             </div>
                         )}
-
-                        {/* Bottom scroll target */}
-                        <div
-                            ref={
-                                messagesEndRef
-                            }
-                        />
                     </div>
-
-                    {/* Message Input */}
-                    {conversationId && (
-                        <div className="border-t bg-white p-3">
-                            <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) =>
-                                        setInput(
-                                            e.target.value
-                                        )
-                                    }
-                                    onKeyDown={
-                                        handleKeyDown
-                                    }
-                                    placeholder="Type a message..."
-                                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        sendMessage
-                                    }
-                                    disabled={
-                                        !input.trim()
-                                    }
-                                    className={cn(
-                                        "flex h-9 w-9 items-center justify-center rounded-lg text-white transition",
-                                        !input.trim()
-                                            ? "cursor-not-allowed bg-gray-300"
-                                            : "bg-green-600 hover:bg-green-700"
-                                    )}
-                                >
-                                    <Send
-                                        size={17}
-                                    />
-                                </button>
-                            </div>
-
-                            {/* End Conversation */}
-                            <button
-                                type="button"
-                                onClick={
-                                    endConversation
-                                }
-                                className="mb-2 mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
-                            >
-                                End Conversation
-                            </button>
-                        </div>
-                    )}
                 </div>
-            </div>
+            )}
 
             {/* Floating Button */}
             <button
                 type="button"
-                onClick={() => {
-                    setIsOpen((prev) => !prev);
-                    handleReadAll();
-                }}
+                onClick={toggleChat}
                 className={cn(
-                    "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700",
-                    isOpen && "bg-gray-700 hover:bg-gray-800"
+                    "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105",
+                    isOpen
+                        ? "bg-gray-700 hover:bg-gray-800"
+                        : "bg-green-600 hover:bg-green-700"
                 )}
-                aria-label={isOpen ? "Close chat" : "Open chat"}
+                aria-label={
+                    isOpen
+                        ? "Close messages"
+                        : "Open messages"
+                }
             >
-                {!isOpen && conversationId && (
-                    <>
-                        {/* Pulse */}
-                        <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-75" />
-
-                        {/* Badge */}
-                        {unread > 0 && (
-                            <span className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
-                            {unread}
-                            </span>
-                        )}
-                    </>
-                )}
-
                 {isOpen ? (
-                    <X size={25} />
+                    <X size={24} />
                 ) : (
-                    <MessageCircle size={25} />
+                    <MessageCircle size={24} />
                 )}
             </button>
         </>

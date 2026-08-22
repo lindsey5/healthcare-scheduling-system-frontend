@@ -14,6 +14,7 @@ export interface Conversation {
     status: "Waiting" | "Active" | "Closed";
     createdAt: string;
     patient: Patient;
+    unread: number;
 }
 
 export interface Message {
