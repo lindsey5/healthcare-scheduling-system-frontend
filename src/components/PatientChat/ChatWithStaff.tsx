@@ -1,20 +1,28 @@
-import { useEffect, useRef, useState } from "react";
-import { useSocket } from "../../hooks/useSocket";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { cn, errorToast, timeAgo } from "../../utils/utils";
 import { Headset, Send, User } from "lucide-react";
 import Button from "../ui/Button";
 import type { ConversationMessage, Message } from "../../types/conversation.type";
 import useGetPatientConversation from "../../hooks/conversation/use-get-patient-conversation.hook";
 import type { PaginationState } from "@tanstack/react-table";
+import type { Socket } from "socket.io-client";
 
-export default function ChatWithStaff() {
+interface ChatWithStaffProps {
+    socket: Socket<any> | null;
+    setUnread: Dispatch<SetStateAction<number>>;
+    messages: ConversationMessage[];
+    setMessages: Dispatch<SetStateAction<ConversationMessage[]>>;
+}
+
+export default function ChatWithStaff({
+    setUnread,
+    socket,
+    messages,
+    setMessages
+} : ChatWithStaffProps) {
     const [input, setInput] = useState("");
 
     const [status, setStatus] = useState<"active" | "waiting" | "ended">("waiting");
-
-    const socket = useSocket({ namespace: "/conversation" });
-
-    const [messages, setMessages] = useState<ConversationMessage[]>([]);
 
     const [pagination, setPagination] =
         useState<PaginationState>({
@@ -140,6 +148,7 @@ export default function ChatWithStaff() {
         };
 
         const handleNewMessage = (message: Message) => {
+            setUnread(prev => prev + 1);
             setMessages((prev) => [
                 ...prev,
                 {
