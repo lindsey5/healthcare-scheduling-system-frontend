@@ -11,14 +11,10 @@ import ChatWithStaff from "./ChatWithStaff";
 import { useAuthStore } from "../../lib/store/authStore";
 import useGetUnreadMessages from "../../hooks/conversation/use-get-unread-messages.hook";
 import useReadAllMessages from "../../hooks/conversation/use-read-all-messages.hook";
-import { useSocket } from "../../hooks/useSocket";
-import type { ConversationMessage, Message } from "../../types/conversation.type";
 
 type ChatMode = "ai" | "staff";
 
 export default function ChatWidget() {
-    const socket = useSocket({ namespace: "/conversation" });
-    const [messages, setMessages] = useState<ConversationMessage[]>([]);
     const [unread, setUnread] = useState(0);
     const { user } = useAuthStore();
     const [mode, setMode] = useState<ChatMode>("ai");
@@ -48,28 +44,6 @@ export default function ChatWidget() {
 
         setUnread(data.unread);
     }, [data]);
-
-        useEffect(() => {
-        if (!socket) return;
-
-        const handleNewMessage = (message: Message) => {
-            setUnread(prev => prev + 1);
-            setMessages((prev) => [
-                ...prev,
-                {
-                    message: message.message,
-                    createdAt: message.createdAt,
-                    senderType: message.senderType,
-                },
-            ]);
-        };
-
-        socket.on("message:new", handleNewMessage);
-
-        return () => {
-            socket.off("message:new");
-        };
-    }, [socket]);
 
     return (
         <>
@@ -162,10 +136,7 @@ export default function ChatWidget() {
                         <Chatbot />
                     ) : (
                         <ChatWithStaff 
-                            messages={messages} 
-                            setMessages={setMessages} 
-                            socket={socket} 
-                            handleReadAll={handleReadAll}
+                           
                         />
                     )}
                 </div>

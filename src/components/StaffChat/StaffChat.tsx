@@ -13,17 +13,23 @@ import type {
 } from "../../types/conversation.type";
 import type { PaginationState } from "@tanstack/react-table";
 import useGetStaffConversation from "../../hooks/conversation/use-get-staff-conversation.hook";
+import useGetUnreadMessages from "../../hooks/conversation/use-get-unread-messages.hook";
+import useReadAllMessages from "../../hooks/conversation/use-read-all-messages.hook";
 
 export default function StaffChat() {
     const [isOpen, setIsOpen] = useState(false);
 
     const [conversationId, setConversationId] = useState<number | null>(null);
 
+    const readAllMutation = useReadAllMessages();
+
     const [input, setInput] = useState("");
 
     const socket = useSocket({namespace: "/conversation" });
 
     const [messages, setMessages] = useState<ConversationMessage[]>([]);
+
+    const [unread, setUnread] = useState(0);
 
     const [pagination, setPagination] = useState<PaginationState>({ pageSize: 10, pageIndex: 0 });
 
@@ -32,6 +38,8 @@ export default function StaffChat() {
     const messagesEndRef =useRef<HTMLDivElement | null>(null);
     const previousScrollHeightRef = useRef(0);
     const isLoadingOlderRef = useRef(false);
+
+    const { data : unreadMessages } = useGetUnreadMessages();
 
     /*
      * Determines whether we should
@@ -79,6 +87,11 @@ export default function StaffChat() {
         }
     }, [messages]);
 
+    useEffect(() => {
+        if(!unreadMessages) return;
+        setUnread(unreadMessages.unread);
+    }, [unreadMessages])
+
     /*
      * Handle chat scrolling.
      *
@@ -112,6 +125,11 @@ export default function StaffChat() {
             pageIndex: prev.pageIndex + 1,
         }));
     };
+
+    const handleReadAll = () => {
+        setUnread(0);
+        readAllMutation.mutate();
+    }
 
     /*
      * Handle API messages.
@@ -231,12 +249,15 @@ export default function StaffChat() {
 
             shouldScrollToBottom.current = true;
 
+            setUnread(prev => prev + 1);
+
             setMessages((prev) => [...prev, newMessage]);
         };
 
         const handleEndConversation = () => {
             setConversationId(null);
             setInput("");
+            setUnread(0);
         };
 
         socket.on("conversation:new", handleNewConversation);
@@ -523,26 +544,34 @@ export default function StaffChat() {
             {/* Floating Button */}
             <button
                 type="button"
-                onClick={() =>
-                    setIsOpen((prev) => !prev)
-                }
+                onClick={() => {
+                    setIsOpen((prev) => !prev);
+                    handleReadAll();
+                }}
                 className={cn(
                     "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700",
-                    isOpen &&
-                        "bg-gray-700 hover:bg-gray-800"
+                    isOpen && "bg-gray-700 hover:bg-gray-800"
                 )}
-                aria-label={
-                    isOpen
-                        ? "Close chat"
-                        : "Open chat"
-                }
+                aria-label={isOpen ? "Close chat" : "Open chat"}
             >
+                {!isOpen && conversationId && (
+                    <>
+                        {/* Pulse */}
+                        <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-75" />
+
+                        {/* Badge */}
+                        {unread > 1 && (
+                            <span className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                            {unread}
+                            </span>
+                        )}
+                    </>
+                )}
+
                 {isOpen ? (
                     <X size={25} />
                 ) : (
-                    <MessageCircle
-                        size={25}
-                    />
+                    <MessageCircle size={25} />
                 )}
             </button>
         </>

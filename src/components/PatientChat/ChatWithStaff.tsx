@@ -1,32 +1,29 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { cn, timeAgo } from "../../utils/utils";
+import { useEffect, useRef, useState } from "react";
+import { useSocket } from "../../hooks/useSocket";
+import { cn, errorToast, timeAgo } from "../../utils/utils";
 import { Headset, Send, User } from "lucide-react";
-import type { ConversationMessage } from "../../types/conversation.type";
+import Button from "../ui/Button";
+import type { ConversationMessage, Message } from "../../types/conversation.type";
 import useGetPatientConversation from "../../hooks/conversation/use-get-patient-conversation.hook";
 import type { PaginationState } from "@tanstack/react-table";
-import type { Socket } from "socket.io-client";
 
-interface ChatWithStaffProps {
-    socket: Socket<any> | null;
-    messages: ConversationMessage[];
-    setMessages: Dispatch<SetStateAction<ConversationMessage[]>>;
-    handleReadAll: () => void;
-}
-
-export default function ChatWithStaff({
-    socket,
-    messages,
-    setMessages,
-    handleReadAll
- } : ChatWithStaffProps) {
+export default function ChatWithStaff() {
     const [input, setInput] = useState("");
 
-    const [pagination, setPagination] = useState<PaginationState>({
+    const [status, setStatus] = useState<"active" | "waiting" | "ended">("waiting");
+
+    const socket = useSocket({ namespace: "/conversation" });
+
+    const [messages, setMessages] = useState<ConversationMessage[]>([]);
+
+    const [pagination, setPagination] =
+        useState<PaginationState>({
             pageSize: 10,
             pageIndex: 0,
         });
 
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const [isFetchingMore, setIsFetchingMore] =
+        useState(false);
 
     const topRef = useRef<HTMLDivElement | null>(null);
 
@@ -102,6 +99,10 @@ export default function ChatWithStaff({
     useEffect(() => {
         if (!data) return;
 
+        if (data.conversation.status === "Active" && data.conversation.assignedStaffId !== null) {
+            setStatus("active");
+        }
+
         const newMessages: ConversationMessage[] =
             data.messages.map((message) => ({
                 message: message.message,
@@ -120,6 +121,65 @@ export default function ChatWithStaff({
 
         setIsFetchingMore(false);
     }, [data, pagination.pageIndex]);
+
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleConversationStatus = (
+            hasAvailable: boolean
+        ) => {
+            if (hasAvailable) {
+                setStatus("active");
+            } else {
+                errorToast(
+                    "Failed",
+                    "No Available Staff, Please try again later"
+                );
+            }
+        };
+
+        const handleNewMessage = (message: Message) => {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    message: message.message,
+                    createdAt: message.createdAt,
+                    senderType: message.senderType,
+                },
+            ]);
+        };
+
+        const handleEndConversation = () => {
+            setStatus("ended");
+        }
+
+        socket.on("conversation:status", handleConversationStatus);
+
+        socket.on("message:new", handleNewMessage);
+
+        socket.on("conversation:end", handleEndConversation);
+
+        return () => {
+            socket.off("conversation:status");
+
+            socket.off("conversation:end")
+
+            socket.off("message:new");
+        };
+    }, [socket]);
+
+    /*
+     * Start conversation
+     */
+    const handleStart = () => {
+        socket?.emit("conversation:start");
+    };
+
+    const endConversation = () => {
+        socket?.emit("conversation:end", data?.conversation.id);
+        setStatus("ended");
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -234,31 +294,58 @@ export default function ChatWithStaff({
 
             {/* Input */}
             <div className="border-t bg-white p-3">
-                <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onFocus={handleReadAll}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Ask anything..."
-                        className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-                    />
+                {status !== 'active' ? (
+                    <>
+                    <Button
+                        disabled={isLoading}
+                        className="w-full"
+                        onClick={handleStart}
+                    >
+                        Start Conversation
+                    </Button>
+                    {status === "ended" && (
+                        <p className="text-center text-sm text-gray-500 mt-1">
+                            Conversation has been ended
+                        </p>
+                    )}
+                    </>
+                ) : (
+                    <>
+                    <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) =>
+                                setInput(e.target.value)
+                            }
+                            onKeyDown={handleKeyDown}
+                            placeholder="Ask anything..."
+                            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                        />
 
+                        <button
+                            type="button"
+                            onClick={sendMessage}
+                            disabled={!input.trim()}
+                            className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-lg text-white transition",
+                                !input.trim()
+                                    ? "cursor-not-allowed bg-gray-300"
+                                    : "bg-green-600 hover:bg-green-700"
+                            )}
+                        >
+                            <Send size={17} />
+                        </button>
+                    </div>
                     <button
                         type="button"
-                        onClick={sendMessage}
-                        disabled={!input.trim()}
-                        className={cn(
-                            "flex h-9 w-9 items-center justify-center rounded-lg text-white transition",
-                            !input.trim()
-                                ? "cursor-not-allowed bg-gray-300"
-                                : "bg-green-600 hover:bg-green-700"
-                        )}
+                        onClick={endConversation}
+                        className="mt-3 mb-2 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
                     >
-                        <Send size={17} />
+                        End Conversation
                     </button>
-                </div>
+                    </>
+                )}
             </div>
         </>
     );
