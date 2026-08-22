@@ -46,7 +46,7 @@ export default function StaffChatWidget({
 
     const [pagination, setPagination] =
         useState<PaginationState>({
-            pageSize: 5,
+            pageSize: 20,
             pageIndex: 0,
         });
 
