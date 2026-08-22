@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import {
     MessageCircle,
     X,
-    Search,
     Headset,
 } from "lucide-react";
 import { cn } from "../../utils/utils";
 import { useSocket } from "../../hooks/useSocket";
 import useGetStaffConversations from "../../hooks/conversation/use-get-staff-conversations.hook";
 import StaffChatWidget from "./StaffChatWidget";
-import type { Conversation } from "../../types/conversation.type";
+import type { Conversation, Message } from "../../types/conversation.type";
+import useReadAllStaffMessages from "../../hooks/conversation/use-read-all-staff-messages.hook";
 
 export default function StaffChat() {
+    const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConversationId, setActiveConversationId] =
@@ -20,6 +21,8 @@ export default function StaffChat() {
     const socket = useSocket({
         namespace: "/conversation",
     });
+
+    const readAllMutation = useReadAllStaffMessages();
 
     const { data } =
         useGetStaffConversations();
@@ -31,6 +34,7 @@ export default function StaffChat() {
         if (!data) return;
 
         setConversations(data.conversations);
+        setUnreadCount(data.conversations.reduce((prev, curr) => prev + curr.unread, 0))
     }, [data]);
 
     /*
@@ -49,15 +53,53 @@ export default function StaffChat() {
             setIsOpen(true);
         };
 
+         const handleEndConversation = (
+            endedId?: number
+        ) => {
+            setConversations(prev => prev.filter(conversation => conversation.id !== endedId))
+        };
+
+        const handleNewMessage = (message: Message) => {
+            setUnreadCount(prev => prev + 1);
+            setConversations(prev => 
+                prev.map(conversation => {
+                    return conversation.id === message.conversationId ? {
+                        ...conversation,
+                        unread: conversation.unread + 1
+                    } : conversation
+                })
+        )
+        }
+
+        socket.on(
+            "conversation:end",
+            handleEndConversation
+        );
+
         socket.on(
             "conversation:new",
             handleNewConversation
+        );
+
+        socket.on(
+            "message:new",
+            handleNewMessage
         );
 
         return () => {
             socket.off(
                 "conversation:new",
                 handleNewConversation
+            );
+
+            socket.off(
+                "conversation:end",
+                handleEndConversation
+            );
+
+            socket.off(
+                "message:new",
+                handleNewMessage
             );
         };
     }, [socket]);
@@ -85,6 +127,16 @@ export default function StaffChat() {
     const toggleChat = () => {
         setIsOpen((prev) => !prev);
     };
+
+    const handleActiveConversation = (id: number) => {
+        setActiveConversationId(id);
+        readAllMutation.mutate(id);
+        setConversations(prev => 
+            prev.map(conversation => {
+                return conversation.id === id ? { ...conversation, unread: 0 } : conversation 
+            })
+        )
+    }
 
     return (
         <>
@@ -133,15 +185,13 @@ export default function StaffChat() {
                                                 ? `${patient.firstname} ${patient.lastname}`
                                                 : "Patient";
 
+                                        const email = patient.email;
+
                                         return (
                                             <button
                                                 key={conversation.id}
                                                 type="button"
-                                                onClick={() =>
-                                                    setActiveConversationId(
-                                                        conversation.id
-                                                    )
-                                                }
+                                                onClick={() => handleActiveConversation(conversation.id)}
                                                 className={cn(
                                                     "flex w-full items-center gap-3 border-b border-gray-100 px-4 py-3 text-left transition",
                                                     isActive
@@ -179,11 +229,17 @@ export default function StaffChat() {
                                                             }
                                                         </p>
 
-                                                        <span className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
+                                                        {conversation.unread > 0 && (
+                                                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                                                            {conversation.unread > 99
+                                                                ? "99+"
+                                                                : conversation.unread}
+                                                        </span>
+                                                    )}
                                                     </div>
 
                                                     <p className="mt-0.5 truncate text-xs text-gray-400">
-                                                        Active conversation
+                                                    {email}
                                                     </p>
                                                 </div>
                                             </button>
@@ -263,6 +319,15 @@ export default function StaffChat() {
                         : "Open messages"
                 }
             >
+                {/* Unread Badge */}
+                {!isOpen && unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
+                        {unreadCount > 99
+                            ? "99+"
+                            : unreadCount}
+                    </span>
+                )}
+
                 {isOpen ? (
                     <X size={24} />
                 ) : (

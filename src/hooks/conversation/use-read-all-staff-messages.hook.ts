@@ -6,8 +6,8 @@ const readAllMessages = (id: number) =>
         method: "POST",
     })
 
-export default function useReadAllStaffMessages (id: number) {
+export default function useReadAllStaffMessages () {
     return useMutation({
-        mutationFn: () => readAllMessages(id),
+        mutationFn: (id: number) => readAllMessages(id),
     })
 }

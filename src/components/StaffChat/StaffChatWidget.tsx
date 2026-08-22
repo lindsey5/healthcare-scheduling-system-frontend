@@ -22,8 +22,6 @@ import type {
 import { cn, timeAgo } from "../../utils/utils";
 
 import useGetStaffConversation from "../../hooks/conversation/use-get-staff-conversation.hook";
-import useGetStaffUnreadMessages from "../../hooks/conversation/use-get-staff-unread-messages.hook";
-import useReadAllStaffMessages from "../../hooks/conversation/use-read-all-staff-messages.hook";
 
 interface StaffChatWidgetProps {
     socket: Socket<any> | null;
@@ -86,21 +84,6 @@ export default function StaffChatWidget({
     );
 
     /*
-     * Unread messages.
-     */
-    const {
-        data: unreadMessages,
-    } =
-        useGetStaffUnreadMessages(
-            conversationId
-        );
-
-    const readAllMutation =
-        useReadAllStaffMessages(
-            conversationId
-        );
-
-    /*
      * More messages?
      */
     const hasMore = useMemo(() => {
@@ -128,19 +111,6 @@ export default function StaffChatWidget({
     const patientEmail =
         patient?.email ??
         "Patient conversation";
-
-    /*
-     * Mark unread messages as read
-     * when conversation is opened.
-     */
-    useEffect(() => {
-        if (
-            unreadMessages &&
-            unreadMessages.unread > 0
-        ) {
-            readAllMutation.mutate();
-        }
-    }, [conversationId]);
 
     /*
      * API messages.
@@ -330,29 +300,6 @@ export default function StaffChatWidget({
                 ...prev,
                 newMessage,
             ]);
-
-            /*
-             * Automatically mark as read
-             * because this conversation is
-             * currently open.
-             */
-            readAllMutation.mutate();
-        };
-
-        const handleEndConversation = (
-            endedId?: number
-        ) => {
-            if (
-                endedId !== undefined &&
-                endedId !==
-                    conversationId
-            ) {
-                return;
-            }
-
-            handleRemove(
-                conversationId
-            );
         };
 
         socket.on(
@@ -360,20 +307,10 @@ export default function StaffChatWidget({
             handleNewMessage
         );
 
-        socket.on(
-            "conversation:end",
-            handleEndConversation
-        );
-
         return () => {
             socket.off(
                 "message:new",
                 handleNewMessage
-            );
-
-            socket.off(
-                "conversation:end",
-                handleEndConversation
             );
         };
     }, [
