@@ -9,7 +9,6 @@ import {
     Headset,
     Send,
     X,
-    MoreVertical,
 } from "lucide-react";
 
 import type { Socket } from "socket.io-client";
@@ -480,15 +479,6 @@ export default function StaffChatWidget({
                         </p>
                     </div>
                 </div>
-
-                <button
-                    type="button"
-                    className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                >
-                    <MoreVertical
-                        size={19}
-                    />
-                </button>
             </div>
 
             {/* Active status */}
