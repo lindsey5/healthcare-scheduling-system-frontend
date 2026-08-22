@@ -29,12 +29,14 @@ interface StaffChatWidgetProps {
     handleRemove: (
         conversationId: number
     ) => void;
+    handleReadAll: (id: number) => void;
 }
 
 export default function StaffChatWidget({
     socket,
     conversationId,
     handleRemove,
+    handleReadAll
 }: StaffChatWidgetProps) {
     const [input, setInput] = useState("");
 
@@ -550,6 +552,7 @@ export default function StaffChatWidget({
                         onKeyDown={
                             handleKeyDown
                         }
+                        onFocus={() => handleReadAll(conversationId)}
                         placeholder="Type a message..."
                         className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                     />

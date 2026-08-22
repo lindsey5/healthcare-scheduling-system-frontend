@@ -130,6 +130,10 @@ export default function StaffChat() {
 
     const handleActiveConversation = (id: number) => {
         setActiveConversationId(id);
+        handleReadAll(id);
+    }
+
+    const handleReadAll = (id: number) => {
         readAllMutation.mutate(id);
         setConversations(prev => 
             prev.map(conversation => {
@@ -285,6 +289,7 @@ export default function StaffChat() {
                                 handleRemove={
                                     handleRemoveConversation
                                 }
+                                handleReadAll={handleReadAll}
                             />
                         ) : (
                             <div className="flex h-full flex-col items-center justify-center bg-gray-50 px-6 text-center">
