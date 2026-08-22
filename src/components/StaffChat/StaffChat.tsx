@@ -136,6 +136,12 @@ export default function StaffChat() {
                 return conversation.id === id ? { ...conversation, unread: 0 } : conversation 
             })
         )
+
+        const conversation = conversations.find(conversation => conversation.id === id);
+
+        if(!conversation) return;
+
+        setUnreadCount(prev => prev - conversation.unread);
     }
 
     return (
