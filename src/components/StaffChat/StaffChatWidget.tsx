@@ -36,7 +36,7 @@ export default function StaffChatWidget({
     socket,
     conversationId,
     handleRemove,
-    handleReadAll
+    handleReadAll,
 }: StaffChatWidgetProps) {
     const [input, setInput] = useState("");
 
@@ -46,7 +46,7 @@ export default function StaffChatWidget({
 
     const [pagination, setPagination] =
         useState<PaginationState>({
-            pageSize: 20,
+            pageSize: 5,
             pageIndex: 0,
         });
 
@@ -67,6 +67,16 @@ export default function StaffChatWidget({
 
     const shouldScrollToBottom =
         useRef(true);
+
+    /*
+     * Keep track of the currently selected
+     * conversation.
+     *
+     * This helps prevent an old request from
+     * affecting the newly selected conversation.
+     */
+    const currentConversationIdRef =
+        useRef(conversationId);
 
     /*
      * Get conversation.
@@ -115,10 +125,56 @@ export default function StaffChatWidget({
         "Patient conversation";
 
     /*
+     * Reset everything whenever the
+     * conversation changes.
+     */
+    useEffect(() => {
+        currentConversationIdRef.current =
+            conversationId;
+
+        // Clear old conversation messages
+        setMessages([]);
+
+        // Reset pagination
+        setPagination({
+            pageSize: 5,
+            pageIndex: 0,
+        });
+
+        // Reset loading states
+        setIsFetchingMore(false);
+
+        // Reset scroll-related refs
+        previousScrollHeightRef.current = 0;
+        isLoadingOlderRef.current = false;
+        shouldScrollToBottom.current = true;
+
+        // Clear input
+        setInput("");
+
+        // Reset scroll position
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = 0;
+        }
+    }, [conversationId]);
+
+    /*
      * API messages.
+     *
+     * Important:
+     * Only update messages if the response
+     * belongs to the currently selected
+     * conversation.
      */
     useEffect(() => {
         if (!data) return;
+
+        if (
+            currentConversationIdRef.current !==
+            conversationId
+        ) {
+            return;
+        }
 
         const newMessages: ConversationMessage[] =
             data.messages.map(
@@ -132,6 +188,11 @@ export default function StaffChatWidget({
                 })
             );
 
+        /*
+         * First page.
+         *
+         * Replace messages instead of appending.
+         */
         if (
             pagination.pageIndex === 0
         ) {
@@ -142,6 +203,12 @@ export default function StaffChatWidget({
                 newMessages
             );
         } else {
+            /*
+             * Older page.
+             *
+             * Add older messages to the
+             * beginning.
+             */
             shouldScrollToBottom.current =
                 false;
 
@@ -158,10 +225,12 @@ export default function StaffChatWidget({
     }, [
         data,
         pagination.pageIndex,
+        conversationId,
     ]);
 
     /*
-     * Scroll to bottom.
+     * Scroll to bottom when the first page
+     * or a new message is loaded.
      */
     useEffect(() => {
         if (
@@ -190,17 +259,26 @@ export default function StaffChatWidget({
 
         if (!container) return;
 
+        /*
+         * First page.
+         */
         if (
             pagination.pageIndex === 0
         ) {
             if (messages.length > 0) {
-                container.scrollTop =
-                    container.scrollHeight;
+                requestAnimationFrame(() => {
+                    container.scrollTop =
+                        container.scrollHeight;
+                });
             }
 
             return;
         }
 
+        /*
+         * Don't restore the position while
+         * the older messages are still loading.
+         */
         if (isFetchingMore) return;
 
         const previousHeight =
@@ -217,6 +295,9 @@ export default function StaffChatWidget({
             newHeight -
             previousHeight;
 
+        /*
+         * Preserve the user's position.
+         */
         container.scrollTop =
             difference;
 
@@ -237,6 +318,10 @@ export default function StaffChatWidget({
 
         if (!container) return;
 
+        /*
+         * Only load older messages when
+         * the user reaches the top.
+         */
         if (container.scrollTop > 5) {
             return;
         }
@@ -259,6 +344,10 @@ export default function StaffChatWidget({
         shouldScrollToBottom.current =
             false;
 
+        /*
+         * Save current height before
+         * loading older messages.
+         */
         previousScrollHeightRef.current =
             container.scrollHeight;
 
@@ -278,8 +367,23 @@ export default function StaffChatWidget({
         const handleNewMessage = (
             message: Message
         ) => {
+            /*
+             * Ignore messages belonging
+             * to another conversation.
+             */
             if (
                 message.conversationId !==
+                conversationId
+            ) {
+                return;
+            }
+
+            /*
+             * Make sure this is still
+             * the active conversation.
+             */
+            if (
+                currentConversationIdRef.current !==
                 conversationId
             ) {
                 return;
@@ -318,7 +422,6 @@ export default function StaffChatWidget({
     }, [
         socket,
         conversationId,
-        handleRemove,
     ]);
 
     /*
@@ -517,16 +620,20 @@ export default function StaffChatWidget({
                         </div>
 
                         <h3 className="text-sm font-semibold text-gray-700">
-                            Start a conversation
+                            {isLoading
+                                ? "Loading conversation..."
+                                : "Start a conversation"}
                         </h3>
 
-                        <p className="mt-1 max-w-xs text-xs text-gray-400">
-                            Send a message to{" "}
-                            <span className="font-medium text-gray-500">
-                                {patientName}
-                            </span>
-                            .
-                        </p>
+                        {!isLoading && (
+                            <p className="mt-1 max-w-xs text-xs text-gray-400">
+                                Send a message to{" "}
+                                <span className="font-medium text-gray-500">
+                                    {patientName}
+                                </span>
+                                .
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -545,14 +652,17 @@ export default function StaffChatWidget({
                         value={input}
                         onChange={(e) =>
                             setInput(
-                                e.target
-                                    .value
+                                e.target.value
                             )
                         }
                         onKeyDown={
                             handleKeyDown
                         }
-                        onFocus={() => handleReadAll(conversationId)}
+                        onFocus={() =>
+                            handleReadAll(
+                                conversationId
+                            )
+                        }
                         placeholder="Type a message..."
                         className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
                     />

@@ -16,7 +16,7 @@ const getStaffConversationById = (id: number, params: PaginationParams) =>
 
 export default function useGetStaffConversationById (id: number, params: PaginationParams) {
     return useQuery<GetStaffConversationByIdResponse, Error>({
-        queryKey: ['conversations/staff', id],
+        queryKey: ['conversations/staff', id, params],
         queryFn: () => getStaffConversationById(id, params),
         refetchOnWindowFocus: false
     })
