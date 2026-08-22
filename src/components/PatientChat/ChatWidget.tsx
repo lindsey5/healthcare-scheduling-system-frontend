@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "../../utils/utils";
 import {
     Bot,
@@ -9,13 +9,67 @@ import {
 import Chatbot from "./Chatbot";
 import ChatWithStaff from "./ChatWithStaff";
 import { useAuthStore } from "../../lib/store/authStore";
+import useGetUnreadMessages from "../../hooks/conversation/use-get-unread-messages.hook";
+import useReadAllMessages from "../../hooks/conversation/use-read-all-messages.hook";
+import { useSocket } from "../../hooks/useSocket";
+import type { ConversationMessage, Message } from "../../types/conversation.type";
 
 type ChatMode = "ai" | "staff";
 
 export default function ChatWidget() {
+    const socket = useSocket({ namespace: "/conversation" });
+    const [messages, setMessages] = useState<ConversationMessage[]>([]);
+    const [unread, setUnread] = useState(0);
     const { user } = useAuthStore();
     const [mode, setMode] = useState<ChatMode>("ai");
     const [isOpen, setIsOpen] = useState(false);
+    const { data } = useGetUnreadMessages();
+    const readAllMutation = useReadAllMessages();
+
+
+    const handleOpenChat = () => {
+        setIsOpen((prev) => !prev);
+    };
+
+    const handleStaffMode = async () => {
+        setMode("staff");
+
+        handleReadAll();
+    };
+
+    const handleReadAll = () => {
+         // Clear unread messages when switching to staff chat
+        setUnread(0);
+        readAllMutation.mutateAsync()
+    }
+
+    useEffect(() => {
+        if(!data) return;
+
+        setUnread(data.unread);
+    }, [data]);
+
+        useEffect(() => {
+        if (!socket) return;
+
+        const handleNewMessage = (message: Message) => {
+            setUnread(prev => prev + 1);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    message: message.message,
+                    createdAt: message.createdAt,
+                    senderType: message.senderType,
+                },
+            ]);
+        };
+
+        socket.on("message:new", handleNewMessage);
+
+        return () => {
+            socket.off("message:new");
+        };
+    }, [socket]);
 
     return (
         <>
@@ -80,9 +134,9 @@ export default function ChatWidget() {
 
                         {user && (
                             <button
-                                onClick={() => setMode("staff")}
+                                onClick={handleStaffMode}
                                 className={cn(
-                                    "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
+                                    "relative flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
                                     mode === "staff"
                                         ? "bg-white text-green-600 shadow-sm"
                                         : "text-gray-500 hover:text-gray-700"
@@ -90,6 +144,13 @@ export default function ChatWidget() {
                             >
                                 <Headset size={16} />
                                 Staff
+
+                                {/* Staff unread badge */}
+                                {unread > 0 && (
+                                    <span className="absolute right-2 top-1 flex min-w-5 h-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                                        {unread > 99 ? "99+" : unread}
+                                    </span>
+                                )}
                             </button>
                         )}
                     </div>
@@ -100,14 +161,19 @@ export default function ChatWidget() {
                     {mode === "ai" ? (
                         <Chatbot />
                     ) : (
-                        <ChatWithStaff />
+                        <ChatWithStaff 
+                            messages={messages} 
+                            setMessages={setMessages} 
+                            socket={socket} 
+                            handleReadAll={handleReadAll}
+                        />
                     )}
                 </div>
             </div>
 
             {/* Floating Button */}
             <button
-                onClick={() => setIsOpen((prev) => !prev)}
+                onClick={handleOpenChat}
                 className={cn(
                     "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700",
                     isOpen && "bg-gray-700 hover:bg-gray-800"
@@ -117,7 +183,16 @@ export default function ChatWidget() {
                 {isOpen ? (
                     <X size={25} />
                 ) : (
-                    <MessageCircle size={25} />
+                    <>
+                        <MessageCircle size={25} />
+
+                        {/* Unread badge */}
+                        {unread > 0 && (
+                            <span className="absolute -right-1 -top-1 flex min-w-6 h-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-md">
+                                {unread > 99 ? "99+" : unread}
+                            </span>
+                        )}
+                    </>
                 )}
             </button>
         </>
