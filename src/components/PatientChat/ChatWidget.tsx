@@ -183,6 +183,11 @@ export default function ChatWidget() {
                 )}
                 aria-label={isOpen ? "Close chat" : "Open chat"}
             >
+                {/* Pulse Effect */}
+                {!isOpen && unread > 0 && (
+                    <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
+                )}
+
                 {isOpen ? (
                     <X size={25} />
                 ) : (

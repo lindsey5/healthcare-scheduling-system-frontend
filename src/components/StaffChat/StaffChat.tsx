@@ -324,26 +324,28 @@ export default function StaffChat() {
                         ? "bg-gray-700 hover:bg-gray-800"
                         : "bg-green-600 hover:bg-green-700"
                 )}
-                aria-label={
-                    isOpen
-                        ? "Close messages"
-                        : "Open messages"
-                }
+                aria-label={isOpen ? "Close messages" : "Open messages"}
             >
+                {/* Pulse Effect */}
+                {!isOpen && unreadCount > 0 && (
+                    <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
+                )}
+
                 {/* Unread Badge */}
                 {!isOpen && unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
-                        {unreadCount > 99
-                            ? "99+"
-                            : unreadCount}
+                    <span className="absolute -right-1 -top-1 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
+                        {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                 )}
 
-                {isOpen ? (
-                    <X size={24} />
-                ) : (
-                    <MessageCircle size={24} />
-                )}
+                {/* Icon */}
+                <span className="relative z-10">
+                    {isOpen ? (
+                        <X size={24} />
+                    ) : (
+                        <MessageCircle size={24} />
+                    )}
+                </span>
             </button>
         </>
     );
