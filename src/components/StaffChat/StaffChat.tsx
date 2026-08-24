@@ -54,9 +54,9 @@ export default function StaffChat() {
         };
 
          const handleEndConversation = (
-            endedId?: number
+            endedId: number
         ) => {
-            setConversations(prev => prev.filter(conversation => conversation.id !== endedId))
+            handleRemoveConversation(endedId);
         };
 
         const handleNewMessage = (message: Message) => {

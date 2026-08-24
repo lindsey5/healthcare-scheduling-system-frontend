@@ -167,6 +167,7 @@ export default function ChatWidget() {
                             setMessages={setMessages}
                             setUnread={setUnread} 
                             socket={socket}
+                            handleReadAll={handleReadAll}
                         
                         />
                     )}

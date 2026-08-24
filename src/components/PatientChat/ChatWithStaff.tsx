@@ -12,13 +12,15 @@ interface ChatWithStaffProps {
     setUnread: Dispatch<SetStateAction<number>>;
     messages: ConversationMessage[];
     setMessages: Dispatch<SetStateAction<ConversationMessage[]>>;
+    handleReadAll: () => void;
 }
 
 export default function ChatWithStaff({
     setUnread,
     socket,
     messages,
-    setMessages
+    setMessages,
+    handleReadAll
 } : ChatWithStaffProps) {
     const [input, setInput] = useState("");
 
@@ -202,6 +204,7 @@ export default function ChatWithStaff({
         if (!input.trim() || !data?.conversation) {
             return;
         }
+        handleReadAll();
 
         const message = input.trim();
 
@@ -322,6 +325,7 @@ export default function ChatWithStaff({
                     <>
                     <div className="flex items-center gap-2 rounded-xl border border-gray-500 px-3 py-2 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
                         <input
+                            onFocus={handleReadAll}
                             type="text"
                             value={input}
                             onChange={(e) =>
