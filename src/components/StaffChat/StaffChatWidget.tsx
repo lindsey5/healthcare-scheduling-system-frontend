@@ -71,9 +71,6 @@ export default function StaffChatWidget({
     /*
      * Keep track of the currently selected
      * conversation.
-     *
-     * This helps prevent an old request from
-     * affecting the newly selected conversation.
      */
     const currentConversationIdRef =
         useRef(conversationId);
@@ -161,7 +158,6 @@ export default function StaffChatWidget({
     /*
      * API messages.
      *
-     * Important:
      * Only update messages if the response
      * belongs to the currently selected
      * conversation.
@@ -277,7 +273,7 @@ export default function StaffChatWidget({
 
         /*
          * Don't restore the position while
-         * the older messages are still loading.
+         * older messages are loading.
          */
         if (isFetchingMore) return;
 
@@ -296,7 +292,7 @@ export default function StaffChatWidget({
             previousHeight;
 
         /*
-         * Preserve the user's position.
+         * Preserve user's position.
          */
         container.scrollTop =
             difference;
@@ -499,40 +495,49 @@ export default function StaffChatWidget({
     };
 
     return (
-        <div className="flex h-full min-w-0 flex-col bg-white">
-            {/* Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
-                <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-white">
+            {/* =========================
+                HEADER
+            ========================== */}
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 md:px-5">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
                     {/* Avatar */}
-                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
-                        <Headset size={20} />
+                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 sm:h-10 sm:w-10 md:h-11 md:w-11">
+                        <Headset
+                            size={18}
+                            className="sm:h-5 sm:w-5"
+                        />
 
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
+                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500 sm:h-3 sm:w-3" />
                     </div>
 
                     {/* Patient information */}
-                    <div className="min-w-0">
-                        <h2 className="truncate text-sm font-semibold text-gray-800">
+                    <div className="min-w-0 flex-1">
+                        <h2 className="truncate text-xs font-semibold text-gray-800 sm:text-sm">
                             {patientName}
                         </h2>
 
-                        <p className="truncate text-xs text-gray-400">
+                        <p className="truncate text-[10px] text-gray-400 sm:text-xs">
                             {patientEmail}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* Active status */}
-            <div className="flex shrink-0 items-center gap-2 border-b border-gray-100 px-5 py-2.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+            {/* =========================
+                ACTIVE STATUS
+            ========================== */}
+            <div className="flex shrink-0 items-center gap-1.5 border-b border-gray-100 px-3 py-2 sm:gap-2 sm:px-4 sm:py-2.5 md:px-5">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-500" />
 
-                <span className="text-[11px] font-medium text-gray-500">
+                <span className="text-[10px] font-medium text-gray-500 sm:text-[11px]">
                     Active conversation
                 </span>
             </div>
 
-            {/* Messages */}
+            {/* =========================
+                MESSAGES
+            ========================== */}
             <div
                 ref={
                     chatContainerRef
@@ -540,19 +545,20 @@ export default function StaffChatWidget({
                 onScroll={
                     handleScroll
                 }
-                className="min-h-0 flex-1 overflow-y-auto bg-gray-50 px-5 py-5"
+                className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-3 py-4 sm:px-4 sm:py-5 md:px-5"
             >
                 {messages.length >
                 0 ? (
                     <>
+                        {/* Loading older messages */}
                         {isFetchingMore && (
-                            <div className="mb-4 text-center text-[11px] text-gray-400">
+                            <div className="mb-3 text-center text-[10px] text-gray-400 sm:mb-4 sm:text-[11px]">
                                 Loading older
                                 messages...
                             </div>
                         )}
 
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {messages.map(
                                 (
                                     message,
@@ -566,7 +572,7 @@ export default function StaffChatWidget({
                                         <div
                                             key={`${message.createdAt}-${index}`}
                                             className={cn(
-                                                "flex",
+                                                "flex min-w-0",
                                                 isStaff
                                                     ? "justify-end"
                                                     : "justify-start"
@@ -574,15 +580,17 @@ export default function StaffChatWidget({
                                         >
                                             <div
                                                 className={cn(
-                                                    "max-w-[75%]",
+                                                    "flex min-w-0 flex-col",
                                                     isStaff
                                                         ? "items-end"
-                                                        : "items-start"
+                                                        : "items-start",
+                                                    "max-w-[88%] sm:max-w-[80%] md:max-w-[75%]"
                                                 )}
                                             >
+                                                {/* Message */}
                                                 <div
                                                     className={cn(
-                                                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                                                        "break-words rounded-2xl px-3 py-2 text-xs leading-relaxed sm:px-4 sm:py-2.5 sm:text-sm",
                                                         isStaff
                                                             ? "rounded-br-md bg-green-600 text-white"
                                                             : "rounded-bl-md border border-gray-200 bg-white text-gray-700"
@@ -593,9 +601,10 @@ export default function StaffChatWidget({
                                                     }
                                                 </div>
 
+                                                {/* Time */}
                                                 <p
                                                     className={cn(
-                                                        "mt-1 px-1 text-[10px] text-gray-400",
+                                                        "mt-1 px-1 text-[9px] text-gray-400 sm:text-[10px]",
                                                         isStaff &&
                                                             "text-right"
                                                     )}
@@ -612,21 +621,25 @@ export default function StaffChatWidget({
                         </div>
                     </>
                 ) : (
-                    <div className="flex h-full flex-col items-center justify-center text-center">
-                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600">
+                    /* =========================
+                       EMPTY STATE
+                    ========================== */
+                    <div className="flex h-full flex-col items-center justify-center px-4 text-center">
+                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 sm:mb-4 sm:h-14 sm:w-14">
                             <Headset
-                                size={24}
+                                size={22}
+                                className="sm:h-6 sm:w-6"
                             />
                         </div>
 
-                        <h3 className="text-sm font-semibold text-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-700 sm:text-sm">
                             {isLoading
                                 ? "Loading conversation..."
                                 : "Start a conversation"}
                         </h3>
 
                         {!isLoading && (
-                            <p className="mt-1 max-w-xs text-xs text-gray-400">
+                            <p className="mt-1 max-w-[250px] text-[10px] leading-relaxed text-gray-400 sm:max-w-xs sm:text-xs">
                                 Send a message to{" "}
                                 <span className="font-medium text-gray-500">
                                     {patientName}
@@ -637,6 +650,7 @@ export default function StaffChatWidget({
                     </div>
                 )}
 
+                {/* Scroll target */}
                 <div
                     ref={
                         messagesEndRef
@@ -644,9 +658,12 @@ export default function StaffChatWidget({
                 />
             </div>
 
-            {/* Input */}
-            <div className="shrink-0 border-t border-gray-200 bg-white p-4">
-                <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 transition focus-within:border-green-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-green-100">
+            {/* =========================
+                INPUT
+            ========================== */}
+            <div className="shrink-0 border-t border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4">
+                {/* Input container */}
+                <div className="flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 transition focus-within:border-green-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-green-100 sm:px-3">
                     <input
                         type="text"
                         value={input}
@@ -664,7 +681,7 @@ export default function StaffChatWidget({
                             )
                         }
                         placeholder="Type a message..."
-                        className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                        className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-gray-400 sm:text-sm"
                     />
 
                     <button
@@ -676,26 +693,32 @@ export default function StaffChatWidget({
                             !input.trim()
                         }
                         className={cn(
-                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition",
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition sm:h-9 sm:w-9",
                             input.trim()
                                 ? "bg-green-600 text-white hover:bg-green-700"
                                 : "cursor-not-allowed bg-gray-200 text-gray-400"
                         )}
                     >
                         <Send
-                            size={16}
+                            size={14}
+                            className="sm:h-4 sm:w-4"
                         />
                     </button>
                 </div>
 
+                {/* End conversation */}
                 <button
                     type="button"
                     onClick={
                         endConversation
                     }
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-red-500 transition hover:text-red-600"
+                    className="mt-1.5 flex min-h-[32px] w-full items-center justify-center gap-1.5 py-1.5 text-[10px] font-medium text-red-500 transition hover:text-red-600 sm:mt-2 sm:text-xs"
                 >
-                    <X size={13} />
+                    <X
+                        size={12}
+                        className="sm:h-[13px] sm:w-[13px]"
+                    />
+
                     End conversation
                 </button>
             </div>
