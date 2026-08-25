@@ -11,6 +11,7 @@ import Admins from "../pages/Admin/Admins/Admins";
 import Staffs from "../pages/Admin/Staffs/Staffs";
 import QrScanner from "../pages/QrScanner/QrScanner";
 import AdminProfile from "../pages/Admin/Profile/AdminProfile";
+import Messages from "../pages/Admin/Messages/Messages";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -57,6 +58,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'scan-qr',
                     element: <QrScanner />
+                },
+                {
+                    path: 'messages',
+                    element: <Messages />
                 },
                 {
                     path: 'profile',

@@ -10,6 +10,7 @@ import {
     LogOut,
     QrCode,
     X,
+    MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -54,6 +55,11 @@ const menuItems = [
         name: "Patients",
         icon: UserRound,
         path: "/admin/patients",
+    },
+    {
+        name: "Messages",
+        icon: MessageCircle,
+        path: "/admin/messages"
     },
     {
         name: "Profile",

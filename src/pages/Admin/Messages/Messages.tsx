@@ -1,5 +1,5 @@
 
-export default function Conversations () {
+export default function Messages () {
     return (
         <div>
             
