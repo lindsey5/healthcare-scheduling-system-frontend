@@ -11,6 +11,7 @@ import {
     QrCode,
     X,
     MessageCircle,
+    ClipboardCheck,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -60,6 +61,11 @@ const menuItems = [
         name: "Messages",
         icon: MessageCircle,
         path: "/admin/messages"
+    },
+    {
+        name: "Audit Logs",
+        icon: ClipboardCheck,
+        path: "/admin/audit-logs"
     },
     {
         name: "Profile",

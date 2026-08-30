@@ -12,6 +12,7 @@ import Staffs from "../pages/Admin/Staffs/Staffs";
 import QrScanner from "../pages/QrScanner/QrScanner";
 import AdminProfile from "../pages/Admin/Profile/AdminProfile";
 import Messages from "../pages/Admin/Messages/Messages";
+import Audits from "../pages/Admin/Audits/Audits";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -62,6 +63,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'messages',
                     element: <Messages />
+                },
+                {
+                    path: 'audit-logs',
+                    element: <Audits />
                 },
                 {
                     path: 'profile',
