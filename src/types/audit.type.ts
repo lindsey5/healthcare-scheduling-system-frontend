@@ -13,8 +13,8 @@ export interface Audit {
 
     severity: "INFO" | "WARNING" | "CRITICAL";
 
-    oldValues: object;
-    newValues: object;
+    oldValues: string;
+    newValues: string;
 
     ipAddress: string;
     userAgent: string;

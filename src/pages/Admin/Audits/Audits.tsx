@@ -9,6 +9,7 @@ import useGetAudits from "../../../hooks/audit/use-get-audits.hook";
 import type { Audit } from "../../../types/audit.type";
 import { SeverityChip } from "../../../components/ui/SeverityChip";
 import Dropdown from "../../../components/ui/Dropdown";
+import AuditModal from "./AuditModal";
 
 const columns : ColumnDef<Audit>[] = [
     {
@@ -60,6 +61,9 @@ const columns : ColumnDef<Audit>[] = [
 ]
 
 export default function Audits () {
+    const [audit, setAudit] = useState<Audit>();
+    const [showModal, setShowModal] = useState(false);
+
     const [userType, setUserType] = useState("");
     const [severity, setSeverity] = useState("");
     const [pagination, setPagination] = useState<PaginationState>({ pageSize: 50, pageIndex: 0 });
@@ -88,10 +92,25 @@ export default function Audits () {
         userType
     ])
 
-    const { data, isFetching } = useGetAudits(params)
+    const { data, isFetching } = useGetAudits(params);
+
+    const onRowClick = (row : Audit) => {
+        setAudit(row);
+        setShowModal(true);
+    }
+
+    const handleClose = () => {
+        setAudit(undefined);
+        setShowModal(false);
+    }
 
     return (
         <div className="p-6 flex-1 flex flex-col gap-10 overflow-auto">
+            <AuditModal 
+                close={handleClose}
+                show={showModal}
+                audit={audit}
+            />
             <h1 className="text-3xl font-bold text-[#1E3D15]">
                 Audit Logs
             </h1>
@@ -166,6 +185,7 @@ export default function Audits () {
                 total={data?.total || 0}
                 showPagination
                 noDataMessage="No Audit Logs Found"
+                onRowClick={onRowClick}
             />
         </div>
     )
