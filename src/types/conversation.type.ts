@@ -15,6 +15,8 @@ export interface Conversation {
     createdAt: string;
     patient: Patient;
     unread: number;
+    lastMessage: string;
+    lastMessageAt: string;
 }
 
 export interface Message {
