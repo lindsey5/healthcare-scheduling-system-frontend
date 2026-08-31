@@ -92,11 +92,13 @@ export default function Patients () {
         },
         {
             header: "Action",
+            meta: { align: 'center' },
             cell: ({ row }) => {
                 const patient = row.original;
 
                 return (
                     <Button
+                        variant={patient.isActive ? 'danger' : 'primary'}
                         onClick={() =>
                             patient.isActive
                                 ? handleDeactivate(patient.id)
