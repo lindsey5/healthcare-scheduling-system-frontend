@@ -6,27 +6,10 @@ import { useDebounce } from "../../hooks/useDebouce";
 import useGetPatients from "../../hooks/patient/use-get-patients.hook";
 import CustomizedTable from "../../components/ui/Table";
 import type { Patient } from "../../types/patient.type";
-import { formatDate } from "../../utils/utils";
-
-const columns : ColumnDef<Patient>[] = [
-    {
-        header: "First Name",
-        accessorKey: "firstname",
-    },
-    {
-        header: "Last Name",
-        accessorKey: "lastname"
-    },
-    {
-        header: "Email",
-        accessorKey: "email"
-    },
-    {
-        header: "Registered At",
-        accessorKey: "createdAt",
-        cell: info => formatDate(info.getValue() as string)
-    }
-]
+import { cn, formatDate, promiseToast } from "../../utils/utils";
+import useActivatePatient from "../../hooks/patient-notification/use-activate-patient.hook";
+import useDeactivatePatient from "../../hooks/patient-notification/use-deactivate-patient.hook";
+import Button from "../../components/ui/Button";
 
 export default function Patients () {
     const [pagination, setPagination] = useState<PaginationState>({ pageSize: 50, pageIndex: 0 });
@@ -45,6 +28,87 @@ export default function Patients () {
     ])
 
     const { data, isFetching } = useGetPatients(params);
+
+    const activateMutation = useActivatePatient();
+    const deactivateMutation = useDeactivatePatient();
+
+    const handleActivate = (id: number) => {
+        const isConfirm = confirm(
+            "Are you sure you want to activate this patient?"
+        );
+
+        if (!isConfirm) return;
+
+        promiseToast(activateMutation.mutateAsync(id));
+    };
+
+    const handleDeactivate = (id: number) => {
+        const isConfirm = confirm(
+            "Are you sure you want to deactivate this patient?"
+        );
+
+        if (!isConfirm) return;
+
+        promiseToast(deactivateMutation.mutateAsync(id));
+    };
+
+    const columns : ColumnDef<Patient>[] = useMemo(() => [
+        {
+            header: "First Name",
+            accessorKey: "firstname",
+        },
+        {
+            header: "Last Name",
+            accessorKey: "lastname"
+        },
+        {
+            header: "Email",
+            accessorKey: "email"
+        },
+        {
+            header: "Status",
+            accessorKey: "isActive",
+            cell: info => {
+                const isActive = info.getValue<boolean>();
+
+                return (
+                    <span
+                        className={cn(
+                            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+                            isActive
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                        )}
+                    >
+                        {isActive ? "Active" : "Deactivated"}
+                    </span>
+                );
+            },
+        },
+        {
+            header: "Registered At",
+            accessorKey: "createdAt",
+            cell: info => formatDate(info.getValue() as string)
+        },
+        {
+            header: "Action",
+            cell: ({ row }) => {
+                const patient = row.original;
+
+                return (
+                    <Button
+                        onClick={() =>
+                            patient.isActive
+                                ? handleDeactivate(patient.id)
+                                : handleActivate(patient.id)
+                        }
+                    >
+                        {patient.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                );
+            },
+        },
+    ], [])
 
     return (
         <div className="p-6 space-y-5 overflow-auto">

@@ -4,5 +4,6 @@ export interface Patient {
     lastname: string;
     email: string;
     isVerified: boolean;
+    isActive: boolean;
     createdAt: Date;
 }
