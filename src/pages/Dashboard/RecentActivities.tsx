@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import useGetRecentAudits from "../../hooks/audit/use-get-recent-audits.hook";
 import { cn, formatDate } from "../../utils/utils";
 import Card from "../../components/ui/Card";
