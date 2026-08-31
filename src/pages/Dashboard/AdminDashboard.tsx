@@ -3,8 +3,9 @@ import AvailableServicesCard from "../../components/shared/AvailableServicesCard
 import { CancelledAppointments, CompletedAppointments, PendingAppointments, TodayAppointments, TotalDoctors, TotalPatients, UpcomingAppointments } from "./DashboardCards";
 import MonthlyAppointments from "./MonthlyAppointments";
 import { useAuthStore } from "../../lib/store/authStore";
+import RecentActivities from "./RecentActivities";
 
-export default function Dashboard () {
+export default function AdminDashboard () {
     const navigate = useNavigate();
     const { user } = useAuthStore();
 
@@ -23,7 +24,12 @@ export default function Dashboard () {
                 <CompletedAppointments />
                 <CancelledAppointments />
             </div>
-            <MonthlyAppointments />
+            <div className="flex flex-col md:flex-row gap-5">
+                <div className="flex-2">
+                    <MonthlyAppointments />
+                </div>
+                <RecentActivities />
+            </div>
         </main>
     )
 }

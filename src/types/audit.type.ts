@@ -22,6 +22,6 @@ export interface Audit {
     staff: Staff;
     admin: Admin;
 
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }

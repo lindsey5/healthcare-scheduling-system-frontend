@@ -3,7 +3,7 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import Appointments from "../pages/Appointments/Appointments";
 import Services from "../pages/Services/Services";
 import Doctors from "../pages/Doctors/Doctors";
-import Dashboard from "../pages/Dashboard/Dashboard";
+import StaffDashboard from "../pages/Dashboard/StaffDashboard";
 import StaffLayout from "../pages/Staff/StaffLayout";
 import QrScanner from "../pages/QrScanner/QrScanner";
 import StaffProfile from "../pages/Staff/Profile/StaffProfile";
@@ -18,7 +18,7 @@ export const StaffRoutes: RouteObject = {
     children: [
         {
             index: true,
-            Component: () => <Dashboard />
+            Component: () => <StaffDashboard />
         },
         {
             path: 'appointments',
