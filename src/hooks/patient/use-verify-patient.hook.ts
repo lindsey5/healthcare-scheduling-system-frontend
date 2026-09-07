@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiAxios } from "../../api/apiAxios";
 import { useAuthStore } from "../../lib/store/authStore";
-import type { User } from "../../types/auth.type";
+import type { User } from "../../types/user.type";
 
 type VerifyPatientPayload = {
     email: string;

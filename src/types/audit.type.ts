@@ -5,7 +5,7 @@ export interface Audit {
     id: number;
 
     userId: number;
-    userType: "Admin" | "Staff";
+    userType: "admin" | "staff";
 
     action: string;
     entity: string;

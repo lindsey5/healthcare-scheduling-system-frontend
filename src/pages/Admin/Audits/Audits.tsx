@@ -15,9 +15,9 @@ const columns : ColumnDef<Audit>[] = [
     {
         header: "User",
         cell: ({ row }) => {
-            const firstname = row.original.userType === 'Admin' ? row.original.admin.firstname : row.original.staff.firstname;
-            const lastname = row.original.userType === 'Admin' ? row.original.admin.lastname : row.original.staff.lastname;
-            const email = row.original.userType === 'Admin' ? row.original.admin.email : row.original.staff.email;
+            const firstname = row.original.userType === 'admin' ? row.original.admin.firstname : row.original.staff.firstname;
+            const lastname = row.original.userType === 'admin' ? row.original.admin.lastname : row.original.staff.lastname;
+            const email = row.original.userType === 'admin' ? row.original.admin.email : row.original.staff.email;
 
             return (
                 <div>
