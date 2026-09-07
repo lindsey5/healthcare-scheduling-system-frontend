@@ -58,7 +58,7 @@ export default function RecentActivities() {
 
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm font-medium text-gray-900">
-                                        {audit.entity} has been {audit.action}D
+                                        {audit.entity} has been {audit.action}D by {audit.userType === 'admin' ? `${audit.admin.firstname} ${audit.admin.lastname}` : `${audit.staff.firstname} ${audit.staff.lastname}`}
                                     </p>
 
                                     <p className="mt-1 text-xs text-gray-400">
