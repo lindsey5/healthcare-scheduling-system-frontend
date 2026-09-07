@@ -5,6 +5,7 @@ import { useAuthStore } from "../../lib/store/authStore";
 import { Navigate } from "react-router-dom";
 import Services from "../../components/shared/Services";
 import ChatWidget from "../../components/PatientChat/ChatWidget";
+import Contact from "./Contact";
 
 export default function Home () {
     const { isAuthenticated, user } = useAuthStore();
@@ -22,6 +23,7 @@ export default function Home () {
                 <Services />
             </div>
             <ChatWidget />
+            <Contact />
         </div>
     )
 }
