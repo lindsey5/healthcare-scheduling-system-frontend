@@ -68,6 +68,11 @@ const menuItems = [
         path: "/admin/audit-logs"
     },
     {
+        name: "My Logs",
+        icon: ClipboardCheck,
+        path: "/admin/my-logs"
+    },
+    {
         name: "Profile",
         icon: UserRound,
         path: "/admin/profile",

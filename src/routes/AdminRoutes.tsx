@@ -13,6 +13,7 @@ import AdminProfile from "../pages/Admin/Profile/AdminProfile";
 import Messages from "../pages/Admin/Messages/Messages";
 import Audits from "../pages/Admin/Audits/Audits";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard";
+import MyAudits from "../pages/MyAudits/MyAudits";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -67,6 +68,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: 'audit-logs',
                     element: <Audits />
+                },
+                {
+                    path: 'my-logs',
+                    element: <MyAudits />
                 },
                 {
                     path: 'profile',

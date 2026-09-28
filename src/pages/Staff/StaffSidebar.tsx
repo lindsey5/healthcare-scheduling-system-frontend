@@ -8,6 +8,7 @@ import {
     QrCode,
     X,
     UserRound,
+    ClipboardCheck,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -37,6 +38,11 @@ const menuItems = [
         name: "Doctors",
         icon: BriefcaseMedical,
         path: "/staff/doctors",
+    },
+    {
+        name: "My Logs",
+        icon: ClipboardCheck,
+        path: "/staff/my-logs"
     },
     {
         name: "Profile",
