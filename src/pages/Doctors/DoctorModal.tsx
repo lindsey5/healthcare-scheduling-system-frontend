@@ -300,7 +300,7 @@ export default function DoctorModal({
                 show={showAddService}
                 handleAdd={handleAddService}
                 doctorServices={doctorServices}
-                dayOfWeek={scheduleDays}
+                schedules={watch('schedules')}
             />
 
             <Card className="relative space-y-5 max-h-[80%] overflow-auto">

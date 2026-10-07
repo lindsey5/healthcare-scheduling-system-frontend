@@ -9,6 +9,7 @@ interface AvailableTimeSlotDropdownProps {
     appointmentDate?: string;
     value?: string;
     serviceId: number;
+    doctorId: number;
     label?: string;
 }
 
@@ -18,6 +19,7 @@ export default function AvailableTimeSlotDropdown ({
     disabled,
     appointmentDate,
     serviceId,
+    doctorId,
     value,
     label
 } : AvailableTimeSlotDropdownProps) {
@@ -32,7 +34,7 @@ export default function AvailableTimeSlotDropdown ({
         )
     };
 
-    const { data } = useGetgetAvailableTimeSlot({ appointmentDate, serviceId });
+    const { data } = useGetgetAvailableTimeSlot({ appointmentDate, serviceId, doctorId });
 
     return (
         <Dropdown 

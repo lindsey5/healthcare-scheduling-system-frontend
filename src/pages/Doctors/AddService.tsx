@@ -1,29 +1,50 @@
 import { useState } from "react";
-import useGetServices from "../../hooks/service/use-get-services.hook";
+
 import type { Service } from "../../types/service.type";
+import type { ScheduleFormData } from "../../schemas/doctorSchema";
+
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Dropdown from "../../components/ui/Dropdown";
 import Modal from "../../components/ui/Modal";
 
+import useGetAvailableServices from "../../hooks/doctor/use-get-available-services.hook";
+
 interface AddServiceProps {
     show: boolean;
     close: () => void;
-    handleAdd: (service : Service | null) => void;
+    handleAdd: (service: Service | null) => void;
     doctorServices: number[];
-    dayOfWeek: string[];
+    schedules: ScheduleFormData[];
 }
 
-export default function AddService ({
+export default function AddService({
     show,
     handleAdd,
     close,
     doctorServices,
-    dayOfWeek
-} : AddServiceProps) {
-    const [selectedService, setSelectedService] = useState<Service | null>(null);
+    schedules,
+}: AddServiceProps) {
+    const [selectedService, setSelectedService] =
+        useState<Service | null>(null);
 
-    const { data } = useGetServices(dayOfWeek.join(','));
+    const { data, isLoading } = useGetAvailableServices({
+        schedules: schedules.map((schedule) => ({
+            day: schedule.day,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+        })),
+    });
+
+    const availableServices =
+        data?.services
+            .filter(
+                (service) =>
+                    !doctorServices.includes(service.id)
+            )
+            .sort((a, b) =>
+                a.serviceName.localeCompare(b.serviceName)
+            ) ?? [];
 
     return (
         <Modal
@@ -34,23 +55,45 @@ export default function AddService ({
                 <h1 className="text-xl font-bold text-[#1E3D15]">
                     Add Service
                 </h1>
-                <Dropdown 
+
+                <Dropdown
                     className="text-sm"
                     label="Select Service"
-                    options={data?.services
-                        .filter(service => !doctorServices.includes(service.id))
-                        .sort((a, b) => a.serviceName.localeCompare(b.serviceName))
-                        .map(service => ({ label: service.serviceName, value: service.id })) || []
+                    placeholder={
+                        isLoading
+                            ? "Loading services..."
+                            : "Select Service"
                     }
-                    onChange={(e) => setSelectedService(data?.services.find(service => service.id === Number(e.target.value)) || null)}
-                />
-                <Button
-                    className="text-sm px-4 py-2"
-                    onClick={() => handleAdd(selectedService)}
-                    disabled={!selectedService}
-                >Add Service</Button>
-            </Card>
+                    disabled={isLoading}
+                    options={availableServices.map(
+                        (service) => ({
+                            label: service.serviceName,
+                            value: service.id,
+                        })
+                    )}
+                    onChange={(e) => {
+                        const service =
+                            data?.services.find(
+                                (service) =>
+                                    service.id ===
+                                    Number(e.target.value)
+                            ) ?? null;
 
+                        setSelectedService(service);
+                    }}
+                />
+
+                <Button
+                    type="button"
+                    className="text-sm px-4 py-2"
+                    onClick={() =>
+                        handleAdd(selectedService)
+                    }
+                    disabled={!selectedService}
+                >
+                    Add Service
+                </Button>
+            </Card>
         </Modal>
-    )
+    );
 }

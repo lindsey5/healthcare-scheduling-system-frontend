@@ -8,15 +8,13 @@ type GetAvailableTimeSlotResponse = {
 type GetAvailableTimeSlotParams = {
     appointmentDate : string;
     serviceId: number;
+    doctorId: number;
 }
 
-const getAvailableTimeSlot = ({ appointmentDate, serviceId } : GetAvailableTimeSlotParams) => 
+const getAvailableTimeSlot = (params : GetAvailableTimeSlotParams) => 
     apiAxios<GetAvailableTimeSlotResponse>(`/api/appointments/available-time`, {
         method: "GET",
-        params: {
-            appointmentDate,
-            serviceId
-        }
+        params
     })
 
 export default function useGetgetAvailableTimeSlot (params : GetAvailableTimeSlotParams) {

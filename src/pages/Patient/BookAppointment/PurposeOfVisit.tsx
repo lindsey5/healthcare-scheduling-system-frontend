@@ -267,6 +267,7 @@ export default function PurposeOfVisit({
                             )
                         }
                         serviceId={watch("serviceId")}
+                        doctorId={watch('doctorId')}
                         disabled={
                             !watch("serviceId")
                         }
