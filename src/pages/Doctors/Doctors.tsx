@@ -28,7 +28,7 @@ const columns = ({
     },
     {
         header: "Assigned Services",
-        cell: ({ row }) => row.original.doctorServices.length
+        cell: ({ row }) => row.original.doctorServices?.length ?? 0
     },
     {
         header: "Action",

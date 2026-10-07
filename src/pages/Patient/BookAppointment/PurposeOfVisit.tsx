@@ -6,7 +6,12 @@ import AvailableTimeSlotDropdown from "../../../components/shared/AvailableTimeS
 import Card from "../../../components/ui/Card";
 import Textarea from "../../../components/ui/Textarea";
 import type { AppointmentFormData } from "../../../schemas/appointmentSchema";
-import type { FieldErrors, UseFormHandleSubmit, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import type {
+    FieldErrors,
+    UseFormHandleSubmit,
+    UseFormSetValue,
+    UseFormWatch,
+} from "react-hook-form";
 import Button from "../../../components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
@@ -23,20 +28,25 @@ interface PurposeOfVisitProps {
     setSelectedService: Dispatch<SetStateAction<Service | null>>;
 }
 
-export default function PurposeOfVisit ({ 
+export default function PurposeOfVisit({
     next,
     setValue,
     errors,
     watch,
     handleSubmit,
     setSelectedDoctor,
-    setSelectedService
-} : PurposeOfVisitProps) {
+    setSelectedService,
+}: PurposeOfVisitProps) {
+    const appointmentDate = watch("appointmentDate");
 
+    // Get the day from the selected appointment date
+    const appointmentDay = appointmentDate
+        ? getDayOfWeek(appointmentDate)
+        : undefined;
 
     const onSubmit = () => {
         next();
-    }
+    };
 
     return (
         <Card className="p-6 space-y-6">
@@ -46,83 +56,124 @@ export default function PurposeOfVisit ({
                 </h1>
 
                 <p className="text-sm text-gray-500 mt-1">
-                    Please select your preferred healthcare service, doctor, appointment schedule, and briefly describe your concern.
+                    Please select your preferred healthcare service,
+                    doctor, appointment schedule, and briefly describe
+                    your concern.
                 </p>
             </div>
+
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-5"
             >
-                <Textfield 
+                {/* Appointment Date */}
+                <Textfield
                     label="Appointment Date *"
                     type="date"
                     className="bg-white"
                     onChange={(e) => {
-                        setValue('appointmentDate', e.target.value);
-                        setValue('serviceId', 0);
-                        setValue('doctorId', 0);
-                        setValue('appointmentTime', "");
+                        const date = e.target.value;
+
+                        setValue("appointmentDate", date, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                        });
+
+                        // Reset dependent fields
+                        setValue("serviceId", 0);
+                        setValue("doctorId", 0);
+                        setValue("appointmentTime", "");
+
                         setSelectedDoctor(null);
                         setSelectedService(null);
                     }}
-                    value={watch('appointmentDate')}
+                    value={appointmentDate}
                     min={new Date().toLocaleDateString("en-CA", {
                         timeZone: "Asia/Manila",
                     })}
                     error={errors.appointmentDate?.message}
                 />
-                <ServicesDropdown 
+
+                {/* Service */}
+                <ServicesDropdown
                     setSelectedService={setSelectedService}
                     onChange={(e) => {
-                        setValue('serviceId', Number(e.target.value));
-                        setValue('doctorId', 0);
+                        setValue(
+                            "serviceId",
+                            Number(e.target.value)
+                        );
+
+                        setValue("doctorId", 0);
+                        setValue("appointmentTime", "");
+
                         setSelectedDoctor(null);
-                        setValue('appointmentTime', "");
                     }}
                     error={errors.serviceId?.message}
-                    disabled={!watch('appointmentDate')}
-                    value={watch('serviceId') || undefined}
-                    dayOfWeek={getDayOfWeek(watch('appointmentDate'))}
+                    disabled={!appointmentDate}
+                    value={watch("serviceId") || undefined}
+                    dayOfWeek={appointmentDay}
                 />
+
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {/* Doctor */}
                     <DoctorsDropdown
                         serviceId={watch("serviceId")}
+                        dayOfWeek={appointmentDay}
                         disabled={!watch("serviceId")}
-                        value={watch("doctorId") || undefined}
+                        value={
+                            watch("doctorId") || undefined
+                        }
                         error={errors.doctorId?.message}
-                        onChange={(e) => setValue("doctorId", Number(e.target.value))}
+                        onChange={(e) =>
+                            setValue(
+                                "doctorId",
+                                Number(e.target.value)
+                            )
+                        }
                         setSelectedDoctor={setSelectedDoctor}
                     />
 
+                    {/* Time */}
                     <AvailableTimeSlotDropdown
-                        appointmentDate={watch("appointmentDate")}
+                        appointmentDate={appointmentDate}
                         error={errors.appointmentTime?.message}
-                        value={watch('appointmentTime')}
-                        onChange={(e) => setValue('appointmentTime', e.target.value)}
-                        serviceId={watch('serviceId')}
+                        value={watch("appointmentTime")}
+                        onChange={(e) =>
+                            setValue(
+                                "appointmentTime",
+                                e.target.value
+                            )
+                        }
+                        serviceId={watch("serviceId")}
                         disabled={!watch("serviceId")}
                     />
                 </div>
 
-                <Textarea 
+                {/* Purpose */}
+                <Textarea
                     label="Purpose of Visit *"
                     rows={5}
                     error={errors.purposeOfVisit?.message}
-                    value={watch('purposeOfVisit')}
-                    onChange={(e) => setValue("purposeOfVisit", e.target.value)}
+                    value={watch("purposeOfVisit")}
+                    onChange={(e) =>
+                        setValue(
+                            "purposeOfVisit",
+                            e.target.value
+                        )
+                    }
                     placeholder="Briefly describe your illness, concern, or reason for your appointment"
                 />
+
                 <div className="flex justify-end">
                     <Button
                         className="px-6 flex gap-3 items-center"
                         type="submit"
                     >
                         Next
-                        <ArrowRight size={20}/> 
+                        <ArrowRight size={20} />
                     </Button>
                 </div>
             </form>
-        
         </Card>
-    )
+    );
 }

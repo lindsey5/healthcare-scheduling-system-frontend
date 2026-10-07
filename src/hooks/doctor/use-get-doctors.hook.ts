@@ -9,6 +9,7 @@ type GetDoctorsResponse = {
 type GetDoctorsParams = {
     serviceId?: number;
     search?: string;
+    dayOfWeek?: string;
 }
 
 const getDoctors = (params: GetDoctorsParams) => 

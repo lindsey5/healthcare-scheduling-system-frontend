@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
+
 import useGetDoctors from "../../hooks/doctor/use-get-doctors.hook";
 import Dropdown from "../ui/Dropdown";
+
 import type { Doctor } from "../../types/doctor.type";
 
 interface DoctorsDropdownProps {
@@ -11,31 +13,47 @@ interface DoctorsDropdownProps {
     value?: number;
     setSelectedDoctor?: Dispatch<SetStateAction<Doctor | null>>;
     label?: string;
+    dayOfWeek?: string;
 }
 
-export default function DoctorsDropdown ({ 
+export default function DoctorsDropdown({
     onChange,
     error,
     serviceId,
     disabled,
     value,
     label,
-    setSelectedDoctor
-} : DoctorsDropdownProps) {
-    const { data } = useGetDoctors({ serviceId });
+    setSelectedDoctor,
+    dayOfWeek,
+}: DoctorsDropdownProps) {
+    const { data } = useGetDoctors({
+        serviceId,
+        dayOfWeek,
+    });
 
     return (
-        <Dropdown 
+        <Dropdown
             onChange={(e) => {
                 onChange?.(e);
-                setSelectedDoctor?.(data?.doctors.find(doctor => doctor.id === Number(e.target.value)) || null)
+
+                setSelectedDoctor?.(
+                    data?.doctors.find(
+                        (doctor) =>
+                            doctor.id === Number(e.target.value)
+                    ) || null
+                );
             }}
             error={error}
             value={value}
             label={label || "Assigned Doctor *"}
             placeholder="Select Doctor"
             disabled={disabled}
-            options={data?.doctors.map(doctor => ({ label: `Dr. ${doctor.firstname} ${doctor.lastname}`, value: doctor.id })) || []}
+            options={
+                data?.doctors.map((doctor) => ({
+                    label: `Dr. ${doctor.firstname} ${doctor.lastname}`,
+                    value: doctor.id,
+                })) || []
+            }
         />
-    )
+    );
 }

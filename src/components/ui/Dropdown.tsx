@@ -27,7 +27,7 @@ export default function Dropdown({
     ...props
 }: DropdownProps) {
     return (
-        <div>
+        <div className="flex-1">
             {label && (
                 <label
                     className={cn(

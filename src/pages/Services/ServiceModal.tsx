@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { memo, useEffect, useMemo } from "react";
 import Dropdown from "../../components/ui/Dropdown";
 import Button from "../../components/ui/Button";
-import { DAYS } from "../../lib/contants/constants";
+import { DAYS, timeSlots } from "../../lib/contants/constants";
 import useCreateService from "../../hooks/service/use-create-service.hook";
 import useUpdateService from "../../hooks/service/use-update-service.hook";
 import { promiseToast } from "../../utils/utils";
@@ -18,18 +18,6 @@ interface ServiceModalProps {
     show: boolean;
     close: () => void;
 }
-
-const timeSlots = [
-    { label: "8:00 AM", value: "08:00:00" },
-    { label: "9:00 AM", value: "09:00:00" },
-    { label: "10:00 AM", value: "10:00:00" },
-    { label: "11:00 AM", value: "11:00:00" },
-    { label: "12:00 PM", value: "12:00:00" },
-    { label: "1:00 PM", value: "13:00:00" },
-    { label: "2:00 PM", value: "14:00:00" },
-    { label: "3:00 PM", value: "15:00:00" },
-    { label: "4:00 PM", value: "16:00:00" },
-];
 
 function ServiceModal ({
     close,

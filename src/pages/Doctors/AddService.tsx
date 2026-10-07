@@ -11,17 +11,19 @@ interface AddServiceProps {
     close: () => void;
     handleAdd: (service : Service | null) => void;
     doctorServices: number[];
+    dayOfWeek: string[];
 }
 
 export default function AddService ({
     show,
     handleAdd,
     close,
-    doctorServices
+    doctorServices,
+    dayOfWeek
 } : AddServiceProps) {
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-    const { data } = useGetServices();
+    const { data } = useGetServices(dayOfWeek.join(','));
 
     return (
         <Modal

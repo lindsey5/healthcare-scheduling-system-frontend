@@ -36,7 +36,7 @@ export default function Textfield({
             : type;
 
     return (
-        <div>
+        <div className="flex-1">
 
             {label && (
                 <label
