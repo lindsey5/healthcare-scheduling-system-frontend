@@ -40,6 +40,11 @@ const menuItems = [
         path: "/staff/doctors",
     },
     {
+        name: "Patients",
+        icon: UserRound,
+        path: "/staff/patients",
+    },
+    {
         name: "My Logs",
         icon: ClipboardCheck,
         path: "/staff/my-logs"

@@ -8,6 +8,7 @@ import StaffLayout from "../pages/Staff/StaffLayout";
 import QrScanner from "../pages/QrScanner/QrScanner";
 import StaffProfile from "../pages/Staff/Profile/StaffProfile";
 import MyAudits from "../pages/MyAudits/MyAudits";
+import Patients from "../pages/Patients/Patients";
 
 export const StaffRoutes: RouteObject = {
     path: "staff",
@@ -36,6 +37,10 @@ export const StaffRoutes: RouteObject = {
         {
             path: 'scan-qr',
             Component: () => <QrScanner />
+        },
+        {
+            path: 'patients',
+            Component: () => <Patients />
         },
         {
             path: 'my-logs',
