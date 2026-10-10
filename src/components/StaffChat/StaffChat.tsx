@@ -1,5 +1,4 @@
-
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle, X, Search } from "lucide-react";
 import { cn } from "../../utils/utils";
 import { useSocket } from "../../hooks/useSocket";
@@ -18,71 +17,34 @@ export default function StaffChat() {
     const readAllMutation = useReadAllStaffMessages();
     const { data, refetch } = useGetStaffConversations();
 
-    // Keep the total unread count numeric and consistent.
-    const calculateUnreadCount = useCallback(
-        (items: Conversation[]) =>
-            items.reduce(
-                (total, conversation) =>
-                    total + Number(conversation.unread || 0),
-                0
-            ),
-        []
-    );
-
-    // Initialize conversations from the API response.
     useEffect(() => {
         if (!data) return;
-
-        const items = data.conversations;
-
-        setConversations(items);
-        setUnreadCount(calculateUnreadCount(items));
-    }, [data, calculateUnreadCount]);
-
-    // Fetch the latest conversation data and synchronize the badge.
-    const handleRefetch = useCallback(async () => {
-        const result = await refetch();
-        const updatedConversations = result.data?.conversations;
-
-        if (!updatedConversations) return;
-
-        setConversations(updatedConversations);
-        setUnreadCount(calculateUnreadCount(updatedConversations));
-    }, [refetch, calculateUnreadCount]);
-
-    const handleRemoveConversation = useCallback((conversationId: number) => {
-        setConversations(prev => {
-            const updated = prev.filter(
-                conversation => conversation.id !== conversationId
-            );
-
-            setUnreadCount(calculateUnreadCount(updated));
-
-            return updated;
-        });
-
-        setActiveConversationId(current =>
-            current === conversationId ? null : current
-        );
-    }, [calculateUnreadCount]);
+        setConversations(data.conversations);
+        setUnreadCount(data.conversations.reduce((total, conversation) => total + conversation.unread, 0));
+    }, [data]);
 
     useEffect(() => {
         if (!socket) return;
 
         const handleNewConversation = () => {
-            void handleRefetch();
+            handleRefetch();
             setIsOpen(true);
         };
 
         const handleEndConversation = (conversationId: number) => {
             handleRemoveConversation(conversationId);
-            void handleRefetch();
         };
 
         const handleNewMessage = (message: Message) => {
-            // Do not increment unreadCount separately.
-            // The API response is the source of truth for the badge.
-            void handleRefetch();
+            handleRefetch();
+            setUnreadCount(prev => prev + 1);
+            setConversations(prev =>
+                prev.map(conversation =>
+                    conversation.id === message.conversationId
+                        ? { ...conversation, unread: conversation.unread + 1 }
+                        : conversation
+                )
+            );
         };
 
         socket.on("conversation:new", handleNewConversation);
@@ -94,46 +56,49 @@ export default function StaffChat() {
             socket.off("conversation:end", handleEndConversation);
             socket.off("message:new", handleNewMessage);
         };
-    }, [socket, handleRefetch, handleRemoveConversation]);
+    }, [socket]);
+
+    const handleRemoveConversation = (conversationId: number) => {
+        setConversations(prev => prev.filter(conversation => conversation.id !== conversationId));
+        setActiveConversationId(current => current === conversationId ? null : current);
+    };
+
+    const handleRefetch = async () => {
+        const result = await refetch();
+
+        if (result.data) {
+            setConversations(result.data.conversations);
+
+            setUnreadCount(
+                result.data.conversations.reduce(
+                    (total, conversation) =>
+                        total + conversation.unread,
+                    0
+                )
+            );
+        }
+    }
 
     const toggleChat = () => setIsOpen(prev => !prev);
-
-    const handleReadAll = useCallback((id: number) => {
-        const conversation = conversations.find(
-            item => item.id === id
-        );
-
-        if (!conversation) return;
-
-        // Optimistically mark the conversation as read.
-        setConversations(prev => {
-            const updated = prev.map(item =>
-                item.id === id
-                    ? { ...item, unread: 0 }
-                    : item
-            );
-
-            setUnreadCount(calculateUnreadCount(updated));
-
-            return updated;
-        });
-
-        readAllMutation.mutate(id, {
-            onError: () => {
-                // Restore the latest server state if marking as read fails.
-                void handleRefetch();
-            },
-        });
-    }, [
-        conversations,
-        readAllMutation,
-        calculateUnreadCount,
-        handleRefetch,
-    ]);
 
     const handleActiveConversation = (id: number) => {
         setActiveConversationId(id);
         handleReadAll(id);
+    };
+
+    const handleReadAll = (id: number) => {
+        readAllMutation.mutate(id);
+
+        const conversation = conversations.find(conversation => conversation.id === id);
+        if (!conversation) return;
+
+        setConversations(prev =>
+            prev.map(conversation =>
+                conversation.id === id ? { ...conversation, unread: 0 } : conversation
+            )
+        );
+
+        setUnreadCount(prev => Math.max(0, prev - conversation.unread));
     };
 
     const activeConversation = conversations.find(
@@ -141,7 +106,6 @@ export default function StaffChat() {
     );
 
     const activePatient = activeConversation?.patient;
-
     const activePatientName = activePatient
         ? `${activePatient.firstname} ${activePatient.lastname}`
         : "Patient";
@@ -155,28 +119,17 @@ export default function StaffChat() {
                         <div className="border-b border-gray-200 p-5">
                             <div className="mb-4 flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">
-                                        Messages
-                                    </h2>
-                                    <p className="mt-0.5 text-xs text-gray-500">
-                                        Patient conversations
-                                    </p>
+                                    <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
+                                    <p className="mt-0.5 text-xs text-gray-500">Patient conversations</p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={toggleChat}
-                                    className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-                                >
+                                <button type="button" onClick={toggleChat} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
                                     <X size={19} />
                                 </button>
                             </div>
 
                             <div className="relative">
-                                <Search
-                                    size={17}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                />
+                                <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Search conversations..."
@@ -188,37 +141,23 @@ export default function StaffChat() {
                         <div className="min-h-0 flex-1 overflow-y-auto">
                             {conversations.length > 0 ? (
                                 conversations.map(conversation => {
-                                    const isActive =
-                                        conversation.id === activeConversationId;
-
+                                    const isActive = conversation.id === activeConversationId;
                                     const patient = conversation.patient;
-
                                     const patientName = patient
                                         ? `${patient.firstname} ${patient.lastname}`
                                         : "Patient";
-
                                     const initials = patient
                                         ? `${patient.firstname?.[0] ?? ""}${patient.lastname?.[0] ?? ""}`
                                         : "P";
-
-                                    const unread = Number(
-                                        conversation.unread || 0
-                                    );
 
                                     return (
                                         <button
                                             key={conversation.id}
                                             type="button"
-                                            onClick={() =>
-                                                handleActiveConversation(
-                                                    conversation.id
-                                                )
-                                            }
+                                            onClick={() => handleActiveConversation(conversation.id)}
                                             className={cn(
                                                 "flex w-full gap-3 border-b border-gray-100 px-4 py-4 text-left transition",
-                                                isActive
-                                                    ? "bg-green-50"
-                                                    : "hover:bg-gray-50"
+                                                isActive ? "bg-green-50" : "hover:bg-gray-50"
                                             )}
                                         >
                                             <div className="relative shrink-0">
@@ -243,7 +182,7 @@ export default function StaffChat() {
                                                     <p
                                                         className={cn(
                                                             "truncate text-sm",
-                                                            unread > 0
+                                                            conversation.unread > 0
                                                                 ? "font-semibold text-gray-900"
                                                                 : "font-medium text-gray-800"
                                                         )}
@@ -256,28 +195,25 @@ export default function StaffChat() {
                                                             <span
                                                                 className={cn(
                                                                     "text-[10px]",
-                                                                    unread > 0
+                                                                    conversation.unread > 0
                                                                         ? "font-medium text-green-600"
                                                                         : "text-gray-400"
                                                                 )}
                                                             >
                                                                 {new Date(
                                                                     conversation.lastMessageAt
-                                                                ).toLocaleTimeString(
-                                                                    [],
-                                                                    {
-                                                                        hour: "numeric",
-                                                                        minute: "2-digit",
-                                                                    }
-                                                                )}
+                                                                ).toLocaleTimeString([], {
+                                                                    hour: "numeric",
+                                                                    minute: "2-digit",
+                                                                })}
                                                             </span>
                                                         )}
 
-                                                        {unread > 0 && (
+                                                        {conversation.unread > 0 && (
                                                             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1.5 text-[10px] font-bold text-white">
-                                                                {unread > 99
+                                                                {conversation.unread > 99
                                                                     ? "99+"
-                                                                    : unread}
+                                                                    : conversation.unread}
                                                             </span>
                                                         )}
                                                     </div>
@@ -286,13 +222,12 @@ export default function StaffChat() {
                                                 <p
                                                     className={cn(
                                                         "mt-1 truncate text-xs",
-                                                        unread > 0
+                                                        conversation.unread > 0
                                                             ? "font-medium text-gray-600"
                                                             : "text-gray-400"
                                                     )}
                                                 >
-                                                    {conversation.lastMessage ||
-                                                        "No messages yet"}
+                                                    {conversation.lastMessage || "No messages yet"}
                                                 </p>
                                             </div>
                                         </button>
@@ -309,8 +244,7 @@ export default function StaffChat() {
                                     </p>
 
                                     <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-gray-400">
-                                        Patient messages will appear here when a
-                                        conversation starts.
+                                        Patient messages will appear here when a conversation starts.
                                     </p>
                                 </div>
                             )}
@@ -329,7 +263,6 @@ export default function StaffChat() {
                                                     ? `${activePatient.firstname?.[0] ?? ""}${activePatient.lastname?.[0] ?? ""}`.toUpperCase()
                                                     : "P"}
                                             </div>
-
                                             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
                                         </div>
 
@@ -337,9 +270,7 @@ export default function StaffChat() {
                                             <h3 className="truncate text-sm font-semibold text-gray-900">
                                                 {activePatientName}
                                             </h3>
-                                            <p className="text-xs text-green-600">
-                                                Active conversation
-                                            </p>
+                                            <p className="text-xs text-green-600">Active conversation</p>
                                         </div>
                                     </div>
                                 </div>
@@ -364,8 +295,7 @@ export default function StaffChat() {
                                 </h3>
 
                                 <p className="mt-1 max-w-xs text-xs leading-relaxed text-gray-400">
-                                    Choose a patient from the conversation list
-                                    to view your messages.
+                                    Choose a patient from the conversation list to view your messages.
                                 </p>
                             </div>
                         )}
@@ -379,30 +309,21 @@ export default function StaffChat() {
                 onClick={toggleChat}
                 className={cn(
                     "fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105",
-                    isOpen
-                        ? "bg-gray-700 hover:bg-gray-800"
-                        : "bg-green-600 hover:bg-green-700"
+                    isOpen ? "bg-gray-700 hover:bg-gray-800" : "bg-green-600 hover:bg-green-700"
                 )}
-                aria-label={
-                    isOpen ? "Close messages" : "Open messages"
-                }
+                aria-label={isOpen ? "Close messages" : "Open messages"}
             >
                 {!isOpen && unreadCount > 0 && (
                     <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
                 )}
-
                 {!isOpen && unreadCount > 0 && (
                     <span className="absolute -right-1 -top-1 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
-                        {unreadCount > 99 ? "99+" : unreadCount}
+                        {unreadCount > 99 ? "99+" : Number(unreadCount)}
                     </span>
                 )}
 
                 <span className="relative z-10">
-                    {isOpen ? (
-                        <X size={24} />
-                    ) : (
-                        <MessageCircle size={24} />
-                    )}
+                    {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
                 </span>
             </button>
         </>
