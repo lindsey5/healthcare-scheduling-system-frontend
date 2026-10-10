@@ -145,9 +145,15 @@ export default function RescheduleAppointmentModal({
         );
     };
 
-    const minDate = new Date().toLocaleDateString("en-CA", {
-        timeZone: "Asia/Manila",
-    });
+    const minDate = appointment?.appointmentDate
+        ? (() => {
+            const date = new Date(appointment.appointmentDate);
+            date.setDate(date.getDate() + 1);
+            return date.toLocaleDateString("en-CA", {
+                timeZone: "Asia/Manila",
+            });
+        })()
+        : "";
 
     return (
         <Modal onClose={close} open={show}>
