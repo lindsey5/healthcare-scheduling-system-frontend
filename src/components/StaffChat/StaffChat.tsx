@@ -316,10 +316,9 @@ export default function StaffChat() {
                 {!isOpen && unreadCount > 0 && (
                     <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
                 )}
-
                 {!isOpen && unreadCount > 0 && (
                     <span className="absolute -right-1 -top-1 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
-                        {unreadCount > 99 ? "99+" : unreadCount}
+                        {unreadCount > 99 ? "99+" : Number(unreadCount)}
                     </span>
                 )}
 
