@@ -12,7 +12,7 @@ import { useAuthStore } from "../../lib/store/authStore";
 import useGetUnreadMessages from "../../hooks/conversation/use-get-unread-messages.hook";
 import useReadAllMessages from "../../hooks/conversation/use-read-all-messages.hook";
 import { useSocket } from "../../hooks/useSocket";
-import type { ConversationMessage } from "../../types/conversation.type";
+import type { ConversationMessage, Message } from "../../types/conversation.type";
 
 type ChatMode = "ai" | "staff";
 
@@ -49,6 +49,28 @@ export default function ChatWidget() {
 
         setUnread(data.unread);
     }, [data]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewMessage = (message: Message) => {
+            setUnread(prev => prev + 1);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    message: message.message,
+                    createdAt: message.createdAt,
+                    senderType: message.senderType,
+                },
+            ]);
+        };
+
+        socket.on("message:new", handleNewMessage);
+
+        return () => {
+            socket.off("message:new");
+        };
+    }, [socket]);
 
     return (
         <>

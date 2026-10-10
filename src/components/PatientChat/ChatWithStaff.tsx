@@ -135,31 +135,15 @@ export default function ChatWithStaff({
             }
         };
 
-        const handleNewMessage = (message: Message) => {
-            setUnread(prev => prev + 1);
-            shouldScrollToBottomRef.current = true;
-
-            setMessages(prev => [
-                ...prev,
-                {
-                    message: message.message,
-                    createdAt: message.createdAt,
-                    senderType: message.senderType,
-                },
-            ]);
-        };
-
         const handleEndConversation = () => {
             setStatus("ended");
         };
 
         socket.on("conversation:status", handleConversationStatus);
-        socket.on("message:new", handleNewMessage);
         socket.on("conversation:end", handleEndConversation);
 
         return () => {
             socket.off("conversation:status", handleConversationStatus);
-            socket.off("message:new", handleNewMessage);
             socket.off("conversation:end", handleEndConversation);
         };
     }, [socket, setMessages, setUnread]);
