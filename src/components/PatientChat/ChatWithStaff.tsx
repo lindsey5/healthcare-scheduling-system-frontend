@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 
 import { Headset, Send, User } from "lucide-react";
 import type { PaginationState } from "@tanstack/react-table";
 import type { Socket } from "socket.io-client";
-import type { ConversationMessage, Message } from "../../types/conversation.type";
+import type { ConversationMessage } from "../../types/conversation.type";
 import { cn, errorToast, timeAgo } from "../../utils/utils";
 import Button from "../ui/Button";
 import useGetPatientConversation from "../../hooks/conversation/use-get-patient-conversation.hook";
