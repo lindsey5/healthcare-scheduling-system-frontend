@@ -73,13 +73,13 @@ export default function StaffSidebar({
             {/* Backdrop */}
             {showSide && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-20 lg:hidden"
                     onClick={() => setShowSide(false)}
                 />
             )}
 
             <aside
-                className={`fixed left-0 top-0 z-20 flex h-screen w-72 flex-col overflow-y-auto bg-[#1E3D15] text-white shadow-xl transition-transform duration-300
+                className={`fixed left-0 top-0 z-30 flex h-screen w-72 flex-col overflow-y-auto bg-[#1E3D15] text-white shadow-xl transition-transform duration-300
                 ${
                     showSide ? "translate-x-0" : "-translate-x-full"
                 } lg:translate-x-0`}

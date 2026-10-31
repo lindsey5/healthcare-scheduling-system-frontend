@@ -123,16 +123,16 @@ export default function StaffNotificationBell() {
     };
 
     return (
+        <>
+        <AppointmentModal
+            close={() => setShowModal(false)}
+            appointment={appointment}
+            show={showModal}
+        />
         <div
             className="relative"
             ref={dropdownRef}
         >
-            <AppointmentModal
-                close={() => setShowModal(false)}
-                appointment={appointment}
-                show={showModal}
-            />
-
             {/* Bell */}
             <button
                 onClick={() =>
@@ -304,5 +304,6 @@ export default function StaffNotificationBell() {
                 </div>
             )}
         </div>
+        </>
     );
 }

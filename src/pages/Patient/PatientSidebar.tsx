@@ -51,14 +51,14 @@ export default function PatientSidebar({
             {/* Backdrop */}
             {showSide && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-20 lg:hidden"
                     onClick={() => setShowSide(false)}
                 />
             )}
 
             <aside
                 className={cn(
-                    "fixed left-0 top-0 z-50 w-72 min-h-screen bg-[#1E3D15] text-white flex flex-col overflow-y-auto transition-transform duration-300",
+                    "fixed left-0 top-0 z-20 w-72 min-h-screen bg-[#1E3D15] text-white flex flex-col overflow-y-auto transition-transform duration-300",
                     showSide ? "translate-x-0" : "-translate-x-full",
                     "lg:translate-x-0 lg:flex"
                 )}

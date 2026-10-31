@@ -37,9 +37,9 @@ export default function AppointmentModal({
         <Modal
             onClose={close}
             open={show}
-            className="max-w-[90vw] w-200 h-screen flex flex-col justify-center"
+            className="max-w-[90vw] w-200 h-screen flex flex-col justify-center z-50"
         >
-            <Card className="relative w-full space-y-10 max-h-[80%] overflow-auto">
+            <Card className="relative w-full space-y-10 max-h-[80%] overflow-auto z-50">
                 {/* Close Button */}
                 <button
                     onClick={close}

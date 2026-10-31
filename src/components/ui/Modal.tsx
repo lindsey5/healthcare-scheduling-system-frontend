@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import { cn } from "../../utils/utils";
 
 type AnimatedModalProps = {
@@ -9,11 +10,11 @@ type AnimatedModalProps = {
 };
 
 export default function Modal({ open, onClose, children, className = "" }: AnimatedModalProps) {
-    return (
+    return createPortal(
         <AnimatePresence>
         {open && (
             <motion.div
-                className="min-h-screen fixed inset-0 flex items-center justify-center bg-black/70 z-30"
+                className="min-h-screen fixed inset-0 z-[100] flex items-center justify-center bg-black/70"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -34,6 +35,7 @@ export default function Modal({ open, onClose, children, className = "" }: Anima
                 </motion.div>
             </motion.div>
         )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
