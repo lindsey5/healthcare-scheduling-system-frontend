@@ -3,6 +3,8 @@ import { CalendarOff, RotateCcw } from "lucide-react";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Textfield from "../../components/ui/Textfield";
+import Dropdown from "../../components/ui/Dropdown";
+import { timeSlots } from "../../lib/contants/constants";
 import {
     useAppointmentDateClosures,
     useCreateAppointmentDateClosure,
@@ -10,21 +12,6 @@ import {
 } from "../../hooks/appointment/use-appointment-date-closures.hook";
 import { formatTime, promiseToast } from "../../utils/utils";
 import { format } from "date-fns";
-
-const parse12HourTime = (time: string) => {
-    const match = /^(0?[1-9]|1[0-2]):([0-5]\d)\s?(AM|PM)$/i.exec(
-        time.trim()
-    );
-
-    if (!match) {
-        return null;
-    }
-
-    const hours =
-        (Number(match[1]) % 12) + (match[3].toUpperCase() === "PM" ? 12 : 0);
-
-    return `${String(hours).padStart(2, "0")}:${match[2]}`;
-};
 
 export default function AppointmentDateClosures() {
     const [closureDate, setClosureDate] = useState("");
@@ -40,22 +27,16 @@ export default function AppointmentDateClosures() {
     } = useAppointmentDateClosures();
     const createClosure = useCreateAppointmentDateClosure();
     const deleteClosure = useDeleteAppointmentDateClosure();
+    const endTimeOptions = timeSlots.filter(
+        (time) => time.value > startTime
+    );
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const normalizedStartTime = isFullDay
-            ? null
-            : parse12HourTime(startTime);
-        const normalizedEndTime = isFullDay
-            ? null
-            : parse12HourTime(endTime);
-
         if (
             !isFullDay &&
-            (!normalizedStartTime ||
-                !normalizedEndTime ||
-                normalizedStartTime >= normalizedEndTime)
+            (!startTime || !endTime || startTime >= endTime)
         ) {
             return;
         }
@@ -63,8 +44,8 @@ export default function AppointmentDateClosures() {
         promiseToast(
             createClosure.mutateAsync({
                 closureDate,
-                startTime: normalizedStartTime,
-                endTime: normalizedEndTime,
+                startTime: isFullDay ? null : startTime,
+                endTime: isFullDay ? null : endTime,
                 reason,
             }),
             "top-center",
@@ -141,39 +122,34 @@ export default function AppointmentDateClosures() {
 
                     {!isFullDay && (
                         <div className="grid gap-4 md:grid-cols-2">
-                            <Textfield
+                            <Dropdown
                                 label="From"
-                                type="text"
                                 value={startTime}
-                                onChange={(event) =>
-                                    setStartTime(event.target.value.toUpperCase())
-                                }
-                                placeholder="e.g. 09:30 AM"
-                                pattern="(0?[1-9]|1[0-2]):[0-5][0-9] ?(AM|PM)"
-                                title="Enter time in 12-hour format, such as 09:30 AM."
-                                required
+                                options={timeSlots}
+                                placeholder="Select start time"
+                                onChange={(event) => {
+                                    const nextStartTime = event.target.value;
+                                    setStartTime(nextStartTime);
+                                    if (endTime && endTime <= nextStartTime) {
+                                        setEndTime("");
+                                    }
+                                }}
                             />
-                            <Textfield
+                            <Dropdown
                                 label="To"
-                                type="text"
                                 value={endTime}
+                                options={endTimeOptions}
+                                placeholder="Select end time"
+                                disabled={!startTime}
                                 onChange={(event) =>
-                                    setEndTime(event.target.value.toUpperCase())
+                                    setEndTime(event.target.value)
                                 }
-                                placeholder="e.g. 01:00 PM"
-                                pattern="(0?[1-9]|1[0-2]):[0-5][0-9] ?(AM|PM)"
-                                title="Enter time in 12-hour format, such as 01:00 PM."
-                                required
                             />
                             {startTime &&
                                 endTime &&
-                                (!parse12HourTime(startTime) ||
-                                    !parse12HourTime(endTime) ||
-                                    parse12HourTime(startTime)! >=
-                                        parse12HourTime(endTime)!) && (
+                                endTime <= startTime && (
                                 <p className="text-sm text-red-600 md:col-span-2">
-                                    Enter valid 12-hour times, and make sure
-                                    the end time is later than the start time.
+                                    End time must be later than start time.
                                 </p>
                             )}
                         </div>
@@ -189,10 +165,7 @@ export default function AppointmentDateClosures() {
                                 (!isFullDay &&
                                     (!startTime ||
                                         !endTime ||
-                                        !parse12HourTime(startTime) ||
-                                        !parse12HourTime(endTime) ||
-                                        parse12HourTime(startTime)! >=
-                                            parse12HourTime(endTime)!))
+                                        startTime >= endTime))
                             }
                         >
                             <CalendarOff size={18} />
