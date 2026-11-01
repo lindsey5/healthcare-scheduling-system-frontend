@@ -19,6 +19,7 @@ import type { Doctor } from "../../../types/doctor.type";
 import type { Service } from "../../../types/service.type";
 import { useState } from "react";
 import { useAppointmentDateClosures } from "../../../hooks/appointment/use-appointment-date-closures.hook";
+import { formatTime } from "../../../utils/utils";
 
 interface PurposeOfVisitProps {
     next: () => void;
@@ -46,12 +47,15 @@ export default function PurposeOfVisit({
         isLoading: isClosuresLoading,
         isError: isClosuresError,
     } = useAppointmentDateClosures();
-    const closedDates = new Map(
+    const closuresByDate = new Map(
         (closuresData?.closures ?? []).map((closure) => [
             closure.closureDate,
-            closure.reason,
+            closure,
         ])
     );
+    const selectedDateClosure = appointmentDate
+        ? closuresByDate.get(appointmentDate)
+        : undefined;
 
     /*
      * Get current date in Asia/Manila
@@ -152,13 +156,17 @@ export default function PurposeOfVisit({
                     onChange={(e) => {
                         const date = e.target.value;
 
-                        const closureReason = closedDates.get(date);
+                        const closure = closuresByDate.get(date);
 
-                        if (closureReason !== undefined) {
+                        if (
+                            closure &&
+                            closure.startTime === null &&
+                            closure.endTime === null
+                        ) {
                             setClosedDateError(
-                                closureReason
-                                    ? `Appointments are unavailable on this date: ${closureReason}`
-                                    : "Appointments are unavailable on this date."
+                                closure.reason
+                                    ? `Appointments are unavailable for the full day: ${closure.reason}`
+                                    : "Appointments are unavailable for the full day."
                             );
                             setValue("appointmentDate", "", {
                                 shouldValidate: true,
@@ -230,6 +238,17 @@ export default function PurposeOfVisit({
                                 errors.appointmentDate?.message
                     }
                 />
+                {selectedDateClosure?.startTime &&
+                    selectedDateClosure.endTime && (
+                        <p className="-mt-3 text-sm text-amber-700">
+                            Appointments are unavailable from{" "}
+                            {formatTime(selectedDateClosure.startTime)} to{" "}
+                            {formatTime(selectedDateClosure.endTime)}
+                            {selectedDateClosure.reason
+                                ? `: ${selectedDateClosure.reason}`
+                                : "."}
+                        </p>
+                    )}
 
                 {/* Service */}
                 <ServicesDropdown

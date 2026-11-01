@@ -8,11 +8,30 @@ import {
     useCreateAppointmentDateClosure,
     useDeleteAppointmentDateClosure,
 } from "../../hooks/appointment/use-appointment-date-closures.hook";
-import { promiseToast } from "../../utils/utils";
+import { formatTime, promiseToast } from "../../utils/utils";
+import { format } from "date-fns";
+
+const parse12HourTime = (time: string) => {
+    const match = /^(0?[1-9]|1[0-2]):([0-5]\d)\s?(AM|PM)$/i.exec(
+        time.trim()
+    );
+
+    if (!match) {
+        return null;
+    }
+
+    const hours =
+        (Number(match[1]) % 12) + (match[3].toUpperCase() === "PM" ? 12 : 0);
+
+    return `${String(hours).padStart(2, "0")}:${match[2]}`;
+};
 
 export default function AppointmentDateClosures() {
     const [closureDate, setClosureDate] = useState("");
     const [reason, setReason] = useState("");
+    const [isFullDay, setIsFullDay] = useState(true);
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
     const {
         data,
         isLoading,
@@ -25,12 +44,36 @@ export default function AppointmentDateClosures() {
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        const normalizedStartTime = isFullDay
+            ? null
+            : parse12HourTime(startTime);
+        const normalizedEndTime = isFullDay
+            ? null
+            : parse12HourTime(endTime);
+
+        if (
+            !isFullDay &&
+            (!normalizedStartTime ||
+                !normalizedEndTime ||
+                normalizedStartTime >= normalizedEndTime)
+        ) {
+            return;
+        }
+
         promiseToast(
-            createClosure.mutateAsync({ closureDate, reason }),
+            createClosure.mutateAsync({
+                closureDate,
+                startTime: normalizedStartTime,
+                endTime: normalizedEndTime,
+                reason,
+            }),
             "top-center",
             () => {
                 setClosureDate("");
                 setReason("");
+                setIsFullDay(true);
+                setStartTime("");
+                setEndTime("");
             }
         );
     };
@@ -60,35 +103,102 @@ export default function AppointmentDateClosures() {
                     Close a date
                 </h2>
                 <form
-                    className="grid gap-4 md:grid-cols-[1fr_2fr_auto] md:items-end"
+                    className="space-y-4"
                     onSubmit={handleSubmit}
                 >
-                    <Textfield
-                        label="Date"
-                        type="date"
-                        value={closureDate}
-                        onChange={(event) =>
-                            setClosureDate(event.target.value)
-                        }
-                        required
-                    />
-                    <Textfield
-                        label="Reason (optional)"
-                        value={reason}
-                        onChange={(event) =>
-                            setReason(event.target.value)
-                        }
-                        placeholder="e.g. Public holiday"
-                        maxLength={255}
-                    />
-                    <Button
-                        type="submit"
-                        className="flex items-center justify-center gap-2"
-                        disabled={!closureDate || createClosure.isPending}
-                    >
-                        <CalendarOff size={18} />
-                        Close Date
-                    </Button>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <Textfield
+                            label="Date"
+                            type="date"
+                            value={closureDate}
+                            onChange={(event) =>
+                                setClosureDate(event.target.value)
+                            }
+                            required
+                        />
+                        <Textfield
+                            label="Reason (optional)"
+                            value={reason}
+                            onChange={(event) =>
+                                setReason(event.target.value)
+                            }
+                            placeholder="e.g. Public holiday"
+                            maxLength={255}
+                        />
+                    </div>
+
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input
+                            type="checkbox"
+                            checked={isFullDay}
+                            onChange={(event) =>
+                                setIsFullDay(event.target.checked)
+                            }
+                            className="h-4 w-4 accent-[#1E3D15]"
+                        />
+                        Close for 24 hours
+                    </label>
+
+                    {!isFullDay && (
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Textfield
+                                label="From"
+                                type="text"
+                                value={startTime}
+                                onChange={(event) =>
+                                    setStartTime(event.target.value.toUpperCase())
+                                }
+                                placeholder="e.g. 09:30 AM"
+                                pattern="(0?[1-9]|1[0-2]):[0-5][0-9] ?(AM|PM)"
+                                title="Enter time in 12-hour format, such as 09:30 AM."
+                                required
+                            />
+                            <Textfield
+                                label="To"
+                                type="text"
+                                value={endTime}
+                                onChange={(event) =>
+                                    setEndTime(event.target.value.toUpperCase())
+                                }
+                                placeholder="e.g. 01:00 PM"
+                                pattern="(0?[1-9]|1[0-2]):[0-5][0-9] ?(AM|PM)"
+                                title="Enter time in 12-hour format, such as 01:00 PM."
+                                required
+                            />
+                            {startTime &&
+                                endTime &&
+                                (!parse12HourTime(startTime) ||
+                                    !parse12HourTime(endTime) ||
+                                    parse12HourTime(startTime)! >=
+                                        parse12HourTime(endTime)!) && (
+                                <p className="text-sm text-red-600 md:col-span-2">
+                                    Enter valid 12-hour times, and make sure
+                                    the end time is later than the start time.
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex justify-end">
+                        <Button
+                            type="submit"
+                            className="flex items-center justify-center gap-2"
+                            disabled={
+                                !closureDate ||
+                                createClosure.isPending ||
+                                (!isFullDay &&
+                                    (!startTime ||
+                                        !endTime ||
+                                        !parse12HourTime(startTime) ||
+                                        !parse12HourTime(endTime) ||
+                                        parse12HourTime(startTime)! >=
+                                            parse12HourTime(endTime)!))
+                            }
+                        >
+                            <CalendarOff size={18} />
+                            {isFullDay ? "Close Full Day" : "Close Time Range"}
+                        </Button>
+                    </div>
                 </form>
             </Card>
 
@@ -112,7 +222,12 @@ export default function AppointmentDateClosures() {
                             >
                                 <div>
                                     <p className="font-semibold text-gray-800">
-                                        {closure.closureDate}
+                                        {format(closure.closureDate, "MMMM dd, yyyy")}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        {closure.startTime && closure.endTime
+                                            ? `${formatTime(closure.startTime)} - ${formatTime(closure.endTime)}`
+                                            : "Closed for 24 hours"}
                                     </p>
                                     {closure.reason && (
                                         <p className="text-sm text-gray-500">

@@ -4,6 +4,8 @@ import { apiAxios } from "../../api/apiAxios";
 export type AppointmentDateClosure = {
     id: number;
     closureDate: string;
+    startTime: string | null;
+    endTime: string | null;
     reason: string | null;
     createdAt: string;
 };
@@ -30,6 +32,8 @@ const getAppointmentDateClosures = () =>
 
 const createAppointmentDateClosure = (data: {
     closureDate: string;
+    startTime: string | null;
+    endTime: string | null;
     reason: string;
 }) =>
     apiAxios<CreateClosureResponse>("/api/appointment-date-closures", {
