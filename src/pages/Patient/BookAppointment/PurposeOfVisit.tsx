@@ -17,6 +17,8 @@ import { ArrowRight } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Doctor } from "../../../types/doctor.type";
 import type { Service } from "../../../types/service.type";
+import { useState } from "react";
+import { useAppointmentDateClosures } from "../../../hooks/appointment/use-appointment-date-closures.hook";
 
 interface PurposeOfVisitProps {
     next: () => void;
@@ -38,6 +40,18 @@ export default function PurposeOfVisit({
     setSelectedService,
 }: PurposeOfVisitProps) {
     const appointmentDate = watch("appointmentDate");
+    const [closedDateError, setClosedDateError] = useState("");
+    const {
+        data: closuresData,
+        isLoading: isClosuresLoading,
+        isError: isClosuresError,
+    } = useAppointmentDateClosures();
+    const closedDates = new Map(
+        (closuresData?.closures ?? []).map((closure) => [
+            closure.closureDate,
+            closure.reason,
+        ])
+    );
 
     /*
      * Get current date in Asia/Manila
@@ -134,8 +148,30 @@ export default function PurposeOfVisit({
                     className="bg-white"
                     min={minAppointmentDate}
                     max={maxAppointmentDate}
+                    disabled={isClosuresLoading || isClosuresError}
                     onChange={(e) => {
                         const date = e.target.value;
+
+                        const closureReason = closedDates.get(date);
+
+                        if (closureReason !== undefined) {
+                            setClosedDateError(
+                                closureReason
+                                    ? `Appointments are unavailable on this date: ${closureReason}`
+                                    : "Appointments are unavailable on this date."
+                            );
+                            setValue("appointmentDate", "", {
+                                shouldValidate: true,
+                            });
+                            setValue("serviceId", 0);
+                            setValue("doctorId", 0);
+                            setValue("appointmentTime", "");
+                            setSelectedDoctor(null);
+                            setSelectedService(null);
+                            return;
+                        }
+
+                        setClosedDateError("");
 
                         /*
                          * Prevent Saturday and Sunday
@@ -188,7 +224,10 @@ export default function PurposeOfVisit({
                     }}
                     value={appointmentDate}
                     error={
-                        errors.appointmentDate?.message
+                        isClosuresError
+                            ? "Closed dates could not be loaded. Please refresh and try again."
+                            : closedDateError ||
+                                errors.appointmentDate?.message
                     }
                 />
 
