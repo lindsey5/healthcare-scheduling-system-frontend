@@ -1,9 +1,5 @@
 import {
     CheckCircle2,
-    CalendarDays,
-    ClipboardList,
-    Clock3,
-    ShieldCheck,
     Download,
 } from "lucide-react";
 import { useRef } from "react";
@@ -41,37 +37,44 @@ export default function AppointmentSuccess({
     };
 
     return (
-        <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4 py-10">
-            <div className="w-full max-w-2xl rounded-2xl bg-white shadow-lg border border-gray-200 overflow-hidden">
-                {/* Header */}
-                <div className="bg-[#1E3D15] px-8 py-10 text-center text-white">
-                    <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/15">
-                        <CheckCircle2 className="h-12 w-12 text-green-300" />
+        <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 px-4 py-10">
+            <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-6 py-7 sm:px-8">
+                    <div className="flex items-start gap-3">
+                        <CheckCircle2 className="mt-1 h-6 w-6 shrink-0 text-[#1E3D15]" />
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900">
+                                Appointment Submitted Successfully!
+                            </h1>
+                            <p className="mt-2 text-gray-600">
+                                The health center will review your request. You
+                                can check its status in Appointment History.
+                            </p>
+                        </div>
                     </div>
-
-                    <h1 className="text-3xl font-bold">
-                        Appointment Submitted Successfully!
-                    </h1>
-
-                    <p className="mt-3 text-green-100 leading-relaxed">
-                        Your appointment request has been successfully
-                        submitted. Please wait for approval from the Barangay
-                        Health Center.
-                    </p>
                 </div>
 
                 {/* Body */}
-                <div className="p-8">
-                    {/* QR Code */}
-                    <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
-                        <p className="text-sm font-medium text-gray-600">
-                            Appointment QR Code
+                <div className="space-y-7 p-6 sm:p-8">
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">
+                            Reference number
                         </p>
+                        <p className="mt-1 break-all text-xl font-semibold text-gray-900">
+                            {referenceNumber}
+                        </p>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Keep this number for your records.
+                        </p>
+                    </div>
 
-                        <div className="mt-5 flex justify-center">
+                    {/* QR Code */}
+                    <div className="flex flex-col items-center border-y border-gray-200 py-6 text-center">
+                        <p className="font-medium text-gray-900">Appointment QR code</p>
+                        <div className="mt-4 flex justify-center">
                             <div
                                 ref={qrRef}
-                                className="inline-block rounded-xl bg-white p-6 shadow-md"
+                                className="inline-block bg-white p-3"
                             >
                                 <QRCode
                                     value={referenceNumber}
@@ -83,97 +86,33 @@ export default function AppointmentSuccess({
                             </div>
                         </div>
 
-                        <p className="mt-4 text-sm text-gray-600">
-                            Please save or download this QR code. Present it to
-                            the Barangay Health Center during your appointment
-                            for faster verification.
+                        <p className="mt-3 max-w-md text-sm text-gray-600">
+                            Save this code and present it when you arrive for
+                            your appointment.
                         </p>
 
-                        <div className="flex justify-center">
-                            <Button
-                                className="mt-5 flex items-center"
-                                variant="secondary"
-                                onClick={downloadQRCode}
-                            >
-                                <Download className="mr-2 h-5 w-5" />
-                                Download QR Code
-                            </Button>
-                        </div>
+                        <Button
+                            className="mt-4 flex items-center"
+                            variant="outline"
+                            onClick={downloadQRCode}
+                        >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download QR code
+                        </Button>
                     </div>
 
-                    {/* Next Steps */}
-                    <div className="mt-8">
-                        <div className="mb-5 flex items-center gap-2">
-                            <ClipboardList className="h-5 w-5 text-[#1E3D15]" />
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                What's Next?
-                            </h3>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4 rounded-lg border border-gray-200 p-4">
-                                <Clock3 className="mt-1 h-5 w-5 text-amber-500" />
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Pending Approval
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Your appointment is currently waiting
-                                        for approval from the health center.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4 rounded-lg border border-gray-200 p-4">
-                                <ShieldCheck className="mt-1 h-5 w-5 text-blue-500" />
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Staff Review
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        The Barangay Health Center staff will
-                                        review your appointment request.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4 rounded-lg border border-gray-200 p-4">
-                                <ClipboardList className="mt-1 h-5 w-5 text-purple-500" />
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Track Your Appointment
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        You can monitor the status anytime from{" "}
-                                        <span className="font-medium">
-                                            Appointment History
-                                        </span>{" "}
-                                        page.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4 rounded-lg border border-gray-200 p-4">
-                                <CalendarDays className="mt-1 h-5 w-5 text-green-600" />
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Arrival Reminder
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                        Once approved, please arrive at least{" "}
-                                        <span className="font-semibold">
-                                            15 minutes
-                                        </span>{" "}
-                                        before your scheduled appointment and
-                                        present your QR code upon arrival.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <h2 className="font-semibold text-gray-900">
+                            What happens next
+                        </h2>
+                        <p className="mt-2 text-sm leading-6 text-gray-600">
+                            Once your appointment is approved, arrive 15 minutes
+                            before your scheduled time and bring your QR code.
+                        </p>
                     </div>
 
                     <Button
-                        className="mt-8 w-full"
+                        className="w-full"
                         onClick={() => window.location.reload()}
                     >
                         Book Another Appointment
