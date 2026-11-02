@@ -7,13 +7,15 @@ type CancelAppointmentResponse = {
     message: string;
 }
 
-const cancelAppointment = (id: string) => 
+const cancelAppointment = (id: string, reason: string) =>
     apiAxios<CancelAppointmentResponse>(`/api/appointments/cancel/${id}`, {
         method: "PATCH",
+        data: { reason },
     })
 
 export default function useCancelAppointment () {
     return useMutation({
-        mutationFn: (id : string) => cancelAppointment(id),
+        mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+            cancelAppointment(id, reason),
     })
 }

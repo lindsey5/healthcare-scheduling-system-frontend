@@ -9,6 +9,7 @@ import AppointmentActionButtons from "./AppointmentActionButton";
 import useUpdateAppointment from "../../hooks/appointment/use-update-appointment.hook";
 import RescheduleAppointmentModal from "./RescheduleAppointmentModal";
 import { useState } from "react";
+import AppointmentStatusReasonModal from "../../components/shared/AppointmentStatusReasonModal";
 
 interface AppointmentModalProps {
     show: boolean;
@@ -23,14 +24,34 @@ export default function AppointmentModal({
 }: AppointmentModalProps) {
     const updateAppointmentMutation = useUpdateAppointment();
     const [showReschedule, setShowReschedule] = useState(false);
+    const [reasonStatus, setReasonStatus] = useState<
+        "Cancelled" | "Rejected" | null
+    >(null);
 
     const handleUpdate = (id: string, status: string) => {
+        if (status === "Cancelled" || status === "Rejected") {
+            setReasonStatus(status);
+            return;
+        }
+
         const isConfirm = confirm(`Are you sure you want to update the status to ${status}`);
 
         if(!isConfirm) return;
 
         promiseToast(updateAppointmentMutation.mutateAsync({ status, id }));
     }
+
+    const handleSubmitReason = (reason: string) => {
+        if (!appointment || !reasonStatus) return;
+
+        promiseToast(
+            updateAppointmentMutation.mutateAsync({
+                status: reasonStatus,
+                id: appointment.id,
+                reason,
+            })
+        );
+    };
 
     const handleReschedule = () => setShowReschedule(true);
 
@@ -94,6 +115,13 @@ export default function AppointmentModal({
                         label="Status"
                         value={appointment?.status}
                     />
+                    {(appointment?.status === "Cancelled" ||
+                        appointment?.status === "Rejected") && (
+                        <SummaryRow
+                            label="Reason"
+                            value={appointment.statusReason || "Not provided"}
+                        />
+                    )}
                     <SummaryRow
                         label="Date Submitted"
                         value={formatDate(appointment?.createdAt) || ""}
@@ -165,6 +193,13 @@ export default function AppointmentModal({
             appointment={appointment}
             show={showReschedule}
             close={() => setShowReschedule(false)}
+        />
+        <AppointmentStatusReasonModal
+            open={reasonStatus !== null}
+            status={reasonStatus ?? "Cancelled"}
+            disabled={updateAppointmentMutation.isPending}
+            onClose={() => setReasonStatus(null)}
+            onSubmit={handleSubmitReason}
         />
         </>
     );

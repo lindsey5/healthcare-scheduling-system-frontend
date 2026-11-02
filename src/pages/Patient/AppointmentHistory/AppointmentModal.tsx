@@ -9,6 +9,7 @@ import Button from "../../../components/ui/Button";
 import useCancelAppointment from "../../../hooks/appointment/use-cancel-appointment.hook";
 import { useState } from "react";
 import QRCodeModal from "./QRCodeModal";
+import AppointmentStatusReasonModal from "../../../components/shared/AppointmentStatusReasonModal";
 
 interface AppointmentModalProps {
     show: boolean;
@@ -22,14 +23,18 @@ export default function AppointmentModal({
     appointment,
 }: AppointmentModalProps) {
     const [showQr, setShowQr] = useState(false);
+    const [showCancelReason, setShowCancelReason] = useState(false);
     const cancelAppointmentMutation = useCancelAppointment();
 
-    const handleCancel = () => {
-        const isConfirm = confirm("Are you sure you want to cancel this appointment?");
+    const handleCancel = (reason: string) => {
+        if (!appointment) return;
 
-        if(!isConfirm) return;
-
-        promiseToast(cancelAppointmentMutation.mutateAsync(appointment?.id || ""));
+        promiseToast(
+            cancelAppointmentMutation.mutateAsync({
+                id: appointment.id,
+                reason,
+            })
+        );
     }
 
     return (
@@ -92,6 +97,13 @@ export default function AppointmentModal({
                         label="Status"
                         value={appointment?.status}
                     />
+                    {(appointment?.status === "Cancelled" ||
+                        appointment?.status === "Rejected") && (
+                        <SummaryRow
+                            label="Reason"
+                            value={appointment.statusReason || "Not provided"}
+                        />
+                    )}
 
                     <SummaryRow
                         label="Date Submitted"
@@ -165,7 +177,7 @@ export default function AppointmentModal({
                     {appointment?.status === 'Pending' && (
                         <Button
                             variant="danger"
-                            onClick={handleCancel}
+                            onClick={() => setShowCancelReason(true)}
                             disabled={cancelAppointmentMutation.isPending}
                         >Cancel Appointment</Button>
                     )}
@@ -176,6 +188,13 @@ export default function AppointmentModal({
             close={() => setShowQr(false)}
             show={showQr}
             referenceNumber={appointment?.referenceNumber || ""}
+        />
+        <AppointmentStatusReasonModal
+            open={showCancelReason}
+            status="Cancelled"
+            disabled={cancelAppointmentMutation.isPending}
+            onClose={() => setShowCancelReason(false)}
+            onSubmit={handleCancel}
         />
         </>
     );

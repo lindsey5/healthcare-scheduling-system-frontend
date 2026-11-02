@@ -7,16 +7,17 @@ type UpdateAppointmentResponse = {
     message: string;
 }
 
-const updateAppointment = (id: string, status: string) => 
+const updateAppointment = (id: string, status: string, reason?: string) =>
     apiAxios<UpdateAppointmentResponse>(`/api/appointments/status/${id}`, {
         method: "PATCH",
         data: {
-            status
+            status,
+            reason,
         }
     })
 
 export default function useUpdateAppointment () {
     return useMutation({
-        mutationFn: ({ status, id } : { status: string, id: string }) => updateAppointment(id, status),
+        mutationFn: ({ status, id, reason } : { status: string, id: string, reason?: string }) => updateAppointment(id, status, reason),
     })
 }

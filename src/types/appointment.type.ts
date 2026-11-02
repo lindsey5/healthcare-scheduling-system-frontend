@@ -31,6 +31,7 @@ export interface Appointment {
         | "Rescheduled";
 
     purposeOfVisit: string;
+    statusReason?: string | null;
 
     createdAt: Date;
 
