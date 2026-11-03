@@ -185,7 +185,7 @@ function ServiceModal({ close, service, show }: ServiceModalProps) {
                                 Assigned doctors and service hours
                             </h2>
                             <p className="text-sm text-gray-500">
-                                Assigned doctors must have hours within the service hours. Appointment times use the selected doctor&apos;s assigned hours.
+                                Doctor assignments are optional. Assigned doctors&apos; hours must fall within the service hours, and appointment availability follows each doctor&apos;s schedule.
                             </p>
                             {!service && (
                                 <p className="text-sm text-amber-700">
