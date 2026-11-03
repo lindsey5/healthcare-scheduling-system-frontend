@@ -162,13 +162,12 @@ export default function ChatWidget() {
                     {mode === "ai" ? (
                         <Chatbot />
                     ) : (
-                        <ChatWithStaff 
+                        <ChatWithStaff
                             messages={messages}
                             setMessages={setMessages}
-                            setUnread={setUnread} 
+                            setUnread={setUnread}
                             socket={socket}
                             handleReadAll={handleReadAll}
-                        
                         />
                     )}
                 </div>

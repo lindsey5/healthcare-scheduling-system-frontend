@@ -2,21 +2,29 @@ import { useMutation } from "@tanstack/react-query";
 import { apiAxios } from "../../api/apiAxios";
 
 type AcceptMessageRecordingNoticeResponse = {
-    recordingConsentAt: string;
+    recordingConsentAt: string | null;
 };
 
-const acceptMessageRecordingNotice = (conversationId: number) =>
+const updateMessageRecordingConsent = (
+    conversationId: number,
+    accepted: boolean
+) =>
     apiAxios<AcceptMessageRecordingNoticeResponse>(
         `/api/conversations/${conversationId}/recording-consent`,
         {
             method: "POST",
-            data: { accepted: true },
+            data: { accepted },
         }
     );
 
 export default function useAcceptMessageRecordingNotice() {
     return useMutation({
-        mutationFn: (conversationId: number) =>
-            acceptMessageRecordingNotice(conversationId),
+        mutationFn: ({
+            conversationId,
+            accepted,
+        }: {
+            conversationId: number;
+            accepted: boolean;
+        }) => updateMessageRecordingConsent(conversationId, accepted),
     });
 }

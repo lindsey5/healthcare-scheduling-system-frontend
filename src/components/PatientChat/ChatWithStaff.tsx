@@ -1,12 +1,71 @@
-import { useEffect, useRef, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
-import { Headset, Send, User } from "lucide-react";
+import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import { Headset, Loader2, Send, User } from "lucide-react";
 import type { PaginationState } from "@tanstack/react-table";
 import type { Socket } from "socket.io-client";
 import type { ConversationMessage } from "../../types/conversation.type";
 import { cn, errorToast, timeAgo } from "../../utils/utils";
 import Button from "../ui/Button";
 import useGetPatientConversation from "../../hooks/conversation/use-get-patient-conversation.hook";
-import useAcceptMessageRecordingNotice from "../../hooks/conversation/use-accept-message-recording-notice.hook";
+import { RecordingConsentProvider } from "./RecordingConsentContext";
+import useRecordingConsent from "./useRecordingConsent";
+
+type RecordingConsentNoticeProps = {
+    conversationId?: number;
+    recordingConsentAt: string | null | undefined;
+};
+
+const RecordingConsentNotice = memo(function RecordingConsentNotice({
+    conversationId,
+    recordingConsentAt,
+}: RecordingConsentNoticeProps) {
+    const {
+        consentOverride,
+        isPending,
+        setRecordingConsent,
+    } = useRecordingConsent();
+    const checked = consentOverride &&
+        consentOverride.conversationId === conversationId
+        ? consentOverride.accepted
+        : Boolean(recordingConsentAt);
+    const onChange = useCallback(async (
+        event: ChangeEvent<HTMLInputElement>
+    ) => {
+        if (!conversationId) return;
+
+        try {
+            await setRecordingConsent(conversationId, event.target.checked);
+        } catch {
+            return;
+        }
+    }, [conversationId, setRecordingConsent]);
+
+    return (
+        <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <label className="group relative mt-2 flex cursor-pointer items-start gap-2 text-xs font-medium text-gray-700">
+                <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={onChange}
+                    disabled={!conversationId || isPending}
+                    className="mt-0.5 h-4 w-4 accent-green-600"
+                />
+                <span>
+                    I understand and acknowledge that these messages are
+                    recorded and stored.
+                </span>
+                <span
+                    role="tooltip"
+                    className="pointer-events-none absolute bottom-full left-0 z-10 mb-2 hidden w-72 rounded-md bg-gray-900 px-3 py-2 text-xs font-normal leading-5 text-white shadow-lg group-hover:block group-focus-within:block"
+                >
+                    Messages in this staff conversation are recorded and
+                    stored in your conversation history. Authorized health
+                    center staff may access them to respond to your inquiry.
+                    Please avoid sharing information that is not needed.
+                </span>
+            </label>
+        </div>
+    );
+});
 
 interface ChatWithStaffProps {
     socket: Socket | null;
@@ -16,7 +75,7 @@ interface ChatWithStaffProps {
     handleReadAll: () => void;
 }
 
-export default function ChatWithStaff({
+function ChatWithStaffContent({
     socket,
     setUnread,
     messages,
@@ -24,8 +83,6 @@ export default function ChatWithStaff({
     handleReadAll,
 }: ChatWithStaffProps) {
     const [input, setInput] = useState("");
-    const [acknowledgedConversationId, setAcknowledgedConversationId] =
-        useState<number | null>(null);
     const [status, setStatus] = useState<"active" | "waiting" | "ended">("waiting");
     const [pagination, setPagination] = useState<PaginationState>({
         pageSize: 10,
@@ -33,20 +90,26 @@ export default function ChatWithStaff({
     });
 
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
-    const topRef = useRef<HTMLDivElement | null>(null);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const previousScrollHeightRef = useRef(0);
+    const previousScrollTopRef = useRef(0);
     const shouldScrollToBottomRef = useRef(true);
 
     const { data, isLoading, isFetching } = useGetPatientConversation({
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
     });
-    const recordingNoticeMutation = useAcceptMessageRecordingNotice();
-    const isFetchingMore = pagination.pageIndex > 0 && isFetching && !isLoading;
+    const {
+        consentOverride,
+        isPending: isRecordingConsentPending,
+    } = useRecordingConsent();
+    const isFetchingMore = pagination.pageIndex > 0 && isFetching;
     const hasAcknowledgedRecording = Boolean(
-        data?.conversation.recordingConsentAt ||
-        acknowledgedConversationId === data?.conversation.id
+        consentOverride &&
+        data &&
+        consentOverride.conversationId === data.conversation.id
+            ? consentOverride.accepted
+            : data?.conversation.recordingConsentAt
     );
     const chatStatus =
         status === "waiting" &&
@@ -58,6 +121,19 @@ export default function ChatWithStaff({
     const hasMore = data
         ? pagination.pageIndex + 1 < data.totalPages
         : false;
+
+    const loadOlderMessages = useCallback(() => {
+        if (isLoading || isFetching || !hasMore) return;
+
+        const container = chatContainerRef.current;
+        if (!container) return;
+
+        previousScrollHeightRef.current = container.scrollHeight;
+        setPagination(prev => ({
+            ...prev,
+            pageIndex: prev.pageIndex + 1,
+        }));
+    }, [hasMore, isFetching, isLoading]);
 
     const patientName = data?.conversation?.patient
         ? `${data.conversation.patient.firstname} ${data.conversation.patient.lastname}`
@@ -73,30 +149,6 @@ export default function ChatWithStaff({
             shouldScrollToBottomRef.current = false;
         });
     }, [messages]);
-
-    useEffect(() => {
-        const target = topRef.current;
-        if (!target) return;
-
-        const observer = new IntersectionObserver(([entry]) => {
-            if (!entry.isIntersecting || isLoading || isFetching || !hasMore) {
-                return;
-            }
-
-            const container = chatContainerRef.current;
-            if (!container) return;
-
-            previousScrollHeightRef.current = container.scrollHeight;
-            setPagination(prev => ({
-                ...prev,
-                pageIndex: prev.pageIndex + 1,
-            }));
-        });
-
-        observer.observe(target);
-
-        return () => observer.disconnect();
-    }, [isLoading, isFetching, hasMore]);
 
     useEffect(() => {
         if (!data) return;
@@ -173,22 +225,7 @@ export default function ChatWithStaff({
         socket?.emit("conversation:start");
     };
 
-    const acknowledgeRecording = async (
-        event: ChangeEvent<HTMLInputElement>
-    ) => {
-        if (!event.target.checked || !data?.conversation) return;
-
-        try {
-            await recordingNoticeMutation.mutateAsync(data.conversation.id);
-            setAcknowledgedConversationId(data.conversation.id);
-        } catch {
-            errorToast(
-                "Could not save acknowledgment",
-                "Please try again before starting or sending a message."
-            );
-        }
-    };
-
+    const conversationId = data?.conversation.id;
     const endConversation = () => {
         if (!socket || !data?.conversation) return;
 
@@ -233,18 +270,53 @@ export default function ChatWithStaff({
         }
     };
 
+    const handleChatScroll = (event: React.UIEvent<HTMLDivElement>) => {
+        const scrollTop = event.currentTarget.scrollTop;
+        const reachedTopWhileScrollingUp =
+            scrollTop <= 24 && scrollTop < previousScrollTopRef.current;
+        previousScrollTopRef.current = scrollTop;
+
+        if (reachedTopWhileScrollingUp) {
+            loadOlderMessages();
+        }
+    };
+
+    const handleChatWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+        if (event.deltaY < 0 && event.currentTarget.scrollTop <= 24) {
+            loadOlderMessages();
+        }
+    };
+
     return (
         <>
-            <div ref={chatContainerRef} className="min-h-0 flex-1 overflow-y-auto bg-gray-50 p-4">
-                <div ref={topRef} className="h-1 w-full" />
-
+            <div
+                ref={chatContainerRef}
+                onScroll={handleChatScroll}
+                onWheel={handleChatWheel}
+                className="min-h-0 flex-1 overflow-y-auto bg-gray-50 p-4"
+            >
+                {isLoading && messages.length === 0 && (
+                    <div className="flex h-full items-center justify-center gap-2 text-sm text-gray-500">
+                        <Loader2
+                            size={18}
+                            className="animate-spin text-green-600"
+                            aria-hidden="true"
+                        />
+                        <span>Loading conversation...</span>
+                    </div>
+                )}
                 {isFetchingMore && (
-                    <div className="py-2 text-center text-xs text-gray-400">
-                        Loading older messages...
+                    <div className="flex items-center justify-center gap-2 py-2 text-xs text-gray-400">
+                        <Loader2
+                            size={14}
+                            className="animate-spin"
+                            aria-hidden="true"
+                        />
+                        <span>Loading older messages...</span>
                     </div>
                 )}
 
-                {!hasMore && messages.length > 0 && (
+                {data && !isFetching && !hasMore && messages.length > 0 && (
                     <div className="py-2 text-center text-[10px] text-gray-400">
                         Beginning of conversation
                     </div>
@@ -299,31 +371,10 @@ export default function ChatWithStaff({
             </div>
 
             <div className="border-t bg-white p-3">
-                <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                    <p className="text-xs leading-5 text-gray-600">
-                        Messages in this staff conversation are recorded and
-                        stored in your conversation history. Authorized health
-                        center staff may access them to respond to your inquiry.
-                        Please avoid sharing information that is not needed.
-                    </p>
-                    <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs font-medium text-gray-700">
-                        <input
-                            type="checkbox"
-                            checked={hasAcknowledgedRecording}
-                            onChange={acknowledgeRecording}
-                            disabled={
-                                !data?.conversation ||
-                                hasAcknowledgedRecording ||
-                                recordingNoticeMutation.isPending
-                            }
-                            className="mt-0.5 h-4 w-4 accent-green-600"
-                        />
-                        <span>
-                            I understand and acknowledge that these messages
-                            are recorded and stored.
-                        </span>
-                    </label>
-                </div>
+                <RecordingConsentNotice
+                    conversationId={conversationId}
+                    recordingConsentAt={data?.conversation.recordingConsentAt}
+                />
 
                 {chatStatus !== "active" ? (
                     <>
@@ -331,7 +382,7 @@ export default function ChatWithStaff({
                             disabled={
                                 isLoading ||
                                 !hasAcknowledgedRecording ||
-                                recordingNoticeMutation.isPending
+                                isRecordingConsentPending
                             }
                             className="w-full"
                             onClick={handleStart}
@@ -388,5 +439,13 @@ export default function ChatWithStaff({
                 )}
             </div>
         </>
+    );
+}
+
+export default function ChatWithStaff(props: ChatWithStaffProps) {
+    return (
+        <RecordingConsentProvider>
+            <ChatWithStaffContent {...props} />
+        </RecordingConsentProvider>
     );
 }
