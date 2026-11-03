@@ -1,13 +1,18 @@
 import type { Service } from "./service.type";
-import type { DayOfWeek } from "./types";
 
 export interface Doctor {
     id: number;
     firstname: string;
     lastname: string;
     status: "Active" | "Inactive";
+    offeredServices?: DoctorOfferedService[];
     doctorServices?: DoctorService[];
-    doctorSchedules?: DoctorSchedule[];
+}
+
+export interface DoctorOfferedService {
+    doctorId: number;
+    serviceId: number;
+    service: Service;
 }
 
 export interface DoctorService {
@@ -15,18 +20,6 @@ export interface DoctorService {
     doctorId: number;
     serviceId: number;
     service: Service;
-}
-
-export interface DoctorSchedule {
-    id: number;
-    doctorId: number;
-    day: DayOfWeek;
     startTime: string;
     endTime: string;
 }
-
-export type DoctorSchedulePayload = {
-    day: DayOfWeek;
-    startTime: string;
-    endTime: string;
-};

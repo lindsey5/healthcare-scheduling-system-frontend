@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
 
 import useCreateDoctor from "../../hooks/doctor/use-create-doctor.hook";
 import useUpdateDoctor from "../../hooks/doctor/use-update-doctor.hook";
-
 import type { Doctor } from "../../types/doctor.type";
-import type { Service } from "../../types/service.type";
-
+import { doctorSchema, type DoctorFormData } from "../../schemas/doctorSchema";
 import Card from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
 import Textfield from "../../components/ui/Textfield";
 import Button from "../../components/ui/Button";
-
-import AddService from "./AddService";
-import AddSchedule from "./AddSchedule";
-
-import {
-    doctorSchema,
-    type DoctorFormData,
-    type ScheduleFormData,
-} from "../../schemas/doctorSchema";
-
-import { DAYS, timeSlots } from "../../lib/contants/constants";
+import Dropdown from "../../components/ui/Dropdown";
+import { DAYS } from "../../lib/contants/constants";
+import useGetServices from "../../hooks/service/use-get-services.hook";
 import { promiseToast } from "../../utils/utils";
 
 interface DoctorModalProps {
@@ -39,463 +28,158 @@ export default function DoctorModal({
 }: DoctorModalProps) {
     const createDoctorMutation = useCreateDoctor();
     const updateDoctorMutation = useUpdateDoctor();
-
-    const [showAddSchedule, setShowAddSchedule] = useState(false);
-    const [showAddService, setShowAddService] = useState(false);
-    const [assignedServices, setAssignedServices] = useState<Service[]>([]);
-
+    const { data: servicesData, isLoading: isLoadingServices } = useGetServices();
     const {
+        control,
         formState: { errors },
         handleSubmit,
         reset,
         register,
-        watch,
         setValue,
-        getValues,
     } = useForm<DoctorFormData>({
         resolver: zodResolver(doctorSchema),
-        defaultValues: {
-            firstname: "",
-            lastname: "",
-            doctorServices: [],
-            schedules: [],
-        },
+        defaultValues: { firstname: "", lastname: "", serviceIds: [] },
     });
+    const serviceIds = useWatch({ control, name: "serviceIds" }) ?? [];
+    const services = servicesData?.services ?? [];
 
-    const schedules = watch("schedules");
-    const doctorServices = watch("doctorServices");
-
-    /*
-     * Get unique days from the doctor's schedules.
-     *
-     * Example:
-     * [
-     *   { day: "Monday", ... },
-     *   { day: "Wednesday", ... }
-     * ]
-     *
-     * becomes:
-     * ["Monday", "Wednesday"]
-     */
-    const scheduleDays = [
-        ...new Set(schedules.map((schedule) => schedule.day)),
-    ];
-
-    const sortedSchedules = schedules
-        .map((schedule, index) => ({
-            schedule,
-            index,
-        }))
-        .sort(
-            (a, b) =>
-                DAYS.indexOf(a.schedule.day) -
-                DAYS.indexOf(b.schedule.day)
-        );
+    useEffect(() => {
+        reset({
+            firstname: doctor?.firstname ?? "",
+            lastname: doctor?.lastname ?? "",
+            serviceIds:
+                doctor?.offeredServices?.map((assignment) => assignment.serviceId) ??
+                [],
+        });
+    }, [doctor, show, reset]);
 
     const onSubmit = (data: DoctorFormData) => {
-        const isConfirm = confirm(
-            `Are you sure you want to ${
-                doctor ? "update" : "create"
-            } this doctor?`
-        );
-
-        if (!isConfirm) return;
+        if (!confirm(`Are you sure you want to ${doctor ? "update" : "create"} this doctor?`)) {
+            return;
+        }
 
         promiseToast(
             doctor
-                ? updateDoctorMutation.mutateAsync({
-                      data,
-                      id: doctor.id,
-                  })
+                ? updateDoctorMutation.mutateAsync({ data, id: doctor.id })
                 : createDoctorMutation.mutateAsync(data)
         );
     };
 
-    const handleRemoveService = (id: number) => {
-        const updated = getValues("doctorServices").filter(
-            (serviceId) => serviceId !== id
-        );
-
-        setAssignedServices((prev) =>
-            prev.filter((service) => service.id !== id)
-        );
-
-        setValue("doctorServices", updated, {
-            shouldValidate: true,
-            shouldDirty: true,
-        });
-    };
-
-    const handleAddService = (service: Service | null) => {
-        if (!service) return;
-
-        const isExisting = getValues("doctorServices").some(
-            (serviceId) => serviceId === service.id
-        );
-
-        if (isExisting) {
-            alert("This service has already been added.");
-            return;
-        }
-
-        const newValues = [
-            ...getValues("doctorServices"),
-            service.id,
-        ];
-
-        setAssignedServices((prev) => [...prev, service]);
-
-        setValue("doctorServices", newValues, {
-            shouldValidate: true,
-            shouldDirty: true,
-        });
-
-        setShowAddService(false);
-    };
-
-    const addSchedule = (data: ScheduleFormData) => {
-        const currentSchedules = getValues("schedules");
-
-        const isExisting = currentSchedules.some(
-            (schedule) =>
-                schedule.day === data.day &&
-                schedule.startTime === data.startTime &&
-                schedule.endTime === data.endTime
-        );
-
-        if (isExisting) {
-            alert("This schedule has already been added.");
-            return;
-        }
-
-        setValue(
-            "schedules",
-            [
-                ...currentSchedules,
-                data as DoctorFormData["schedules"][number],
-            ],
-            {
-                shouldValidate: true,
-                shouldDirty: true,
-            }
-        );
-
-        setShowAddSchedule(false);
-    };
-
-    const handleRemoveSchedule = (index: number) => {
-        const currentSchedules = getValues("schedules");
-
-        // Remove the selected schedule
-        const updatedSchedules = currentSchedules.filter(
-            (_, scheduleIndex) => scheduleIndex !== index
-        );
-
-        setValue("schedules", updatedSchedules, {
-            shouldValidate: true,
-            shouldDirty: true,
-        });
-
-        // Get the remaining schedule days
-        const remainingDays = [
-            ...new Set(
-                updatedSchedules.map((schedule) => schedule.day)
-            ),
-        ];
-
-        /*
-         * Remove services that are no longer available
-         * on any of the remaining schedule days.
-         *
-         * Example:
-         *
-         * Schedules:
-         * Monday
-         * Wednesday
-         *
-         * Service:
-         * Wednesday
-         *
-         * Remove Wednesday schedule
-         * -> Service is automatically removed.
-         */
-
-        const validServices = assignedServices.filter((service) => {
-            if (!service.dayOfWeek) {
-                return false;
-            }
-
-            // If dayOfWeek is an array
-            if (Array.isArray(service.dayOfWeek)) {
-                return service.dayOfWeek.some((day) =>
-                    remainingDays.includes(day)
-                );
-            }
-
-            // If dayOfWeek is a single day
-            return remainingDays.includes(
-                service.dayOfWeek
-            );
-        });
-
-        setAssignedServices(validServices);
-
-        setValue(
-            "doctorServices",
-            validServices.map((service) => service.id),
-            {
-                shouldValidate: true,
-                shouldDirty: true,
-            }
-        );
-    };
-
-    const getTimeLabel = (value: string) => {
-        return (
-            timeSlots.find((time) => time.value === value)?.label ??
-            value
-        );
-    };
-
-    useEffect(() => {
-        if (doctor) {
-            reset({
-                firstname: doctor.firstname,
-                lastname: doctor.lastname,
-                doctorServices:
-                    doctor.doctorServices?.map(
-                        (service) => service.service.id
-                    ) ?? [],
-                schedules: doctor.doctorSchedules ?? [],
-            });
-
-            setAssignedServices(
-                doctor.doctorServices?.map(
-                    (service) => service.service
-                ) ?? []
-            );
-        } else {
-            reset({
-                firstname: "",
-                lastname: "",
-                doctorServices: [],
-                schedules: [],
-            });
-
-            setAssignedServices([]);
-        }
-
-        setShowAddSchedule(false);
-        setShowAddService(false);
-    }, [doctor, show, reset]);
-
     return (
-        <Modal
-            onClose={close}
-            open={show}
-            className="max-w-[90vw] w-200 h-screen flex flex-col justify-center"
-        >
-            <AddService
-                close={() => setShowAddService(false)}
-                show={showAddService}
-                handleAdd={handleAddService}
-                doctorServices={doctorServices}
-                schedules={watch('schedules')}
-            />
-
+        <Modal onClose={close} open={show}>
             <Card className="relative space-y-5 max-h-[80%] overflow-auto">
-                {/* Close */}
-                <button
-                    type="button"
-                    onClick={close}
-                    className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100 cursor-pointer transition"
-                    aria-label="Close"
-                >
-                    <X size={20} />
-                </button>
+                <h1 className="text-xl font-bold text-[#1E3D15]">
+                    {doctor ? "Edit" : "Create"} Doctor
+                </h1>
 
-                {/* Title */}
-                <div className="pr-10">
-                    <h1 className="text-xl font-bold text-[#1E3D15]">
-                        {doctor ? "Edit" : "Create"} Doctor
-                    </h1>
-                </div>
+                <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                    <Textfield
+                        label="First Name"
+                        registration={register("firstname")}
+                        placeholder="Enter first name"
+                        error={errors.firstname?.message}
+                    />
+                    <Textfield
+                        label="Last Name"
+                        registration={register("lastname")}
+                        placeholder="Enter last name"
+                        error={errors.lastname?.message}
+                    />
 
-                <form
-                    className="flex flex-col gap-5"
-                    onSubmit={handleSubmit(onSubmit)}
-                >
-                    {/* Name */}
-                    <div className="flex gap-3 w-full">
-                        <Textfield
-                            className="flex-1"
-                            label="First Name"
-                            registration={register("firstname")}
-                            placeholder="Enter first name"
-                            error={errors.firstname?.message}
-                        />
+                    <section className="space-y-3">
+                        <div>
+                            <h2 className="font-semibold text-gray-800">
+                                Services this doctor can offer
+                            </h2>
+                            <p className="text-sm text-gray-500">
+                                Assign services only. Configure this doctor&apos;s service hours in the Services panel.
+                            </p>
+                        </div>
 
-                        <Textfield
-                            className="flex-1"
-                            label="Last Name"
-                            registration={register("lastname")}
-                            placeholder="Enter last name"
-                            error={errors.lastname?.message}
-                        />
-                    </div>
-
-                    {/* Schedules */}
-                    <div className="space-y-3">
-                        <h2 className="font-medium text-gray-700">
-                            Schedules:
-                        </h2>
-
-                        {!showAddSchedule && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="text-sm w-full py-2"
-                                onClick={() =>
-                                    setShowAddSchedule(true)
-                                }
-                            >
-                                Add Schedule
-                            </Button>
-                        )}
-
-                        {showAddSchedule && (
-                            <AddSchedule
-                                onClose={() =>
-                                    setShowAddSchedule(false)
-                                }
-                                onAdd={addSchedule}
-                                existingDays={scheduleDays}
-                            />
-                        )}
-
-                        {schedules.length > 0 && (
-                            <div className="space-y-2">
-                                {sortedSchedules.map(
-                                    ({ schedule, index }) => (
+                        {serviceIds.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {serviceIds.map((serviceId) => {
+                                    const service = services.find(
+                                        (item) => item.id === serviceId
+                                    );
+                                    return (
                                         <div
-                                            key={`${schedule.day}-${schedule.startTime}-${schedule.endTime}-${index}`}
-                                            className="flex items-center justify-between border border-gray-300 rounded-md px-3 py-2"
+                                            key={serviceId}
+                                            className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2"
                                         >
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-700">
-                                                    {schedule.day}
-                                                </p>
-
-                                                <p className="text-xs text-gray-500">
-                                                    {getTimeLabel(
-                                                        schedule.startTime
-                                                    )}{" "}
-                                                    -{" "}
-                                                    {getTimeLabel(
-                                                        schedule.endTime
-                                                    )}
-                                                </p>
-                                            </div>
-
+                                            <span className="text-sm">
+                                                {service
+                                                    ? `${service.serviceName} - ${service.dayOfWeek}`
+                                                    : "Service"}
+                                            </span>
                                             <button
                                                 type="button"
-                                                className="text-gray-500 hover:text-red-500 cursor-pointer"
+                                                className="text-sm text-red-600 hover:text-red-800"
                                                 onClick={() =>
-                                                    handleRemoveSchedule(
-                                                        index
+                                                    setValue(
+                                                        "serviceIds",
+                                                        serviceIds.filter(
+                                                            (id) => id !== serviceId
+                                                        ),
+                                                        { shouldValidate: true }
                                                     )
                                                 }
-                                                aria-label="Remove schedule"
+                                                aria-label="Remove offered service"
                                             >
-                                                <X size={16} />
+                                                Remove
                                             </button>
                                         </div>
-                                    )
-                                )}
+                                    );
+                                })}
                             </div>
                         )}
 
-                        {errors.schedules?.message && (
+                        {errors.serviceIds?.message && (
                             <p className="text-sm text-red-500">
-                                {errors.schedules.message}
+                                {errors.serviceIds.message}
                             </p>
                         )}
-                    </div>
 
-                    {/* Assigned Services */}
-                    {schedules.length > 0 && (
-                        <div className="space-y-3">
-                            <h2 className="text-sm font-medium text-gray-700">
-                                Assigned Services
-                            </h2>
+                        <Dropdown
+                            label="Add a service"
+                            placeholder={
+                                isLoadingServices ? "Loading services..." : "Select service"
+                            }
+                            disabled={isLoadingServices}
+                            value=""
+                            options={services
+                                .filter((service) => !serviceIds.includes(service.id))
+                                .sort((a, b) => {
+                                    const dayOrder =
+                                        DAYS.indexOf(a.dayOfWeek) - DAYS.indexOf(b.dayOfWeek);
+                                    return dayOrder || a.serviceName.localeCompare(b.serviceName);
+                                })
+                                .map((service) => ({
+                                    label: `${service.serviceName} - ${service.dayOfWeek}`,
+                                    value: service.id,
+                                }))}
+                            onChange={(event) =>
+                                setValue(
+                                    "serviceIds",
+                                    [...serviceIds, Number(event.target.value)],
+                                    { shouldValidate: true }
+                                )
+                            }
+                        />
+                    </section>
 
-                            {!doctorServices.length ? (
-                                <p className="text-sm text-gray-500">
-                                    No assigned services yet
-                                </p>
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {assignedServices.map(
-                                        (service) => (
-                                            <div
-                                                key={service.id}
-                                                className="flex items-center gap-3 border px-2 py-1 border-gray-500 rounded-md"
-                                            >
-                                                <h2 className="text-sm">
-                                                    {
-                                                        service.serviceName
-                                                    }
-                                                </h2>
-
-                                                <button
-                                                    type="button"
-                                                    className="cursor-pointer"
-                                                    onClick={() =>
-                                                        handleRemoveService(
-                                                            service.id
-                                                        )
-                                                    }
-                                                    aria-label="Remove service"
-                                                >
-                                                    <X size={15} />
-                                                </button>
-                                            </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
-
-                            <button
-                                type="button"
-                                className="flex gap-1 items-center text-sm bg-green-100 border border-green-800 px-2 py-1 rounded-md cursor-pointer"
-                                onClick={() =>
-                                    setShowAddService(true)
-                                }
-                            >
-                                <Plus size={16} />
-                                Add Service
-                            </button>
-
-                            {errors.doctorServices?.message && (
-                                <p className="text-sm text-red-500">
-                                    {errors.doctorServices.message}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Submit */}
-                    <div className="flex justify-end">
+                    <div className="flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={close}>
+                            Cancel
+                        </Button>
                         <Button
                             type="submit"
                             disabled={
-                                updateDoctorMutation.isPending ||
-                                createDoctorMutation.isPending
+                                createDoctorMutation.isPending ||
+                                updateDoctorMutation.isPending
                             }
                         >
-                            {doctor
-                                ? "Save Changes"
-                                : "Create Doctor"}
+                            {doctor ? "Save Changes" : "Create Doctor"}
                         </Button>
                     </div>
                 </form>

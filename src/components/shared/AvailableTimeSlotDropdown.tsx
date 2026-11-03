@@ -26,7 +26,15 @@ export default function AvailableTimeSlotDropdown ({
     label,
     onPeriodChange,
 } : AvailableTimeSlotDropdownProps) {
-    const [period, setPeriod] = useState<"morning" | "afternoon" | "">("");
+    const [periodSelection, setPeriodSelection] = useState<{
+        selectionKey: string;
+        period: "morning" | "afternoon";
+    } | null>(null);
+    const selectionKey = `${appointmentDate ?? ""}:${serviceId}:${doctorId}`;
+    const period =
+        periodSelection?.selectionKey === selectionKey
+            ? periodSelection.period
+            : "";
     const requestParams = {
         appointmentDate: appointmentDate ?? "",
         serviceId,
@@ -73,10 +81,18 @@ export default function AvailableTimeSlotDropdown ({
                 value={period}
                 placeholder="Select morning or afternoon"
                 onChange={(event) => {
-                    setPeriod(event.target.value as "morning" | "afternoon");
+                    setPeriodSelection({
+                        selectionKey,
+                        period: event.target.value as "morning" | "afternoon",
+                    });
                     onPeriodChange?.();
                 }}
-                disabled={disabled}
+                disabled={
+                    disabled ||
+                    !appointmentDate ||
+                    !serviceId ||
+                    !doctorId
+                }
                 options={[
                     {
                         label: isMorningLoading

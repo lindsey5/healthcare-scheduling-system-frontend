@@ -34,3 +34,11 @@ export const timeSlots = [
     { label: "3:30 PM", value: "15:30:00" },
     { label: "4:00 PM", value: "16:00:00" },
 ];
+
+export const scheduleTimeSlots = [
+    ...timeSlots.slice(0, 6),
+    { label: "11:00 AM", value: "11:00:00" },
+    { label: "11:30 AM", value: "11:30:00" },
+    { label: "12:00 PM", value: "12:00:00" },
+    ...timeSlots.slice(6),
+].sort((a, b) => a.value.localeCompare(b.value));

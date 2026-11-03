@@ -9,4 +9,18 @@ export interface Service {
         | "Friday"
     startTime: string;
     endTime: string;
+    doctorServices?: ServiceDoctorAssignment[];
+}
+
+export interface ServiceDoctorAssignment {
+    id: number;
+    doctorId: number;
+    serviceId: number;
+    startTime: string;
+    endTime: string;
+    doctor: {
+        id: number;
+        firstname: string;
+        lastname: string;
+    };
 }

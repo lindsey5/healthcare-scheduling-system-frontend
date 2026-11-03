@@ -1,12 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiAxios } from "../../api/apiAxios";
-import type { Doctor, DoctorSchedulePayload } from "../../types/doctor.type";
+import type { Doctor } from "../../types/doctor.type";
 
 type UpdateDoctorPayload = {
     firstname: string;
     lastname: string;
-    doctorServices: number[];
-    schedules: DoctorSchedulePayload[];
+    serviceIds: number[];
 }
 
 type UpdateDoctorResponse = {

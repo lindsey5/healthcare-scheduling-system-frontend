@@ -1,4 +1,3 @@
-import { Clock } from "lucide-react";
 import useGetServices from "../../hooks/service/use-get-services.hook";
 import { cn, formatTime } from "../../utils/utils";
 import Card from "../ui/Card";
@@ -108,12 +107,26 @@ function ServiceCard({
                         {service.serviceName}
                     </h3>
 
-                    <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                        <Clock size={15} />
-
-                        <span>
-                            {formatTime(service.startTime)} - {formatTime(service.endTime)}
-                        </span>
+                    <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-500">
+                            Service hours: {formatTime(service.startTime)} -{" "}
+                            {formatTime(service.endTime)}
+                        </p>
+                        {service.doctorServices?.map((assignment) => (
+                            <div
+                                key={assignment.id}
+                                className="text-sm text-gray-500"
+                            >
+                                <span className="font-medium text-gray-700">
+                                    Dr. {assignment.doctor.firstname}{" "}
+                                    {assignment.doctor.lastname}
+                                </span>
+                                <span className="ml-2">
+                                    {formatTime(assignment.startTime)} -{" "}
+                                    {formatTime(assignment.endTime)}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

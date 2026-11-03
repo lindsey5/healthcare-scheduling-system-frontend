@@ -1,17 +1,19 @@
-import { useForm } from "react-hook-form";
-import { serviceSchema, type ServiceFormData } from "../../schemas/serviceSchema";
-import type { Service } from "../../types/service.type";
+import { memo, useEffect } from "react";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import Card from "../../components/ui/Card";
 import Modal from "../../components/ui/Modal";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { memo, useEffect, useMemo } from "react";
 import Dropdown from "../../components/ui/Dropdown";
 import Button from "../../components/ui/Button";
-import { DAYS, timeSlots } from "../../lib/contants/constants";
+import Textfield from "../../components/ui/Textfield";
+import { DAYS, scheduleTimeSlots } from "../../lib/contants/constants";
+import type { Service } from "../../types/service.type";
 import useCreateService from "../../hooks/service/use-create-service.hook";
 import useUpdateService from "../../hooks/service/use-update-service.hook";
+import useGetDoctors from "../../hooks/doctor/use-get-doctors.hook";
+import { serviceSchema, type ServiceFormData } from "../../schemas/serviceSchema";
 import { promiseToast } from "../../utils/utils";
-import Textfield from "../../components/ui/Textfield";
 
 interface ServiceModalProps {
     service: Service | null;
@@ -19,116 +21,375 @@ interface ServiceModalProps {
     close: () => void;
 }
 
-function ServiceModal ({
-    close,
-    service,
-    show
-} : ServiceModalProps) {
+function ServiceModal({ close, service, show }: ServiceModalProps) {
     const createServiceMutation = useCreateService();
     const updateServiceMutation = useUpdateService();
+    const { data: doctorsData, isLoading: isLoadingDoctors } = useGetDoctors({});
 
-    const { 
-        formState: { errors }, 
-        handleSubmit, 
-        setValue,
-        watch, 
+    const {
+        control,
+        formState: { errors },
+        handleSubmit,
+        register,
         reset,
-        register
+        setError,
+        setValue,
     } = useForm<ServiceFormData>({
-        resolver: zodResolver(serviceSchema)
-    })
-
-    const onSubmit = (data : ServiceFormData) => {
-        const isConfirm = confirm(`Are you sure you want to ${service ? 'update' : 'create'} this service?`);
-
-        if(!isConfirm) return;
-
-        promiseToast(service ? updateServiceMutation.mutateAsync({ data, id: service.id}) : createServiceMutation.mutateAsync(data))
-
-    }
-
-    const startTime = watch("startTime");
-
-    const endTimeOptions = useMemo(() => {
-        if (!startTime) return timeSlots;
-
-        return timeSlots.filter((time) => time.value > startTime);
-    }, [startTime]);
+        resolver: zodResolver(serviceSchema),
+        defaultValues: {
+            serviceName: "",
+            dayOfWeek: "",
+            startTime: "",
+            endTime: "",
+            doctors: [],
+        },
+    });
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "doctors",
+    });
+    const schedules = useWatch({ control, name: "doctors" });
+    const dayOfWeek = useWatch({ control, name: "dayOfWeek" });
+    const serviceStartTime = useWatch({ control, name: "startTime" });
+    const serviceEndTime = useWatch({ control, name: "endTime" });
+    const activeDoctors = doctorsData?.doctors ?? [];
+    const offeredDoctors = activeDoctors.filter((doctor) =>
+        doctor.offeredServices?.some(
+            (assignment) => assignment.serviceId === service?.id
+        )
+    );
 
     useEffect(() => {
-        if (service) {
-            reset({
-                serviceName: service.serviceName,
-                dayOfWeek: service.dayOfWeek,
-                startTime: service.startTime,
-                endTime: service.endTime,
-            });
-        }else {
-            reset({
-                serviceName: "",
-                dayOfWeek: "",
-                startTime: "",
-                endTime: ""
-            })
-        }
+        reset({
+            serviceName: service?.serviceName ?? "",
+            dayOfWeek: service?.dayOfWeek ?? "",
+            startTime: service?.startTime ?? "",
+            endTime: service?.endTime ?? "",
+            doctors:
+                service?.doctorServices?.map((assignment) => ({
+                    doctorId: assignment.doctorId,
+                    startTime: assignment.startTime,
+                    endTime: assignment.endTime,
+                })) ?? [],
+        });
     }, [service, show, reset]);
 
+    const onSubmit = (data: ServiceFormData) => {
+        if (service && data.doctors.length === 0) {
+            setError("doctors", {
+                type: "required",
+                message: "Assign at least one doctor to this service.",
+            });
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to ${service ? "update" : "create"} this service?`)) {
+            return;
+        }
+
+        const request = service
+            ? updateServiceMutation.mutateAsync({ data, id: service.id })
+            : createServiceMutation.mutateAsync(data);
+        promiseToast(request);
+    };
+
     return (
-        <Modal
-            onClose={close}
-            open={show}
-        >
-            <Card className="space-y-5">
+        <Modal onClose={close} open={show}>
+            <Card className="space-y-5 max-h-[80vh] overflow-auto">
                 <h1 className="text-xl font-bold text-[#1E3D15]">
-                    {service ? 'Edit' : 'Create'} Service
+                    {service ? "Edit" : "Create"} Service
                 </h1>
+
                 <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-                    <Textfield 
+                    <Textfield
                         label="Service Name"
                         registration={register("serviceName")}
                         placeholder="Enter service name"
                         error={errors.serviceName?.message}
                     />
-                    <Dropdown 
+                    <Dropdown
                         label="Available Day"
                         placeholder="Select Day"
-                        value={watch('dayOfWeek')}
-                        options={DAYS.map(day => ({ label: day, value: day }))}
+                        value={dayOfWeek}
+                        options={DAYS.map((day) => ({ label: day, value: day }))}
                         error={errors.dayOfWeek?.message}
-                        onChange={(e) => setValue("dayOfWeek", e.target.value)}
+                        onChange={(event) =>
+                            setValue(
+                                "dayOfWeek",
+                                event.target.value,
+                                { shouldValidate: true }
+                            )
+                        }
                     />
-                    <div className="justify-between flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                         <Dropdown
-                            label="Start Time"
-                            placeholder="Select Start Time"
-                            value={watch('startTime')}
-                            options={timeSlots}
-                            onChange={(e) => {
-                                setValue("startTime", e.target.value);
-                                setValue("endTime", "");
-                            }}
+                            label="Service start time"
+                            placeholder="Select start time"
+                            value={serviceStartTime}
+                            options={scheduleTimeSlots.filter(
+                                (time) =>
+                                    !serviceEndTime || time.value < serviceEndTime
+                            )}
                             error={errors.startTime?.message}
+                            onChange={(event) => {
+                                const nextStartTime = event.target.value;
+                                setValue("startTime", nextStartTime, {
+                                    shouldValidate: true,
+                                });
+                                schedules.forEach((schedule, index) => {
+                                    if (
+                                        schedule.startTime &&
+                                        schedule.startTime < nextStartTime
+                                    ) {
+                                        setValue(`doctors.${index}.startTime`, "", {
+                                            shouldValidate: true,
+                                        });
+                                        setValue(`doctors.${index}.endTime`, "", {
+                                            shouldValidate: true,
+                                        });
+                                    }
+                                });
+                            }}
                         />
-                        <div className="w-3 bg-gray-700 mt-5 h-[2px]"/>
                         <Dropdown
-                            label="End Time"
-                            placeholder="Select End Time"
-                            options={endTimeOptions}
-                            value={watch('endTime')}
-                            onChange={(e) => setValue("endTime", e.target.value)}
-                            disabled={!watch("startTime")}
+                            label="Service end time"
+                            placeholder="Select end time"
+                            value={serviceEndTime}
+                            options={scheduleTimeSlots.filter(
+                                (time) =>
+                                    !serviceStartTime || time.value > serviceStartTime
+                            )}
                             error={errors.endTime?.message}
+                            onChange={(event) => {
+                                const nextEndTime = event.target.value;
+                                setValue("endTime", nextEndTime, {
+                                    shouldValidate: true,
+                                });
+                                schedules.forEach((schedule, index) => {
+                                    if (
+                                        schedule.endTime &&
+                                        schedule.endTime > nextEndTime
+                                    ) {
+                                        if (schedule.startTime >= nextEndTime) {
+                                            setValue(`doctors.${index}.startTime`, "", {
+                                                shouldValidate: true,
+                                            });
+                                            setValue(`doctors.${index}.endTime`, "", {
+                                                shouldValidate: true,
+                                            });
+                                        } else {
+                                            setValue(`doctors.${index}.endTime`, "", {
+                                                shouldValidate: true,
+                                            });
+                                        }
+                                    }
+                                });
+                            }}
                         />
                     </div>
-                    <div className="flex justify-end">
-                        <Button type="submit" disabled={createServiceMutation.isPending || updateServiceMutation.isPending}>
+
+                    <section className="space-y-3">
+                        <div>
+                            <h2 className="font-semibold text-gray-800">
+                                Assigned doctors and service hours
+                            </h2>
+                            <p className="text-sm text-gray-500">
+                                Assigned doctors must have hours within the service hours. Appointment times use the selected doctor&apos;s assigned hours.
+                            </p>
+                            {!service && (
+                                <p className="text-sm text-amber-700">
+                                    Save this new service first, assign it to doctors in the Doctors panel, then edit it here to configure their hours.
+                                </p>
+                            )}
+                        </div>
+
+                        {fields.map((field, index) => {
+                            const selectedDoctorId = schedules[index]?.doctorId;
+                            const startTime = schedules[index]?.startTime;
+                            const endTime = schedules[index]?.endTime;
+                            const otherSchedules = schedules.filter(
+                                (schedule, scheduleIndex) =>
+                                    scheduleIndex !== index &&
+                                    Boolean(schedule.startTime) &&
+                                    Boolean(schedule.endTime)
+                            );
+                            const overlapsAnotherSchedule = (
+                                candidateStart: string,
+                                candidateEnd: string
+                            ) =>
+                                otherSchedules.some(
+                                    (schedule) =>
+                                        candidateStart < schedule.endTime &&
+                                        schedule.startTime < candidateEnd
+                                );
+                            const startTimeOptions = scheduleTimeSlots.filter((time) => {
+                                if (
+                                    (serviceStartTime && time.value < serviceStartTime) ||
+                                    (serviceEndTime && time.value >= serviceEndTime)
+                                ) {
+                                    return false;
+                                }
+
+                                if (endTime) {
+                                    return (
+                                        time.value < endTime &&
+                                        !overlapsAnotherSchedule(time.value, endTime)
+                                    );
+                                }
+
+                                return scheduleTimeSlots.some(
+                                    (possibleEnd) =>
+                                        possibleEnd.value > time.value &&
+                                        (!serviceEndTime ||
+                                            possibleEnd.value <= serviceEndTime) &&
+                                        !overlapsAnotherSchedule(
+                                            time.value,
+                                            possibleEnd.value
+                                        )
+                                );
+                            });
+                            const endTimeOptions = scheduleTimeSlots.filter(
+                                (time) =>
+                                    startTime &&
+                                    time.value > startTime &&
+                                    (!serviceEndTime ||
+                                        time.value <= serviceEndTime) &&
+                                    !overlapsAnotherSchedule(startTime, time.value)
+                            );
+                            const availableDoctors = offeredDoctors.filter(
+                                (doctor) =>
+                                    doctor.id === selectedDoctorId ||
+                                    !schedules.some(
+                                        (schedule, scheduleIndex) =>
+                                            scheduleIndex !== index &&
+                                            schedule.doctorId === doctor.id
+                                    )
+                            );
+
+                            return (
+                                <div
+                                    key={field.id}
+                                    className="rounded-xl border border-gray-200 p-3 space-y-3"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Dropdown
+                                            label="Doctor"
+                                            placeholder={
+                                                isLoadingDoctors
+                                                    ? "Loading doctors..."
+                                                    : "Select Doctor"
+                                            }
+                                            value={selectedDoctorId || ""}
+                                            disabled={isLoadingDoctors}
+                                            options={availableDoctors.map((doctor) => ({
+                                                label: `Dr. ${doctor.firstname} ${doctor.lastname}`,
+                                                value: doctor.id,
+                                            }))}
+                                            error={errors.doctors?.[index]?.doctorId?.message}
+                                            onChange={(event) =>
+                                                setValue(
+                                                    `doctors.${index}.doctorId`,
+                                                    Number(event.target.value),
+                                                    { shouldValidate: true }
+                                                )
+                                            }
+                                        />
+                                        <button
+                                            type="button"
+                                            className="mt-9 text-sm text-red-600 hover:text-red-800"
+                                            onClick={() => remove(index)}
+                                            aria-label="Remove assigned doctor"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <Dropdown
+                                            label="Start time"
+                                            placeholder="Select start time"
+                                            value={startTime}
+                                            options={startTimeOptions}
+                                            error={errors.doctors?.[index]?.startTime?.message}
+                                            onChange={(event) => {
+                                                setValue(
+                                                    `doctors.${index}.startTime`,
+                                                    event.target.value,
+                                                    { shouldValidate: true }
+                                                );
+                                                if (event.target.value >= endTime) {
+                                                    setValue(
+                                                        `doctors.${index}.endTime`,
+                                                        "",
+                                                        { shouldValidate: true }
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                        <Dropdown
+                                            label="End time"
+                                            placeholder="Select end time"
+                                            value={endTime}
+                                            options={endTimeOptions}
+                                            disabled={!startTime}
+                                            error={errors.doctors?.[index]?.endTime?.message}
+                                            onChange={(event) =>
+                                                setValue(
+                                                    `doctors.${index}.endTime`,
+                                                    event.target.value,
+                                                    { shouldValidate: true }
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {errors.doctors?.message && (
+                            <p className="text-sm text-red-500">
+                                {errors.doctors.message}
+                            </p>
+                        )}
+                        {service && offeredDoctors.length === 0 && !isLoadingDoctors && (
+                            <p className="text-sm text-amber-700">
+                                No doctors currently offer this service. Assign it to a doctor in the Doctors panel first.
+                            </p>
+                        )}
+                        {service && offeredDoctors.length > schedules.length && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                disabled={isLoadingDoctors}
+                                onClick={() =>
+                                    append({ doctorId: 0, startTime: "", endTime: "" })
+                                }
+                            >
+                                Add Doctor
+                            </Button>
+                        )}
+                    </section>
+
+                    <div className="flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={close}>
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={
+                                (service !== null && offeredDoctors.length === 0) ||
+                                createServiceMutation.isPending ||
+                                updateServiceMutation.isPending
+                            }
+                        >
                             {service ? "Save Changes" : "Create Service"}
                         </Button>
                     </div>
                 </form>
             </Card>
         </Modal>
-    )
+    );
 }
 
 export default memo(ServiceModal);

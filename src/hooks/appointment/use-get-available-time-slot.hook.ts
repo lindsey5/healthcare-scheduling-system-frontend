@@ -20,13 +20,20 @@ const getAvailableTimeSlot = (params : GetAvailableTimeSlotParams) =>
 
 export default function useGetgetAvailableTimeSlot (params : GetAvailableTimeSlotParams) {
     return useQuery<GetAvailableTimeSlotResponse, Error>({
-        queryKey: [`appointments/available-time`, params],
+        queryKey: [
+            "appointments/available-time",
+            params.appointmentDate,
+            params.serviceId,
+            params.doctorId,
+            params.period,
+        ],
         queryFn: () => getAvailableTimeSlot(params),
         enabled: Boolean(
             params.appointmentDate &&
             params.serviceId &&
             params.doctorId
         ),
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
+        staleTime: 0,
     })
 }

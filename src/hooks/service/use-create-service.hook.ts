@@ -5,8 +5,11 @@ import type { Service } from "../../types/service.type";
 type CreateServicePayload = {
     serviceName: string;
     dayOfWeek: string;
-    startTime: string;
-    endTime: string;
+    doctors: {
+        doctorId: number;
+        startTime: string;
+        endTime: string;
+    }[];
 }
 
 type CreateServiceResponse = {

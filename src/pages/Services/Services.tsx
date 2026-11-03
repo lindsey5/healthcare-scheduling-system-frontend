@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from "react";
-import { Clock, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import useGetServices from "../../hooks/service/use-get-services.hook";
 import { cn, formatTime, promiseToast } from "../../utils/utils";
@@ -36,7 +36,7 @@ export default function Services() {
         if(!isConfirm) return;
 
         promiseToast(deleteServiceMutation.mutateAsync(id))
-    }, [])
+    }, [deleteServiceMutation])
 
     return (
         <div className="p-6 flex-1 flex flex-col gap-10 min-h-screen overflow-auto">
@@ -159,12 +159,32 @@ const ServiceCard = memo(function ServiceCard({
                         </h3>
                     </div>
 
-                    <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                        <Clock size={15} />
-                        <span>
-                            {formatTime(service.startTime)} -{" "}
+                    <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-500">
+                            Service hours: {formatTime(service.startTime)} -{" "}
                             {formatTime(service.endTime)}
-                        </span>
+                        </p>
+                        {service.doctorServices?.length ? (
+                            service.doctorServices.map((assignment) => (
+                                <div
+                                    key={assignment.id}
+                                    className="rounded-lg bg-gray-50 px-3 py-2 text-sm"
+                                >
+                                    <p className="font-medium text-gray-700">
+                                        Dr. {assignment.doctor.firstname}{" "}
+                                        {assignment.doctor.lastname}
+                                    </p>
+                                    <p className="text-gray-500">
+                                        {formatTime(assignment.startTime)} -{" "}
+                                        {formatTime(assignment.endTime)}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-gray-500">
+                                No doctors assigned
+                            </p>
+                        )}
                     </div>
                     <div className="flex items-center gap-1 mt-4">
                         <button

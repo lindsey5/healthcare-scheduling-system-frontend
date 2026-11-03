@@ -293,14 +293,15 @@ export default function PurposeOfVisit({
                         error={
                             errors.doctorId?.message
                         }
-                        onChange={(e) =>
+                        onChange={(e) => {
                             setValue(
                                 "doctorId",
                                 Number(
                                     e.target.value
                                 )
-                            )
-                        }
+                            );
+                            setValue("appointmentTime", "");
+                        }}
                         setSelectedDoctor={
                             setSelectedDoctor
                         }
