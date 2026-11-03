@@ -32,7 +32,6 @@ function ServiceModal({ close, service, show }: ServiceModalProps) {
         handleSubmit,
         register,
         reset,
-        setError,
         setValue,
     } = useForm<ServiceFormData>({
         resolver: zodResolver(serviceSchema),
@@ -75,14 +74,6 @@ function ServiceModal({ close, service, show }: ServiceModalProps) {
     }, [service, show, reset]);
 
     const onSubmit = (data: ServiceFormData) => {
-        if (service && data.doctors.length === 0) {
-            setError("doctors", {
-                type: "required",
-                message: "Assign at least one doctor to this service.",
-            });
-            return;
-        }
-
         if (!confirm(`Are you sure you want to ${service ? "update" : "create"} this service?`)) {
             return;
         }
@@ -378,7 +369,6 @@ function ServiceModal({ close, service, show }: ServiceModalProps) {
                         <Button
                             type="submit"
                             disabled={
-                                (service !== null && offeredDoctors.length === 0) ||
                                 createServiceMutation.isPending ||
                                 updateServiceMutation.isPending
                             }
