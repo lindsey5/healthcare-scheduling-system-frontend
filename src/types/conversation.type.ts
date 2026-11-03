@@ -12,6 +12,7 @@ export interface Conversation {
     patientId: number;
     assignedStaffId: number | null;
     status: "Waiting" | "Active" | "Closed";
+    recordingConsentAt: string | null;
     createdAt: string;
     patient: Patient;
     unread: number;
