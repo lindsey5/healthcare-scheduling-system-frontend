@@ -9,6 +9,7 @@ type GetAvailableTimeSlotParams = {
     appointmentDate : string;
     serviceId: number;
     doctorId: number;
+    period: "morning" | "afternoon";
 }
 
 const getAvailableTimeSlot = (params : GetAvailableTimeSlotParams) => 
@@ -21,6 +22,11 @@ export default function useGetgetAvailableTimeSlot (params : GetAvailableTimeSlo
     return useQuery<GetAvailableTimeSlotResponse, Error>({
         queryKey: [`appointments/available-time`, params],
         queryFn: () => getAvailableTimeSlot(params),
+        enabled: Boolean(
+            params.appointmentDate &&
+            params.serviceId &&
+            params.doctorId
+        ),
         refetchOnWindowFocus: false
     })
 }

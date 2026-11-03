@@ -324,6 +324,9 @@ export default function PurposeOfVisit({
                                 e.target.value
                             )
                         }
+                        onPeriodChange={() =>
+                            setValue("appointmentTime", "")
+                        }
                         serviceId={watch("serviceId")}
                         doctorId={watch('doctorId')}
                         disabled={

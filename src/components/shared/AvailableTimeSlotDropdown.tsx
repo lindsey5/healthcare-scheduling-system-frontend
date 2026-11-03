@@ -1,3 +1,4 @@
+import { useState } from "react";
 import useGetgetAvailableTimeSlot from "../../hooks/appointment/use-get-available-time-slot.hook";
 import { formatTime } from "../../utils/utils";
 import Dropdown from "../ui/Dropdown";
@@ -11,6 +12,7 @@ interface AvailableTimeSlotDropdownProps {
     serviceId: number;
     doctorId: number;
     label?: string;
+    onPeriodChange?: () => void;
 }
 
 export default function AvailableTimeSlotDropdown ({ 
@@ -21,9 +23,39 @@ export default function AvailableTimeSlotDropdown ({
     serviceId,
     doctorId,
     value,
-    label
+    label,
+    onPeriodChange,
 } : AvailableTimeSlotDropdownProps) {
-    if(!appointmentDate) {
+    const [period, setPeriod] = useState<"morning" | "afternoon" | "">("");
+    const requestParams = {
+        appointmentDate: appointmentDate ?? "",
+        serviceId,
+        doctorId,
+    };
+    const { data: morningData, isLoading: isMorningLoading } =
+        useGetgetAvailableTimeSlot({
+            ...requestParams,
+            period: "morning",
+        });
+    const { data: afternoonData, isLoading: isAfternoonLoading } =
+        useGetgetAvailableTimeSlot({
+            ...requestParams,
+            period: "afternoon",
+        });
+    const periodData =
+        period === "morning"
+            ? morningData
+            : period === "afternoon"
+                ? afternoonData
+                : undefined;
+    const isPeriodLoading =
+        period === "morning"
+            ? isMorningLoading
+            : period === "afternoon"
+                ? isAfternoonLoading
+                : false;
+
+    if(!appointmentDate || !serviceId || !doctorId) {
         return (
             <Dropdown 
                 label={label || "Available Time Slot *"}
@@ -34,17 +66,55 @@ export default function AvailableTimeSlotDropdown ({
         )
     };
 
-    const { data } = useGetgetAvailableTimeSlot({ appointmentDate, serviceId, doctorId });
-
     return (
-        <Dropdown 
-            onChange={onChange}
-            error={error}
-            label={label || "Available Time Slot"}
-            placeholder="Select Time Slot"
-            value={value}
-            disabled={disabled}
-            options={data?.availableTimes.map(time => ({ label: `${formatTime(time)}`, value: time })) || []}
-        />
+        <div className="flex-1 space-y-3">
+            <Dropdown
+                label="Time of Day *"
+                value={period}
+                placeholder="Select morning or afternoon"
+                onChange={(event) => {
+                    setPeriod(event.target.value as "morning" | "afternoon");
+                    onPeriodChange?.();
+                }}
+                disabled={disabled}
+                options={[
+                    {
+                        label: isMorningLoading
+                            ? "Morning (checking availability...)"
+                            : `Morning (${morningData?.availableTimes.length ?? 0} slots)`,
+                        value: "morning",
+                    },
+                    {
+                        label: isAfternoonLoading
+                            ? "Afternoon (checking availability...)"
+                            : `Afternoon (${afternoonData?.availableTimes.length ?? 0} slots)`,
+                        value: "afternoon",
+                    },
+                ]}
+            />
+            {period && (
+                <>
+                    <p className="text-sm text-gray-600" aria-live="polite">
+                        {isPeriodLoading
+                            ? "Checking available slots..."
+                            : `${periodData?.availableTimes.length ?? 0} ${
+                                period === "morning" ? "morning" : "afternoon"
+                            } slots available`}
+                    </p>
+                    <Dropdown
+                        onChange={onChange}
+                        error={error}
+                        label={label || "Available Time Slot"}
+                        placeholder="Select Time Slot"
+                        value={value}
+                        disabled={disabled || isPeriodLoading}
+                        options={periodData?.availableTimes.map((time) => ({
+                            label: formatTime(time),
+                            value: time,
+                        })) || []}
+                    />
+                </>
+            )}
+        </div>
     )
 }

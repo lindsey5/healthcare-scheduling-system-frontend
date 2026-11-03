@@ -226,6 +226,11 @@ export default function RescheduleAppointmentModal({
                                 shouldValidate: true,
                             })
                         }
+                        onPeriodChange={() =>
+                            setValue("newAppointmentTime", "", {
+                                shouldValidate: true,
+                            })
+                        }
                         serviceId={appointment?.serviceId ?? 0}
                         doctorId={newDoctorId}
                     />
