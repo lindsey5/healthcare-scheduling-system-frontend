@@ -8,6 +8,7 @@ type RescheduleAppointmentResponse = {
 }
 
 type RescheduleAppointmentDTO = {
+    newServiceId: number;
     newDoctorId: number;
     newAppointmentDate: string;
     newAppointmentTime: string;

@@ -97,6 +97,10 @@ function ServiceCard({
 }: {
     service: Service;
 }) {
+    const doctorServices = [...(service.doctorServices ?? [])].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime)
+    );
+
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
             <div className="flex">
@@ -112,7 +116,7 @@ function ServiceCard({
                             Service hours: {formatTime(service.startTime)} -{" "}
                             {formatTime(service.endTime)}
                         </p>
-                        {service.doctorServices?.map((assignment) => (
+                        {doctorServices.map((assignment) => (
                             <div
                                 key={assignment.id}
                                 className="text-sm text-gray-500"

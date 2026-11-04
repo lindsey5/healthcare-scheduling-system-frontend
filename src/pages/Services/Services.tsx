@@ -147,6 +147,10 @@ const ServiceCard = memo(function ServiceCard({
     openModal: (service: Service) => void;
     handleDelete: (id: number) => void;
 }) {
+    const doctorServices = [...(service.doctorServices ?? [])].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime)
+    );
+
     return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
             <div className="flex">
@@ -164,8 +168,8 @@ const ServiceCard = memo(function ServiceCard({
                             Service hours: {formatTime(service.startTime)} -{" "}
                             {formatTime(service.endTime)}
                         </p>
-                        {service.doctorServices?.length ? (
-                            service.doctorServices.map((assignment) => (
+                        {doctorServices.length ? (
+                            doctorServices.map((assignment) => (
                                 <div
                                     key={assignment.id}
                                     className="rounded-lg bg-gray-50 px-3 py-2 text-sm"

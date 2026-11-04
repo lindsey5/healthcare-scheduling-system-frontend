@@ -31,6 +31,10 @@ export const rescheduleAppointmentSchema = z.object({
         .string("Select preferred appointment date")
         .min(1, "Select preferred appointment date"),
 
+    newServiceId: z
+        .number("Select preferred service")
+        .min(1, "Select preferred service"),
+
     newDoctorId: z
         .number("Select preferred doctor")
         .min(1, "Select preferred doctor"),
@@ -47,4 +51,3 @@ export const rescheduleAppointmentSchema = z.object({
 });
 
 export type RescheduleAppointmentFormData = z.infer<typeof rescheduleAppointmentSchema>;
-
