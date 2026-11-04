@@ -1,7 +1,7 @@
 import useGetServices from "../../hooks/service/use-get-services.hook";
 import { cn, formatTime } from "../../utils/utils";
 import Card from "../ui/Card";
-import { DAYS } from "../../lib/contants/constants";
+import { DAYS } from "../../lib/constants/constants";
 import type { Service } from "../../types/service.type";
 
 export default function Services() {

@@ -11,7 +11,7 @@ import Modal from "../../components/ui/Modal";
 import Textfield from "../../components/ui/Textfield";
 import Button from "../../components/ui/Button";
 import Dropdown from "../../components/ui/Dropdown";
-import { DAYS } from "../../lib/contants/constants";
+import { DAYS } from "../../lib/constants/constants";
 import useGetServices from "../../hooks/service/use-get-services.hook";
 import { promiseToast } from "../../utils/utils";
 

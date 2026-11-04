@@ -7,7 +7,7 @@ import Modal from "../../components/ui/Modal";
 import Dropdown from "../../components/ui/Dropdown";
 import Button from "../../components/ui/Button";
 import Textfield from "../../components/ui/Textfield";
-import { DAYS, scheduleTimeSlots } from "../../lib/contants/constants";
+import { DAYS, scheduleTimeSlots } from "../../lib/constants/constants";
 import type { Service } from "../../types/service.type";
 import useCreateService from "../../hooks/service/use-create-service.hook";
 import useUpdateService from "../../hooks/service/use-update-service.hook";

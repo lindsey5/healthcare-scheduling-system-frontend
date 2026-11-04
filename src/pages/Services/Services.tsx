@@ -5,7 +5,7 @@ import useGetServices from "../../hooks/service/use-get-services.hook";
 import { cn, formatTime, promiseToast } from "../../utils/utils";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { DAYS } from "../../lib/contants/constants";
+import { DAYS } from "../../lib/constants/constants";
 import type { Service } from "../../types/service.type";
 import ServiceModal from "./ServiceModal";
 import useDeleteService from "../../hooks/service/use-delete-service.hook";

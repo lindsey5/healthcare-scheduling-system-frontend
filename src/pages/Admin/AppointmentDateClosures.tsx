@@ -4,7 +4,7 @@ import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Textfield from "../../components/ui/Textfield";
 import Dropdown from "../../components/ui/Dropdown";
-import { timeSlots } from "../../lib/contants/constants";
+import { timeSlots } from "../../lib/constants/constants";
 import {
     useAppointmentDateClosures,
     useCreateAppointmentDateClosure,

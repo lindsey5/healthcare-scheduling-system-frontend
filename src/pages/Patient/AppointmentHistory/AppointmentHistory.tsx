@@ -9,7 +9,7 @@ import AppointmentStatusChip from "../../../components/ui/StatusChip";
 import Textfield from "../../../components/ui/Textfield";
 import { Eye, Search } from "lucide-react";
 import Dropdown from "../../../components/ui/Dropdown";
-import { STATUS } from "../../../lib/contants/constants";
+import { STATUS } from "../../../lib/constants/constants";
 import AppointmentModal from "./AppointmentModal";
 import { useSearchParams } from "react-router-dom";
 
