@@ -13,12 +13,13 @@ import type {
     UseFormWatch,
 } from "react-hook-form";
 import Button from "../../../components/ui/Button";
-import { ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, CalendarCheck, CalendarX, Loader2 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Doctor } from "../../../types/doctor.type";
 import type { Service } from "../../../types/service.type";
 import { useState } from "react";
 import { useAppointmentDateClosures } from "../../../hooks/appointment/use-appointment-date-closures.hook";
+import useGetAvailableServiceSlots from "../../../hooks/appointment/use-get-available-service-slots.hook";
 import { formatTime } from "../../../utils/utils";
 
 interface PurposeOfVisitProps {
@@ -122,6 +123,11 @@ export default function PurposeOfVisit({
     const appointmentDay = appointmentDate
         ? getDayOfWeek(appointmentDate)
         : undefined;
+    const {
+        data: availableServiceSlots,
+        isFetching: isAvailableServiceSlotsFetching,
+        isError: isAvailableServiceSlotsError,
+    } = useGetAvailableServiceSlots(appointmentDate);
 
     const onSubmit = () => {
         next();
@@ -249,6 +255,104 @@ export default function PurposeOfVisit({
                                 : "."}
                         </p>
                     )}
+
+
+{appointmentDate && (
+    <section
+        className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+        aria-live="polite"
+    >
+        <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-50 text-green-700">
+                <CalendarCheck size={18} />
+            </div>
+            <div>
+                <h2 className="font-semibold text-gray-900">
+                    Service Availability
+                </h2>
+                <p className="text-xs text-gray-500">
+                    Available appointments for selected date
+                </p>
+            </div>
+        </div>
+
+        <div className="p-5">
+            {isAvailableServiceSlotsFetching ? (
+                <div className="flex items-center gap-3 py-6 text-sm text-gray-500">
+                    <Loader2 size={18} className="animate-spin text-green-600" />
+                    Checking available appointments...
+                </div>
+            ) : isAvailableServiceSlotsError ? (
+                <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-600">
+                    <AlertCircle size={18} />
+                    Unable to load service availability. Please try again.
+                </div>
+            ) : availableServiceSlots?.services.length ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {availableServiceSlots.services.map((service) => (
+                        <div
+                            key={service.serviceId}
+                            className="group rounded-xl border border-gray-100 bg-gray-50/70 p-4 transition-all hover:border-green-200 hover:bg-green-50/40"
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                        {service.serviceName}
+                                    </p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Available appointments
+                                    </p>
+                                </div>
+
+                                <div className={`flex h-10 min-w-10 items-center justify-center rounded-xl px-2 text-sm font-bold ${
+                                    service.availableSlots > 0
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-200 text-gray-500"
+                                }`}>
+                                    {service.availableSlots}
+                                </div>
+                            </div>
+
+                            <div className="mt-4 flex items-center justify-between">
+                                <span className={`flex items-center gap-1.5 text-xs font-medium ${
+                                    service.availableSlots > 0
+                                        ? "text-green-700"
+                                        : "text-gray-500"
+                                }`}>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${
+                                        service.availableSlots > 0
+                                            ? "bg-green-500"
+                                            : "bg-gray-400"
+                                    }`} />
+                                    {service.availableSlots > 0
+                                        ? "Slots available"
+                                        : "Fully booked"}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                    {service.availableSlots}{" "}
+                                    {service.availableSlots === 1 ? "slot" : "slots"}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                        <CalendarX size={22} />
+                    </div>
+                    <p className="text-sm font-medium text-gray-800">
+                        No scheduled services
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                        There are no services scheduled for this date.
+                    </p>
+                </div>
+            )}
+        </div>
+    </section>
+)}
+
 
                 {/* Service */}
                 <ServicesDropdown
