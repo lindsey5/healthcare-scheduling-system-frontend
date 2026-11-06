@@ -72,6 +72,14 @@ export default function Textfield({
                     disabled={disabled}
                     type={inputType}
                     onChange={handleChange}
+                    onWheel={
+                        type === "number"
+                            ? (event) => {
+                                event.preventDefault();
+                                event.currentTarget.blur();
+                            }
+                            : undefined
+                    }
                     className={cn(
                         "w-full border rounded-xl",
                         icon ? "pl-12" : "pl-4",
