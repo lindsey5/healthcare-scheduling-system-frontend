@@ -15,6 +15,7 @@ import Audits from "../pages/Admin/Audits/Audits";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 import MyAudits from "../pages/MyAudits/MyAudits";
 import AppointmentDateClosures from "../pages/Admin/AppointmentDateClosures";
+import AppointmentCapacities from "../pages/Admin/AppointmentCapacities";
 
 export const AdminRoutes: RouteObject = {
     path: "admin",
@@ -41,6 +42,10 @@ export const AdminRoutes: RouteObject = {
                 {
                     path: "closed-dates",
                     element: <AppointmentDateClosures />,
+                },
+                {
+                    path: "appointment-capacities",
+                    element: <AppointmentCapacities />,
                 },
                 {
                     path: "services",

@@ -3,6 +3,7 @@ import { apiAxios } from "../../api/apiAxios";
 
 type GetAvailableTimeSlotResponse = {
     availableTimes: string[];
+    remainingSlots: number;
 }
 
 type GetAvailableTimeSlotParams = {

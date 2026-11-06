@@ -7,6 +7,11 @@ type AvailableServiceSlotsResponse = {
         serviceName: string;
         availableSlots: number;
     }[];
+    capacity: {
+        morningRemaining: number;
+        afternoonRemaining: number;
+        totalRemaining: number;
+    };
 };
 
 const getAvailableServiceSlots = (appointmentDate: string) =>

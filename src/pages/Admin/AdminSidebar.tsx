@@ -13,6 +13,7 @@ import {
     MessageCircle,
     ClipboardCheck,
     CalendarOff,
+    Gauge,
 } from "lucide-react";
 import { useAuthStore } from "../../lib/store/authStore";
 import type { Dispatch, SetStateAction } from "react";
@@ -32,6 +33,11 @@ const menuItems = [
         name: "Closed Dates",
         icon: CalendarOff,
         path: "/admin/closed-dates",
+    },
+    {
+        name: "Slot Capacity",
+        icon: Gauge,
+        path: "/admin/appointment-capacities",
     },
     {
         name: "Scan QR",

@@ -4,7 +4,7 @@ import { formatTime } from "../../utils/utils";
 import Dropdown from "../ui/Dropdown";
 
 interface AvailableTimeSlotDropdownProps {
-    onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
     error?: string;
     disabled?: boolean;
     appointmentDate?: string;
@@ -56,6 +56,7 @@ export default function AvailableTimeSlotDropdown ({
             : period === "afternoon"
                 ? afternoonData
                 : undefined;
+    const availableTimeCount = periodData?.availableTimes.length ?? 0;
     const isPeriodLoading =
         period === "morning"
             ? isMorningLoading
@@ -97,13 +98,13 @@ export default function AvailableTimeSlotDropdown ({
                     {
                         label: isMorningLoading
                             ? "Morning (checking availability...)"
-                            : `Morning (${morningData?.availableTimes.length ?? 0} slots)`,
+                            : `Morning (${morningData?.availableTimes.length ?? 0} available)`,
                         value: "morning",
                     },
                     {
                         label: isAfternoonLoading
                             ? "Afternoon (checking availability...)"
-                            : `Afternoon (${afternoonData?.availableTimes.length ?? 0} slots)`,
+                            : `Afternoon (${afternoonData?.availableTimes.length ?? 0} available)`,
                         value: "afternoon",
                     },
                 ]}
@@ -112,10 +113,10 @@ export default function AvailableTimeSlotDropdown ({
                 <>
                     <p className="text-sm text-gray-600" aria-live="polite">
                         {isPeriodLoading
-                            ? "Checking available slots..."
-                            : `${periodData?.availableTimes.length ?? 0} ${
+                            ? "Checking available times..."
+                            : `${availableTimeCount} ${
                                 period === "morning" ? "morning" : "afternoon"
-                            } slots available`}
+                            } ${availableTimeCount === 1 ? "time" : "times"} available`}
                     </p>
                     <Dropdown
                         onChange={onChange}
