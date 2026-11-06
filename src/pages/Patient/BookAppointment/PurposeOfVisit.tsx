@@ -361,7 +361,9 @@ export default function PurposeOfVisit({
                         setSelectedDoctor(null);
                     }}
                     error={errors.serviceId?.message}
-                    disabled={!appointmentDate}
+                    disabled={
+                        !appointmentDate || isAvailableServiceSlotsFetching
+                    }
                     value={
                         watch("serviceId") ||
                         undefined
