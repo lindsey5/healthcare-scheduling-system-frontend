@@ -185,7 +185,7 @@ export default function StaffNotificationBell() {
                     </div>
 
                     {/* Notifications */}
-                    <div className="max-h-[420px] space-y-3 overflow-y-auto bg-gray-50 p-3">
+                    <div className="max-h-[60vh] 2xl:max-h-[420px] space-y-3 overflow-y-auto bg-gray-50 p-3">
                         {notifications.length ===
                         0 ? (
                             <div className="flex flex-col items-center justify-center py-14">

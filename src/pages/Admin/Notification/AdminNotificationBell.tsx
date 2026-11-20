@@ -114,7 +114,7 @@ export default function AdminNotificationBell() {
 
             {/* Dropdown */}
             {open && (
-                <div className="absolute right-0 z-20 mt-3 w-[400px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                <div className="absolute right-0 z-20 mt-3 w-[400px]zz overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
                     {/* Header */}
                     <div className="flex items-center justify-between border-b border-gray-300 px-5 py-4 bg-white">
                         <div>
@@ -139,7 +139,7 @@ export default function AdminNotificationBell() {
                     </div>
 
                     {/* Notifications */}
-                    <div className="max-h-[420px] overflow-y-auto bg-gray-50 p-3 space-y-3">
+                    <div className="max-h-[60vh] 2xl:max-h-[420px] overflow-y-auto bg-gray-50 p-3 space-y-3">
                         {notifications.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-14">
                                 <Bell
