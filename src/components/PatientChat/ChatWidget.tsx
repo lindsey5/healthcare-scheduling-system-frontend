@@ -77,7 +77,7 @@ export default function ChatWidget() {
             {/* Chat Window */}
             <div
                 className={cn(
-                    "fixed bottom-24 right-6 z-50 flex h-[70vh] max-h-[600px] w-[90vw] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl md:w-[380px]",
+                    "fixed bottom-5 right-6 z-50 flex h-[90vh] lg:h-[90vh] lg:max-h-[800px] w-[90vw] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl md:w-[380px]",
                     !isOpen && "hidden"
                 )}
             >
@@ -174,34 +174,30 @@ export default function ChatWidget() {
             </div>
 
             {/* Floating Button */}
-            <button
-                onClick={handleOpenChat}
-                className={cn(
-                    "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700",
-                    isOpen && "bg-gray-700 hover:bg-gray-800"
-                )}
-                aria-label={isOpen ? "Close chat" : "Open chat"}
-            >
-                {/* Pulse Effect */}
-                {!isOpen && unread > 0 && (
-                    <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
-                )}
+            {!isOpen && (
+                <button
+                    onClick={handleOpenChat}
+                    className={cn(
+                        "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-lg transition hover:scale-105 hover:bg-green-700",
+                        isOpen && "bg-gray-700 hover:bg-gray-800"
+                    )}
+                    aria-label={isOpen ? "Close chat" : "Open chat"}
+                >
+                    {/* Pulse Effect */}
+                    {!isOpen && unread > 0 && (
+                        <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
+                    )}
 
-                {isOpen ? (
-                    <X size={25} />
-                ) : (
-                    <>
-                        <MessageCircle size={25} />
+                    <MessageCircle size={25} />
 
-                        {/* Unread badge */}
-                        {unread > 0 && (
-                            <span className="absolute -right-1 -top-1 flex min-w-6 h-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-md">
-                                {unread > 99 ? "99+" : unread}
-                            </span>
-                        )}
-                    </>
-                )}
-            </button>
+                    {/* Unread badge */}
+                    {unread > 0 && (
+                        <span className="absolute -right-1 -top-1 flex min-w-6 h-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow-md">
+                            {unread > 99 ? "99+" : unread}
+                        </span>
+                    )}
+                </button>
+            )}
         </>
     );
 }

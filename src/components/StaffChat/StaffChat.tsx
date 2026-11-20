@@ -113,7 +113,7 @@ export default function StaffChat() {
     return (
         <>
             {isOpen && (
-                <div className="fixed bottom-24 right-6 z-20 flex h-[650px] w-[calc(100vw-48px)] max-w-[950px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+                <div className="fixed bottom-5 right-6 z-20 flex h-[90vh] 2xl:max-h-[650px] w-[calc(100vw-48px)] max-w-[800px] overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl">
                     {/* Conversation Sidebar */}
                     <aside className="flex w-[320px] shrink-0 flex-col border-r border-gray-200 bg-white">
                         <div className="border-b border-gray-200 p-5">
@@ -304,28 +304,30 @@ export default function StaffChat() {
             )}
 
             {/* Floating Button */}
-            <button
-                type="button"
-                onClick={toggleChat}
-                className={cn(
-                    "fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105",
-                    isOpen ? "bg-gray-700 hover:bg-gray-800" : "bg-green-600 hover:bg-green-700"
-                )}
-                aria-label={isOpen ? "Close messages" : "Open messages"}
-            >
-                {!isOpen && unreadCount > 0 && (
-                    <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
-                )}
-                {!isOpen && unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
-                        {unreadCount > 99 ? "99+" : Number(unreadCount)}
-                    </span>
-                )}
+            {!isOpen && (
+                <button
+                    type="button"
+                    onClick={toggleChat}
+                    className={cn(
+                        "fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all hover:scale-105",
+                        isOpen ? "bg-gray-700 hover:bg-gray-800" : "bg-green-600 hover:bg-green-700"
+                    )}
+                    aria-label={isOpen ? "Close messages" : "Open messages"}
+                >
+                    {!isOpen && unreadCount > 0 && (
+                        <span className="absolute inset-0 animate-ping rounded-full bg-green-400 opacity-50" />
+                    )}
+                    {!isOpen && unreadCount > 0 && (
+                        <span className="absolute -right-1 -top-1 z-20 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white">
+                            {unreadCount > 99 ? "99+" : Number(unreadCount)}
+                        </span>
+                    )}
 
-                <span className="relative z-10">
-                    {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-                </span>
-            </button>
+                    <span className="relative z-10">
+                        <MessageCircle size={24} />
+                    </span>
+                </button>
+            )}
         </>
     );
 }

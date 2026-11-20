@@ -17,7 +17,7 @@ export default function Services() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 flex-1">
                 {DAYS.map((day) => (
                     <ServicesContainer
                         key={day}
